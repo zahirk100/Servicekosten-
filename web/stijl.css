@@ -309,6 +309,67 @@ details.diep dd.reken { font-family: var(--mono); font-size: .77rem; color: var(
 .tijdlijn .wie { font-weight: 650; }
 .tijdlijn .wanneer { color: var(--inkt-3); font-size: .8rem; }
 
+/* ══════════════════════════════════════════════ beheer · het werkblad */
+.kopregel { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 8px 0 18px; }
+
+/* Behandelstappen: een lijst die zegt hoe ver een dossier staat. */
+.stappen { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 7px; }
+.stappen li { display: flex; gap: 11px; align-items: flex-start; background: var(--vel);
+  border: 1px solid var(--lijn); border-radius: var(--r-2); padding: 11px 13px; }
+.stappen li.klaar { border-color: var(--lijn-2); }
+.stappen .vink { flex: none; width: 27px; height: 27px; min-height: 27px; padding: 0; border-radius: 50%;
+  border: 1.5px solid var(--lijn-2); background: var(--vel); color: transparent;
+  display: grid; place-items: center; font-size: .85rem; font-weight: 800; }
+.stappen li.klaar .vink { background: var(--inkt); border-color: var(--inkt); color: var(--papier); }
+.stappen .vink.stil { pointer-events: none; }
+.stappen .wat { flex: 1; min-width: 0; }
+.stappen .wat b { display: block; font-weight: 650; font-size: .95rem; }
+.stappen .wat span { font-size: .85rem; color: var(--inkt-2); }
+.stappen .wanneer { font-size: .76rem; color: var(--inkt-3); white-space: nowrap; align-self: center;
+  font-variant-numeric: tabular-nums; }
+.klein-stappen { margin-top: 12px; }
+.klein-stappen li { padding: 8px 11px; }
+
+/* Uitslag van de ontvankelijkheidstoets. */
+.toets { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 8px; }
+.toets li { display: flex; gap: 10px; align-items: flex-start; font-size: .9rem; color: var(--inkt-2); }
+.toets .merkje { flex: none; width: 22px; height: 22px; border-radius: 5px; display: grid;
+  place-items: center; font-weight: 800; font-size: .78rem; }
+
+/* Posten die nog gegevens missen. */
+.openlijst { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 8px; }
+.openlijst li { display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap;
+  border: 1px solid var(--lijn); border-radius: var(--r-2); padding: 12px 13px; background: var(--vel); }
+.openlijst .wat { flex: 1 1 180px; min-width: 0; }
+.openlijst .wat b { display: block; font-weight: 650; overflow-wrap: anywhere; }
+.openlijst .wat span { font-size: .86rem; color: var(--inkt-2); }
+.openlijst .som { font-family: var(--display); font-weight: 600; font-size: 1.04rem;
+  letter-spacing: -.02em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.openlijst button { flex: none; }
+
+/* Op te vragen stukken, met hun stand. */
+.stukken { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 8px; }
+.stuk { border: 1px solid var(--lijn); border-radius: var(--r-2); padding: 12px 13px; background: var(--vel); }
+.stuk .post { font-weight: 650; font-size: .93rem; overflow-wrap: anywhere; }
+.stuk .vraag { font-size: .88rem; color: var(--inkt-2); margin-top: 2px; }
+.stuk .keuze3 { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.stuk .keuze3 button { padding: 6px 13px; min-height: 38px; font-size: .82rem; border-radius: 999px; }
+.stuk .keuze3 button[aria-pressed="true"] { background: var(--inkt); border-color: var(--inkt); color: var(--papier); }
+
+/* Het rapport op papier, ook in het voorbeeldvenster. */
+.rapportvoorbeeld { background: #fff; color: #14150f; border: 1px solid var(--lijn-2);
+  border-radius: var(--r-2); padding: 20px 18px; margin-top: 14px; max-height: 46vh; overflow: auto;
+  font: 10.5pt/1.5 var(--sans); }
+@media (max-width: 560px) { .rapportvoorbeeld { font-size: 8.4pt; padding: 14px 12px; max-height: 40vh; } }
+
+/* Een terugkoppeling naar het overzicht is een link, geen knop in het midden. */
+.terugrij { display: flex; margin: 0 0 14px; }
+.terugrij button { justify-content: flex-start; padding-left: 0; }
+.uitslagkaart .groot { font-family: var(--display); font-weight: 600; font-size: 1.7rem;
+  letter-spacing: -.03em; font-variant-numeric: tabular-nums; margin: 2px 0 6px; }
+.uitslagkaart .groot .klein { font-family: var(--sans); font-size: .88rem; font-weight: 400;
+  letter-spacing: 0; color: var(--inkt-2); }
+
 /* ═════════════════════════════════════════════════════════════════ blad */
 .blad-achter { position: fixed; inset: 0; background: rgba(10,12,8,.55); z-index: 50;
   display: flex; align-items: flex-end; justify-content: center; }

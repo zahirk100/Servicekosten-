@@ -31,9 +31,46 @@ een rapport. Het dossier verschijnt op het dashboard, waar de huurder de status 
 de beoordelaar terugziet.
 
 **Beheer.** Een overzicht van binnengekomen aanvragen met kengetallen (nieuw, in behandeling, totale
-claim, gemiddelde per dossier), filters per status en een detailpagina. Daar staan de contactgegevens,
-de bedragen, de bevindingen, en de verwerking: status wijzigen, een aantekening toevoegen (die de
-huurder meteen ziet), en een rapport opstellen dat gekopieerd of afgedrukt kan worden.
+claim, gemiddelde per dossier), zoeken op naam, adres, dossiernummer of jaar, filters per status, en
+per dossier een werkblad.
+
+## Het werkblad van de beoordelaar
+
+Een dossier is pas afgehandeld als er een uitkomst ligt, en daar zijn stappen voor nodig die niet in
+één scherm passen. Het dossier doorloopt er zes; elke stap is in de applicatie zelf uit te voeren en
+wordt met een tijdstempel vastgelegd, zodat niemand hoeft te raden hoe ver het staat. Het eerste
+afgevinkte punt zet de status van *Nieuw* op *In behandeling*.
+
+| Stap | Wat er gebeurt |
+| --- | --- |
+| **1. Ontvankelijkheid** | De huurdersstroom vraagt niet naar de procedure, dus `dossier.procedure` komt leeg binnen en de toets is onvolledig. Hier vult de beoordelaar datum huurovereenkomst, sector, of de afrekening is ontvangen, of er schriftelijk bezwaar is gemaakt, of de afrekening is opgevraagd, en de verzoekdatum. Opslaan laat de kern opnieuw toetsen. |
+| **2. Posten** | Elke post die nog niet te beoordelen is, staat op een lijst met het bedrag dat ermee gemoeid is en wat eraan ontbreekt. Aanvullen opent hetzelfde formulier dat de huurder ziet, nu gevuld met wat de verhuurder heeft aangeleverd. |
+| **3. Stukken** | De ontbrekende gegevens worden automatisch een lijst op te vragen stukken, op bedrag gesorteerd. Per stuk: nog niet gevraagd, opgevraagd of ontvangen, met de datum. Er hoort een opvraagbrief bij op grond van artikel 7:259 lid 4 BW. |
+| **4. Herbeoordelen** | `Kern.beoordeelDossier` rekent opnieuw over de aangevulde invoer. Alle totalen, statussen en bevindingen worden overschreven; wijzigt de correctie, dan komt dat als aantekening in het verloop — ook de huurder ziet die. |
+| **5. Rapport** | Het rapport met alle bevindingen, plus de bezwaarbrief en de brief om een ontbrekende afrekening op te vragen. |
+| **6. Afronden** | Uitkomst (verhuurder heeft gecorrigeerd, voorgelegd aan de Huurcommissie, geen grond, huurder ziet ervan af, anders), het daadwerkelijk gecorrigeerde bedrag, een toelichting. Dat bepaalt de eindstatus en verschijnt bij de huurder op zijn eigen pagina. |
+
+Herbeoordelen vraagt om de oorspronkelijke invoer, niet alleen om de bevindingen. Die gaat daarom als
+`invoer` mee het dossier in. Een dossier van vóór die verandering heeft dat veld niet; het werkblad
+zegt dat dan met zoveel woorden en laat stap 1, 2 en 4 vallen — rapport, stukken en afronden werken
+gewoon.
+
+### Het rapport
+
+Het rapport wordt als DOM opgebouwd en voor het afdrukken naar een nieuw venster gekopieerd; er wordt
+nergens tekst in HTML geplakt. Het bevat de dossiergegevens, een samenvatting met de bedragen en het
+saldo tegenover het voorschot, de ontvankelijkheidstoets, alle bevindingen per status met de uitleg in
+gewone taal, de berekening en de regel-ID's, de nog op te vragen stukken, een conclusie en de
+vervolgstappen met hun termijnen. Is het dossier afgerond, dan staat de uitkomst erin in plaats van de
+vervolgstappen. Dezelfde opmaak geldt voor het voorbeeld in de applicatie en voor de afdruk; daarnaast
+is er een tekstversie om in een e-mail te plakken.
+
+### Brieven
+
+Drie concepten, alle drie met de wettelijke grondslag erin: bezwaar tegen de afrekening (art. 7:260
+BW), inzage in de onderliggende stukken (art. 7:259 lid 4 BW), en het opvragen van een afrekening die
+nooit is verstrekt (art. 7:259 lid 2 BW). De huurder krijgt dezelfde brieven aangeboden aan het eind
+van de controle; ze worden uit één bron opgebouwd, zodat de twee kanten niet uit elkaar kunnen lopen.
 
 ## Opslag
 

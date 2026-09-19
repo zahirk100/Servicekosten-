@@ -270,9 +270,19 @@
       el("p", { class: "oog" }, "Dossier " + a.id),
       el("h1", {}, "Boekjaar " + a.jaar),
       el("div", { style: "margin:10px 0 18px" }, chip(a.status)),
+      a.afhandeling && a.afhandeling.uitkomst ? el("div", { class: "kaart uitslagkaart" },
+        el("p", { class: "oog" }, "Uitkomst"),
+        el("h2", {}, afloopLabel(a.afhandeling.uitkomst)),
+        a.afhandeling.bedrag != null
+          ? el("div", { class: "groot" }, euro(a.afhandeling.bedrag),
+              el("span", { class: "klein" }, " daadwerkelijk gecorrigeerd")) : null,
+        a.afhandeling.toelichting ? el("p", { class: "klein" }, a.afhandeling.toelichting) : null,
+        el("p", { class: "mini" }, "Afgerond op " + datumTijd(a.afhandeling.op))) : null,
+
       el("div", { class: "kaart" },
         el("p", { class: "oog" }, "Stand van zaken"),
         el("p", { class: "klein" }, statusTekstHuurder(a)),
+        huurderVoortgang(a),
         el("ul", { class: "tijdlijn" },
           el("li", {}, el("span", { class: "wie" }, "Ingediend"),
             el("div", { class: "wanneer" }, datumTijd(a.ingediend_op))),
@@ -287,6 +297,32 @@
       el("div", { class: "groepkop" }, el("h2", {}, "Bevindingen")),
       rendGroepenUit(a.bevindingen || []));
     toon("mijn");
+  }
+
+  const afloopLabel = (w) => {
+    const g = AFLOOP.find((x) => x.w === w);
+    return (g && g.l) || String(w);
+  };
+
+  /* De huurder ziet wat er met zijn dossier gebeurt, in zijn eigen woorden —
+     niet de werklijst van de beoordelaar. */
+  const HUURDERSTAPPEN = [
+    ["ontvankelijkheid", "Gecontroleerd of je verzoek behandeld kan worden"],
+    ["posten", "Je posten nagelopen"],
+    ["stukken", "Ontbrekende stukken opgevraagd"],
+    ["herbeoordeeld", "Opnieuw berekend met de nieuwe gegevens"],
+    ["rapport", "Rapport naar je verstuurd"],
+    ["afgerond", "Dossier afgerond"],
+  ];
+
+  function huurderVoortgang(a) {
+    const gedaan = HUURDERSTAPPEN.filter(([k]) => (a.stappen || {})[k]);
+    if (!gedaan.length) return null;
+    return el("ul", { class: "stappen klein-stappen" }, gedaan.map(([k, l]) =>
+      el("li", { class: "klaar" },
+        el("span", { class: "vink stil", "aria-hidden": "true" }, "✓"),
+        el("span", { class: "wat" }, el("b", {}, l)),
+        el("span", { class: "wanneer" }, datum(a.stappen[k])))));
   }
 
   function statusTekstHuurder(a) {
@@ -714,7 +750,7 @@
         uitkomst.blokkerend.map((r) => r.replace(/^ROOD - /, "")).join(" ")));
     }
     $("#groepen").textContent = "";
-    $("#groepen").append(rendGroepenUit(uitkomst.beoordelingen));
+    $("#groepen").append(rendGroepenUit(uitkomst.beoordelingen, { dossier, na: bereken }));
 
     $("#advies").textContent = f.potentiele_correctie > 0
       ? "Dien je dossier in, dan kijken wij er met de hand naar en sturen we je een rapport met onze bevindingen en wat je kunt doen. Je kunt ook meteen zelf een bezwaarbrief maken."
@@ -724,7 +760,7 @@
     $("#briefblok").hidden = true;
   }
 
-  function rendGroepenUit(beoordelingen) {
+  function rendGroepenUit(beoordelingen, ctx) {
     const bak = el("div", {});
     for (const status of RANG) {
       const posten = beoordelingen.filter((b) => b.status === status)
@@ -734,12 +770,12 @@
         el("h2", {}, STAT[status].kop),
         el("span", { class: "telling" }, posten.length + " " + (posten.length === 1 ? "post" : "posten"))));
       bak.append(el("p", { class: "klein", style: "margin:0 0 10px" }, STAT[status].uitleg));
-      for (const b of posten) bak.append(postKaart(b));
+      for (const b of posten) bak.append(postKaart(b, ctx));
     }
     return bak;
   }
 
-  function postKaart(b) {
+  function postKaart(b, ctx) {
     const regelId = besteRegel(b);
     const uitleg = regelId ? UITLEG[regelId] : null;
     const kaart = el("div", { class: "post " + b.status });
@@ -763,11 +799,12 @@
     if (b.status === "ORANJE" && b.ontbrekende_informatie.length) {
       body.append(el("div", { class: "post-tekst", style: "margin-top:11px" },
         el("b", {}, "Nog nodig: "), vereenvoudig(b.ontbrekende_informatie[0])));
-      const def = D.categorieen.categorieen[b.categorie];
-      if (def && def.velden.length && uitkomst) {
-        body.append(el("div", { class: "post-acties" },
-          el("button", { class: "klein", type: "button", onclick: () => openBlad(b) }, "Zelf beantwoorden")));
-      }
+    }
+    const def = D.categorieen.categorieen[b.categorie];
+    if (ctx && def && def.velden.length && (ctx.alle || b.status === "ORANJE")) {
+      body.append(el("div", { class: "post-acties" },
+        el("button", { class: "klein", type: "button", onclick: () => openBlad(b, ctx.dossier, ctx.na) },
+          ctx.label || "Zelf beantwoorden")));
     }
     kaart.append(body);
 
@@ -819,20 +856,32 @@
           el("input", { type: "checkbox", checked: gekozen.has(o), style: "width:22px;height:22px;margin-top:2px;flex:none",
             onchange: (e) => { if (e.target.checked) gekozen.add(o); else gekozen.delete(o); opslaan([...gekozen]); } }), o))));
     } else {
-      const type = def.type === "datum" ? "date" : ["getal", "geheel", "bedrag"].includes(def.type) ? "number" : "text";
+      const getal = ["getal", "geheel", "bedrag"].includes(def.type);
+      const type = def.type === "datum" ? "date" : getal ? "number" : "text";
       invoer = el("input", { type, id, inputmode: type === "number" ? "decimal" : null,
         step: def.type === "bedrag" ? "0.01" : def.type === "geheel" ? "1" : "any",
         value: waarde == null ? "" : waarde,
-        onchange: (e) => { const r = e.target.value; opslaan(r === "" ? null : def.type === "geheel" ? parseInt(r, 10) : Number(r)); } });
+        // Een datum of vrije tekst blijft tekst; die door Number() halen gaf NaN.
+        onchange: (e) => {
+          const r = e.target.value;
+          if (r === "") return opslaan(null);
+          if (def.type === "geheel") { const n = parseInt(r, 10); return opslaan(isNaN(n) ? null : n); }
+          if (getal) { const n = Number(r); return opslaan(isNaN(n) ? null : n); }
+          opslaan(r);
+        } });
     }
     return el("div", { style: "margin-top:16px" }, el("label", { for: id }, def.label), invoer,
       def.hulp ? el("div", { class: "hulp" }, def.hulp) : null);
   }
 
-  function openBlad(b) {
-    const post = dossier.kostenposten.find((p) => p.id === b.kostenpost_id);
-    if (!post) return;
+  /* Zowel de huurder (tijdens de controle) als de beoordelaar (in het dossier)
+     vult hier gegevens aan; alleen het bronbestand en het vervolg verschillen. */
+  function openBlad(b, brondossier, na) {
+    const bron = brondossier || dossier;
+    const post = (bron.kostenposten || []).find((p) => p.id === b.kostenpost_id);
+    if (!post) return melding("Deze post staat niet meer in het dossier.", "fout");
     const def = D.categorieen.categorieen[post.categorie];
+    if (!def) return melding("Voor deze soort kosten zijn geen aanvullende velden bekend.", "letop");
     const blad = el("div", { class: "blad" },
       el("p", { class: "oog" }, "Aanvullen"),
       el("h2", {}, post.omschrijving),
@@ -853,36 +902,25 @@
             } }), o.label)))));
     const achter = el("div", { class: "blad-achter", onclick: (e) => { if (e.target === achter) achter.remove(); } }, blad);
     blad.append(el("div", { class: "knoppen" },
-      el("button", { class: "primair vol", type: "button", onclick: () => { achter.remove(); bereken(); } }, "Opslaan en opnieuw berekenen"),
+      el("button", { class: "primair vol", type: "button", onclick: () => { achter.remove(); (na || bereken)(); } }, "Opslaan en opnieuw berekenen"),
       el("button", { class: "link", type: "button", onclick: () => achter.remove() }, "Annuleren")));
     document.body.append(achter);
   }
 
   /* ───────────────────────────────────────────────────────── indienen */
 
+  /* De ingevulde posten gaan mee het dossier in. Zonder die invoer kan de
+     beoordelaar de aangevulde gegevens niet opnieuw laten doorrekenen en blijft
+     de beheerkant een leesscherm. */
   function samenvattingVoorOpslag() {
-    return {
-      jaar: uitkomst.jaar,
+    return Object.assign(uitkomstVelden(uitkomst, dossier), {
       huurder: dossier.huurder,
       bron: dossier.bron,
-      totaal_verhuurder: uitkomst.financieel.totaal_verhuurder,
-      totaal_model: uitkomst.financieel.totaal_model,
-      correctie: uitkomst.financieel.potentiele_correctie,
-      onbeoordeeld: uitkomst.financieel.onbeoordeeld_bedrag,
-      bandbreedte_max: uitkomst.financieel.bandbreedte_max,
-      voorschot: uitkomst.financieel.voorschot_betaald ?? null,
-      tellingen: uitkomst.tellingen,
-      blokkerend: uitkomst.blokkerend,
-      sterkte: uitkomst.sterkte,
-      woonruimte: dossier.woonruimte,
-      bevindingen: uitkomst.beoordelingen.map((b) => ({
-        kostenpost_id: b.kostenpost_id, categorie: b.categorie, omschrijving: b.omschrijving,
-        status: b.status, voorlopig: b.voorlopig, bedrag_verhuurder: b.bedrag_verhuurder,
-        bedrag_model: b.bedrag_model, verschil: b.verschil, regels: b.regels,
-        berekening: b.berekening, toelichting: b.toelichting,
-        ontbrekende_informatie: b.ontbrekende_informatie,
-      })),
-    };
+      invoer: dossier,
+      stappen: {},
+      stukken: [],
+      afhandeling: null,
+    });
   }
 
   async function dienIn() {
@@ -1012,8 +1050,146 @@
         el("span", { class: "meta" }, a.id + " · boekjaar " + a.jaar + " · " + datum(a.ingediend_op)))))));
   }
 
+  /* ═════════════════════════════════════════════ beheer · één dossier
+
+     De beheerkant is een werkblad, geen leesscherm. Een dossier doorloopt zes
+     stappen; elke stap is hier uit te voeren en wordt met een tijdstempel
+     vastgelegd, zodat niemand hoeft te raden hoe ver het staat. */
+
+  const STAPPEN = [
+    { s: "ontvankelijkheid", label: "Ontvankelijkheid getoetst", doel: "Mag dit verzoek behandeld worden?" },
+    { s: "posten", label: "Posten nagelopen", doel: "Kloppen de posten, de bedragen en het boekjaar?" },
+    { s: "stukken", label: "Stukken opgevraagd", doel: "Wat moet er bij de verhuurder vandaan komen?" },
+    { s: "herbeoordeeld", label: "Opnieuw beoordeeld", doel: "Met de aangevulde gegevens opnieuw gerekend." },
+    { s: "rapport", label: "Rapport verstuurd", doel: "De bevindingen op papier, naar de huurder." },
+    { s: "afgerond", label: "Afgerond", doel: "Uitkomst vastgelegd en het dossier gesloten." },
+  ];
+
+  const AFLOOP = [
+    { w: "verhuurder_gecorrigeerd", l: "Verhuurder heeft gecorrigeerd", st: "afgehandeld" },
+    { w: "huurcommissie", l: "Voorgelegd aan de Huurcommissie", st: "behandeling" },
+    { w: "geen_grond", l: "Geen grond voor bezwaar", st: "afgewezen" },
+    { w: "huurder_ziet_af", l: "Huurder ziet ervan af", st: "afgewezen" },
+    { w: "anders", l: "Anders", st: "afgehandeld" },
+  ];
+
+  let werkDossier = null;   // de invoer van de huurder, hier bewerkbaar
+  let werkUitkomst = null;  // de laatste doorrekening daarvan
+
+  const bewerkbaar = (a) => Boolean(a.invoer && (a.invoer.kostenposten || []).length);
+
+  async function schrijf(a, velden, bericht) {
+    try {
+      await Opslag.werkBij(a.id, velden);
+      Object.assign(a, velden);
+      if (bericht) melding(bericht, "ok");
+      herteken();
+      return true;
+    } catch (f) {
+      melding("Opslaan lukte niet: " + (f.message || f.code || "onbekende fout"), "fout");
+      return false;
+    }
+  }
+
+  const metNotitie = (a, titel, tekst) =>
+    ({ notities: (a.notities || []).concat([{ op: new Date().toISOString(), titel, tekst }]) });
+
+  const stapKlaar = (a, sleutel) => Boolean((a.stappen || {})[sleutel]);
+
+  function zetStap(a, sleutel, aan, bericht) {
+    const stappen = Object.assign({}, a.stappen);
+    if (aan) stappen[sleutel] = new Date().toISOString();
+    else delete stappen[sleutel];
+    const velden = { stappen };
+    // Zodra er aan gewerkt wordt, is het dossier niet meer "nieuw".
+    if (aan && a.status === "nieuw") velden.status = "behandeling";
+    return schrijf(a, velden, bericht);
+  }
+
+  /* De velden die de uitkomst van de kern in het opgeslagen dossier zetten.
+     Eén plek, zodat indienen en herbeoordelen hetzelfde opleveren. */
+  function uitkomstVelden(u, d) {
+    return {
+      jaar: u.jaar,
+      totaal_verhuurder: u.financieel.totaal_verhuurder,
+      totaal_model: u.financieel.totaal_model,
+      correctie: u.financieel.potentiele_correctie,
+      onbeoordeeld: u.financieel.onbeoordeeld_bedrag,
+      bandbreedte_max: u.financieel.bandbreedte_max,
+      voorschot: u.financieel.voorschot_betaald ?? null,
+      saldo: u.financieel.saldo_volgens_model ?? null,
+      tellingen: u.tellingen,
+      blokkerend: u.blokkerend,
+      ontvankelijkheid: u.ontvankelijkheid,
+      sterkte: u.sterkte,
+      woonruimte: d.woonruimte,
+      periode: d.periode,
+      bevindingen: u.beoordelingen.map((b) => ({
+        kostenpost_id: b.kostenpost_id, categorie: b.categorie, omschrijving: b.omschrijving,
+        status: b.status, voorlopig: b.voorlopig, bedrag_verhuurder: b.bedrag_verhuurder,
+        bedrag_model: b.bedrag_model, verschil: b.verschil, regels: b.regels,
+        berekening: b.berekening, toelichting: b.toelichting,
+        ontbrekende_informatie: b.ontbrekende_informatie,
+      })),
+    };
+  }
+
+  async function herbeoordeel(a, stilzwijgend) {
+    if (!bewerkbaar(a)) {
+      return melding("Dit dossier is met een oudere versie ingediend; de onderliggende posten zijn " +
+        "niet meegestuurd. Herbeoordelen kan alleen bij dossiers die daarna zijn binnengekomen.", "letop");
+    }
+    let u;
+    try { u = Kern.beoordeelDossier(werkDossier); }
+    catch (f) { return melding("Herberekenen lukte niet: " + f.message, "fout"); }
+    werkUitkomst = u;
+    const nu = new Date().toISOString();
+    const velden = Object.assign(uitkomstVelden(u, werkDossier), {
+      invoer: werkDossier,
+      herzien_op: nu,
+      stappen: Object.assign({}, a.stappen, { herbeoordeeld: nu }),
+    });
+    if (a.status === "nieuw") velden.status = "behandeling";
+    const oud = Number(a.correctie || 0), nieuw = Number(u.financieel.potentiele_correctie);
+    if (!stilzwijgend && Math.abs(nieuw - oud) >= 0.005) {
+      Object.assign(velden, metNotitie(a, "Beoordeling bijgewerkt",
+        "Na aanvulling van de gegevens komt de berekende correctie uit op " + euro(nieuw) +
+        " (was " + euro(oud) + ")."));
+    }
+    await schrijf(a, velden, stilzwijgend ? null : "Opnieuw beoordeeld volgens het beleidsboek.");
+  }
+
+  /* ─────────────────────────────────────────────── op te vragen stukken */
+
+  /* De lijst volgt uit de posten die nog niet te beoordelen zijn. Bestaande
+     regels houden hun stand, nieuwe komen erbij, vervallen regels verdwijnen. */
+  function stukkenVoor(a) {
+    const vers = [];
+    for (const b of a.bevindingen || []) {
+      if (b.status !== "ORANJE") continue;
+      (b.ontbrekende_informatie || []).forEach((tekst, i) => {
+        vers.push({
+          id: b.kostenpost_id + "#" + i, post: b.omschrijving, categorie: b.categorie,
+          vraag: vereenvoudig(tekst), belang: b.bedrag_verhuurder, status: "open", op: null,
+        });
+      });
+    }
+    const oud = new Map((a.stukken || []).map((s) => [s.id, s]));
+    vers.sort((x, y) => y.belang - x.belang);
+    return vers.map((s) => {
+      const b = oud.get(s.id);
+      return b ? Object.assign({}, s, { status: b.status, op: b.op }) : s;
+    });
+  }
+
+  const STUKSTAND = [["open", "Nog niet gevraagd"], ["opgevraagd", "Opgevraagd"], ["ontvangen", "Ontvangen"]];
+
+  /* ───────────────────────────────────────────────────── het werkblad */
+
   function openDossier(a) {
     geopendDossier = a.id;
+    werkDossier = a.invoer ? JSON.parse(JSON.stringify(a.invoer)) : null;
+    werkUitkomst = null;
     const bak = $("#dossier-inhoud");
     bak.textContent = "";
     const h = a.huurder || {};
@@ -1021,83 +1197,29 @@
     bak.append(
       el("p", { class: "oog" }, "Dossier " + a.id),
       el("h1", {}, h.naam || "Onbekende huurder"),
-      el("div", { style: "margin:8px 0 18px;display:flex;gap:10px;flex-wrap:wrap;align-items:center" },
-        chip(a.status), el("span", { class: "klein" }, "Ingediend " + datumTijd(a.ingediend_op))),
+      el("div", { class: "kopregel" },
+        chip(a.status),
+        el("span", { class: "klein" }, "Boekjaar " + a.jaar + " · ingediend " + datumTijd(a.ingediend_op)),
+        a.herzien_op ? el("span", { class: "klein" }, "· herzien " + datumTijd(a.herzien_op)) : null));
 
-      el("div", { class: "kaart" },
-        el("p", { class: "oog" }, "Contactgegevens"),
-        el("div", { class: "veldrij twee", style: "margin-top:4px" },
-          el("div", {}, el("div", { class: "mini" }, "E-mail"), el("div", {}, h.email || "—")),
-          el("div", {}, el("div", { class: "mini" }, "Telefoon"), el("div", {}, h.telefoon || "—"))),
-        el("div", { class: "veldrij twee" },
-          el("div", {}, el("div", { class: "mini" }, "Adres"), el("div", {}, h.adres || "—")),
-          el("div", {}, el("div", { class: "mini" }, "Verhuurder"), el("div", {}, h.verhuurder || "—")))),
+    bak.append(blokVoortgang(a));
+    bak.append(blokBedragen(a));
+    bak.append(blokContact(a, h));
+    bak.append(blokOntvankelijkheid(a));
+    bak.append(blokPosten(a));
+    bak.append(blokStukken(a));
+    bak.append(blokFotos(a));
+    bak.append(blokRapport(a));
+    bak.append(blokAfronden(a));
+    bak.append(blokVerloop(a));
 
-      el("div", { class: "kpi", style: "margin-top:12px" },
-        el("div", {}, el("div", { class: "k" }, "Afgerekend"), el("div", { class: "v" }, euro(a.totaal_verhuurder))),
-        el("div", {}, el("div", { class: "k" }, "Toegestaan"), el("div", { class: "v" }, euro(a.totaal_model))),
-        el("div", {}, el("div", { class: "k" }, "Verschil"), el("div", { class: "v" }, euro(a.correctie))),
-        el("div", {}, el("div", { class: "k" }, "Onbeoordeeld"), el("div", { class: "v" }, euro(a.onbeoordeeld)),
-          el("div", { class: "t" }, "tot " + euro(a.bandbreedte_max)))));
+    bak.append(el("div", { class: "groepkop" }, el("h2", {}, "Alle bevindingen"),
+      el("span", { class: "telling" }, (a.bevindingen || []).length + " posten")));
+    bak.append(rendGroepenUit(a.bevindingen || [], werkBladContext(a)));
 
-    if (a.blokkerend && a.blokkerend.length) {
-      bak.append(el("div", { class: "melding fout", style: "margin-top:12px" },
-        el("b", {}, "Ontvankelijkheid: "), a.blokkerend.map((r) => r.replace(/^ROOD - /, "")).join(" ")));
-    }
-
-    /* Foto's staan in een aparte collectie en komen dus na. */
-    const fotokaart = el("div", { class: "kaart", hidden: true, style: "margin-top:12px" });
-    bak.append(fotokaart);
-    Opslag.laadBijlagen(a.id).then((bij) => {
-      if (!bij.length || geopendDossier !== a.id) return;
-      fotokaart.hidden = false;
-      fotokaart.append(
-        el("p", { class: "oog" }, "Meegestuurd"),
-        el("h2", {}, bij.length + (bij.length === 1 ? " foto" : " foto's") + " van de huurder"),
-        el("p", { class: "klein" }, "Tik een foto aan om hem op volle grootte te bekijken."),
-        el("div", { class: "bijlagen-groot" }, bij.map((f, i) =>
-          el("a", { href: f.data, target: "_blank", rel: "noopener" },
-            el("img", { src: f.data, alt: "Foto " + (i + 1) + " bij dossier " + a.id })))));
-    });
-
-    /* verwerken */
-    const verwerk = el("div", { class: "kaart", style: "margin-top:12px" },
-      el("p", { class: "oog" }, "Verwerken"),
-      el("h2", {}, "Status en aantekening"));
-    const statusKeuze = el("div", { class: "filters", style: "margin:12px 0" },
-      Object.entries(STATUSSEN).map(([w, s]) => el("button", { type: "button",
-        "aria-pressed": String(a.status === w),
-        onclick: async () => {
-          try { await Opslag.werkBij(a.id, { status: w }); a.status = w; melding("Status bijgewerkt naar " + s.label + ".", "ok"); herteken(); }
-          catch (f) { melding("Bijwerken lukte niet: " + (f.message || f.code), "fout"); }
-        } }, s.label)));
-    const notitieVeld = el("textarea", { id: "notitie", placeholder: "Aantekening voor het dossier — ook zichtbaar voor de huurder.", style: "min-height:100px" });
-    verwerk.append(statusKeuze, el("label", { for: "notitie" }, "Aantekening toevoegen"), notitieVeld,
-      el("div", { class: "knoppen rij" },
-        el("button", { class: "primair", type: "button", onclick: async () => {
-          const tekst = notitieVeld.value.trim();
-          if (!tekst) return melding("Schrijf eerst een aantekening.", "fout");
-          const notities = (a.notities || []).concat([{ op: new Date().toISOString(), titel: "Update van de beoordelaar", tekst }]);
-          try { await Opslag.werkBij(a.id, { notities }); a.notities = notities; notitieVeld.value = ""; melding("Aantekening opgeslagen.", "ok"); herteken(); }
-          catch (f) { melding("Opslaan lukte niet: " + (f.message || f.code), "fout"); }
-        } }, "Aantekening opslaan"),
-        el("button", { type: "button", onclick: () => toonRapport(a) }, "Rapport opstellen")));
-    bak.append(verwerk);
-
-    if (a.notities && a.notities.length) {
-      bak.append(el("div", { class: "kaart", style: "margin-top:12px" },
-        el("p", { class: "oog" }, "Verloop"),
-        el("ul", { class: "tijdlijn" }, a.notities.map((n) => el("li", {},
-          el("span", { class: "wie" }, n.titel || "Update"), el("div", {}, n.tekst),
-          el("div", { class: "wanneer" }, datumTijd(n.op)))))));
-    }
-
-    bak.append(el("div", { class: "groepkop" }, el("h2", {}, "Bevindingen")),
-      rendGroepenUit(a.bevindingen || []));
-
-    bak.append(el("div", { class: "knoppen", style: "margin-top:24px" },
+    bak.append(el("div", { class: "knoppen", style: "margin-top:26px" },
       el("button", { class: "link", type: "button", onclick: async () => {
-        if (!confirm("Dit dossier definitief verwijderen?")) return;
+        if (!confirm("Dit dossier definitief verwijderen? Dat kan niet ongedaan worden gemaakt.")) return;
         try { await Opslag.verwijder(a.id); geopendDossier = null; naarScherm("beheer"); melding("Dossier verwijderd.", "ok"); }
         catch (f) { melding("Verwijderen lukte niet: " + (f.message || f.code), "fout"); }
       } }, "Dossier verwijderen")));
@@ -1105,37 +1227,514 @@
     toon("dossier");
   }
 
+  const werkBladContext = (a) => (bewerkbaar(a)
+    ? { dossier: werkDossier, na: () => herbeoordeel(a), label: "Gegevens aanvullen", alle: true }
+    : null);
+
+  /* ─────────────────────────────────────────────────────── de blokken */
+
+  function blokVoortgang(a) {
+    const gedaan = STAPPEN.filter((st) => stapKlaar(a, st.s)).length;
+    return el("div", { class: "kaart", style: "margin-top:14px" },
+      el("p", { class: "oog" }, "Behandeling"),
+      el("h2", {}, gedaan === STAPPEN.length ? "Alle stappen gedaan" : "Stap " + (gedaan + 1) + " van " + STAPPEN.length),
+      el("p", { class: "klein" }, "Vink af wat je hebt gedaan. De stappen hieronder staan in dezelfde volgorde."),
+      el("ul", { class: "stappen" }, STAPPEN.map((st) => {
+        const klaar = stapKlaar(a, st.s);
+        return el("li", { class: klaar ? "klaar" : "" },
+          el("button", { class: "vink", type: "button", "aria-pressed": String(klaar),
+            "aria-label": st.label + (klaar ? " ongedaan maken" : " afvinken"),
+            onclick: () => zetStap(a, st.s, !klaar) }, "✓"),
+          el("span", { class: "wat" }, el("b", {}, st.label), el("span", {}, st.doel)),
+          klaar ? el("span", { class: "wanneer" }, datum(a.stappen[st.s])) : null);
+      })));
+  }
+
+  function blokBedragen(a) {
+    const kpi = el("div", { class: "kpi", style: "margin-top:12px" },
+      el("div", {}, el("div", { class: "k" }, "Afgerekend"), el("div", { class: "v" }, euro(a.totaal_verhuurder))),
+      el("div", {}, el("div", { class: "k" }, "Toegestaan"), el("div", { class: "v" }, euro(a.totaal_model))),
+      el("div", {}, el("div", { class: "k" }, "Verschil"), el("div", { class: "v" }, euro(a.correctie))),
+      el("div", {}, el("div", { class: "k" }, "Onbeoordeeld"), el("div", { class: "v" }, euro(a.onbeoordeeld)),
+        el("div", { class: "t" }, "tot " + euro(a.bandbreedte_max))));
+    if (!bewerkbaar(a)) {
+      return el("div", {}, kpi, el("div", { class: "melding letop", style: "margin-top:10px" },
+        el("b", {}, "Alleen lezen. "),
+        "Dit dossier is met een oudere versie ingediend, zonder de onderliggende posten. " +
+        "Aanvullen en herbeoordelen kan hier niet; het rapport en de afhandeling wel."));
+    }
+    return kpi;
+  }
+
+  function blokContact(a, h) {
+    const w = a.woonruimte || {};
+    const p = a.periode || {};
+    const regel = (k, v) => el("div", {}, el("div", { class: "mini" }, k), el("div", {}, v || "—"));
+    return el("div", { class: "kaart", style: "margin-top:12px" },
+      el("p", { class: "oog" }, "Huurder en woning"),
+      el("div", { class: "veldrij twee", style: "margin-top:4px" },
+        regel("E-mail", h.email), regel("Telefoon", h.telefoon)),
+      el("div", { class: "veldrij twee" },
+        regel("Adres", h.adres), regel("Verhuurder", h.verhuurder)),
+      el("div", { class: "veldrij twee" },
+        regel("Woonruimte", w.zelfstandig === false ? "Onzelfstandig (kamer)"
+          : (w.woningtype || "").replace(/_/g, " ") || "Zelfstandig"),
+        regel("Bewoners", w.aantal_bewoners ? String(w.aantal_bewoners) : null)),
+      el("div", { class: "veldrij twee" },
+        regel("Woningen in complex", w.aantal_woonruimten_complex ? String(w.aantal_woonruimten_complex) : null),
+        regel("Periode", p.jaar ? (p.maand_van || 1) + " t/m " + (p.maand_tot_en_met || 12) + " " + p.jaar : String(a.jaar))),
+      el("div", { class: "veldrij" }, regel("Aangeleverd als", a.bron)));
+  }
+
+  function blokOntvankelijkheid(a) {
+    const kaart = el("div", { class: "kaart", style: "margin-top:12px" },
+      el("p", { class: "oog" }, "Stap 1"),
+      el("h2", {}, "Ontvankelijkheid"),
+      el("p", { class: "klein" }, "De huurdersstroom vraagt hier niet naar. Vul aan wat je weet; " +
+        "wat je openlaat blijft een openstaand punt in plaats van een aanname."));
+
+    const lijst = a.ontvankelijkheid || (a.blokkerend || []);
+    if (lijst.length) {
+      kaart.append(el("ul", { class: "toets" }, lijst.map((r) => {
+        const merk = r.startsWith("ROOD") ? "ROOD" : r.startsWith("OK") ? "GROEN"
+          : r.startsWith("LET OP") ? "ORANJE" : "ORANJE";
+        return el("li", {},
+          el("span", { class: "merkje merk-" + merk, "aria-hidden": "true" }, MERK[merk]),
+          el("span", {}, r.replace(/^(ROOD|ORANJE|OK|LET OP) - /, "")));
+      })));
+    }
+
+    if (!bewerkbaar(a)) return kaart;
+
+    const proc = werkDossier.procedure = werkDossier.procedure || {};
+    const velden = [
+      { naam: "contract_gesloten_op", label: "Huurovereenkomst gesloten op", type: "datum",
+        hulp: "Bepaalt of de Huurcommissie uitspraak kan doen of alleen kan adviseren (par. 6.2.1, p. 51-52)." },
+      { naam: "sector", label: "Sector", type: "keuze",
+        opties: [{ waarde: "sociaal", label: "Sociale huur" }, { waarde: "vrij", label: "Vrije sector" }] },
+      { naam: "afrekening_ontvangen", label: "Afrekening ontvangen van de verhuurder", type: "ja_nee_onbekend" },
+      { naam: "bezwaar_gemaakt", label: "Schriftelijk bezwaar gemaakt bij de verhuurder", type: "ja_nee_onbekend",
+        hulp: "Zonder die kennisgeving verklaart de Huurcommissie het verzoek niet-ontvankelijk (par. 6.3.1, p. 56)." },
+      { naam: "afrekening_opgevraagd", label: "Afrekening schriftelijk opgevraagd", type: "ja_nee_onbekend",
+        hulp: "Alleen van belang als er geen afrekening is ontvangen (par. 6.3.2, p. 57)." },
+      { naam: "verzoekdatum", label: "Datum verzoek aan de Huurcommissie", type: "datum",
+        hulp: "Laat leeg zolang er geen verzoek is; dan wordt met vandaag getoetst." },
+    ];
+    const vak = el("div", {});
+    for (const d of velden) {
+      vak.append(veld(d, proc[d.naam] === undefined ? null : proc[d.naam],
+        (v) => { proc[d.naam] = v; }));
+    }
+    kaart.append(vak, el("div", { class: "knoppen rij" },
+      el("button", { class: "primair", type: "button", onclick: () => herbeoordeel(a) },
+        "Opslaan en opnieuw toetsen"),
+      el("button", { type: "button", onclick: () => zetStap(a, "ontvankelijkheid", true, "Stap afgevinkt.") },
+        "Stap afvinken")));
+    return kaart;
+  }
+
+  function blokPosten(a) {
+    const oranje = (a.bevindingen || []).filter((b) => b.status === "ORANJE");
+    const kaart = el("div", { class: "kaart", style: "margin-top:12px" },
+      el("p", { class: "oog" }, "Stap 2"),
+      el("h2", {}, oranje.length
+        ? oranje.length + (oranje.length === 1 ? " post kan nog niet beoordeeld worden" : " posten kunnen nog niet beoordeeld worden")
+        : "Alle posten zijn beoordeeld"));
+
+    if (!oranje.length) {
+      kaart.append(el("p", { class: "klein" }, "Er ontbreekt niets meer om te kunnen rekenen. " +
+        "Onderaan staan alle bevindingen; daar kun je gegevens alsnog aanpassen."));
+      return kaart;
+    }
+    kaart.append(el("p", { class: "klein" },
+      "Vul in wat de verhuurder heeft aangeleverd. Elke aanvulling laat de kern opnieuw rekenen — " +
+      "er wordt niets ingevuld wat niet is opgegeven."));
+    const ctx = werkBladContext(a);
+    kaart.append(el("ul", { class: "openlijst" }, oranje.map((b) => el("li", {},
+      el("span", { class: "wat" },
+        el("b", {}, b.omschrijving),
+        el("span", {}, vereenvoudig((b.ontbrekende_informatie || [])[0] || "Aanvullende gegevens nodig."))),
+      el("span", { class: "som" }, euro(b.bedrag_verhuurder)),
+      ctx ? el("button", { class: "klein", type: "button", onclick: () => openBlad(b, ctx.dossier, ctx.na) },
+        "Aanvullen") : null))));
+    kaart.append(el("div", { class: "knoppen rij" },
+      el("button", { type: "button", onclick: () => herbeoordeel(a) }, "Opnieuw beoordelen"),
+      el("button", { type: "button", onclick: () => zetStap(a, "posten", true, "Stap afgevinkt.") }, "Stap afvinken")));
+    return kaart;
+  }
+
+  function blokStukken(a) {
+    const stukken = stukkenVoor(a);
+    const kaart = el("div", { class: "kaart", style: "margin-top:12px" },
+      el("p", { class: "oog" }, "Stap 3"),
+      el("h2", {}, "Op te vragen stukken"));
+
+    if (!stukken.length) {
+      kaart.append(el("p", { class: "klein" }, "Er staat niets meer open. Zodra een post gegevens mist, " +
+        "verschijnt die hier vanzelf."));
+      return kaart;
+    }
+    const open = stukken.filter((s) => s.status !== "ontvangen");
+    kaart.append(el("p", { class: "klein" },
+      open.length + " van de " + stukken.length + " nog niet ontvangen. De huurder heeft op grond van " +
+      "artikel 7:259 lid 4 BW recht op inzage in de onderliggende stukken."));
+
+    async function zet(id, stand) {
+      const bij = stukken.map((s) => s.id === id
+        ? Object.assign({}, s, { status: stand, op: stand === "open" ? null : new Date().toISOString() })
+        : s);
+      const velden = { stukken: bij };
+      if (a.status === "nieuw") velden.status = "behandeling";
+      await schrijf(a, velden);
+    }
+
+    kaart.append(el("ul", { class: "stukken" }, stukken.map((s) => el("li", { class: "stuk" },
+      el("div", { class: "post" }, s.post, el("span", { class: "mini" }, " · " + euro(s.belang))),
+      el("div", { class: "vraag" }, s.vraag),
+      el("div", { class: "keuze3" }, STUKSTAND.map(([w, l]) =>
+        el("button", { type: "button", "aria-pressed": String(s.status === w), onclick: () => zet(s.id, w) }, l))),
+      s.op ? el("div", { class: "mini", style: "margin-top:6px" },
+        (s.status === "ontvangen" ? "Ontvangen " : "Opgevraagd ") + datum(s.op)) : null))));
+
+    kaart.append(el("div", { class: "knoppen rij" },
+      el("button", { class: "primair", type: "button", onclick: () => toonBriefBlad(
+        "Opvraagbrief aan de verhuurder", inzagebrief(a, stukken), a) }, "Opvraagbrief opstellen"),
+      el("button", { type: "button", onclick: async () => {
+        const bij = stukken.map((s) => s.status === "open"
+          ? Object.assign({}, s, { status: "opgevraagd", op: new Date().toISOString() }) : s);
+        await schrijf(a, { stukken: bij }, "Alles als opgevraagd gemarkeerd.");
+      } }, "Alles als opgevraagd markeren"),
+      el("button", { type: "button", onclick: () => zetStap(a, "stukken", true, "Stap afgevinkt.") }, "Stap afvinken")));
+    return kaart;
+  }
+
+  function blokFotos(a) {
+    const kaart = el("div", { class: "kaart", hidden: true, style: "margin-top:12px" });
+    Opslag.laadBijlagen(a.id).then((bij) => {
+      if (!bij.length || geopendDossier !== a.id) return;
+      kaart.hidden = false;
+      kaart.append(
+        el("p", { class: "oog" }, "Meegestuurd"),
+        el("h2", {}, bij.length + (bij.length === 1 ? " foto" : " foto's") + " van de huurder"),
+        el("p", { class: "klein" }, "Tik een foto aan om hem op volle grootte te bekijken."),
+        el("div", { class: "bijlagen-groot" }, bij.map((f, i) =>
+          el("a", { href: f.data, target: "_blank", rel: "noopener" },
+            el("img", { src: f.data, alt: "Foto " + (i + 1) + " bij dossier " + a.id })))));
+    });
+    return kaart;
+  }
+
+  function blokRapport(a) {
+    return el("div", { class: "kaart", style: "margin-top:12px" },
+      el("p", { class: "oog" }, "Stap 5"),
+      el("h2", {}, "Rapport en brieven"),
+      el("p", { class: "klein" }, "Het rapport bevat alle bevindingen met de berekening en de regel " +
+        "waarop die berust. De brieven zijn concepten voor de huurder om zelf te versturen."),
+      el("div", { class: "knoppen rij" },
+        el("button", { class: "primair", type: "button", onclick: () => toonRapport(a) }, "Rapport opstellen"),
+        el("button", { type: "button", onclick: () => toonBriefBlad(
+          "Bezwaarbrief aan de verhuurder", bezwaarbriefUit(a), a) }, "Bezwaarbrief"),
+        el("button", { type: "button", onclick: () => toonBriefBlad(
+          "Brief: afrekening opvragen", opvraagbriefUit(a), a) }, "Afrekening opvragen")),
+      el("div", { class: "knoppen rij" },
+        el("button", { type: "button", onclick: () => {
+          const notitie = metNotitie(a, "Rapport verstuurd",
+            "Het rapport met de bevindingen is naar de huurder gestuurd.");
+          schrijf(a, Object.assign(notitie, {
+            stappen: Object.assign({}, a.stappen, { rapport: new Date().toISOString() }),
+            status: a.status === "nieuw" ? "behandeling" : a.status,
+          }), "Vastgelegd dat het rapport is verstuurd.");
+        } }, "Markeer rapport als verstuurd")));
+  }
+
+  function blokAfronden(a) {
+    const af = a.afhandeling || {};
+    const kaart = el("div", { class: "kaart", style: "margin-top:12px" },
+      el("p", { class: "oog" }, "Stap 6"),
+      el("h2", {}, af.uitkomst ? "Afgerond" : "Dossier afronden"));
+
+    if (af.uitkomst) {
+      const gekozen = AFLOOP.find((x) => x.w === af.uitkomst);
+      kaart.append(
+        el("div", { class: "veldrij twee", style: "margin-top:4px" },
+          el("div", {}, el("div", { class: "mini" }, "Uitkomst"), el("div", {}, (gekozen && gekozen.l) || af.uitkomst)),
+          el("div", {}, el("div", { class: "mini" }, "Daadwerkelijk gecorrigeerd"),
+            el("div", {}, af.bedrag == null ? "—" : euro(af.bedrag)))),
+        af.toelichting ? el("p", { class: "klein", style: "margin-top:10px" }, af.toelichting) : null,
+        el("p", { class: "mini", style: "margin-top:8px" }, "Afgerond op " + datumTijd(af.op)),
+        el("div", { class: "knoppen" },
+          el("button", { class: "link", type: "button", onclick: () => {
+            // undefined overleeft het serialiseren niet; de sleutel moet weg.
+            const stappen = Object.assign({}, a.stappen);
+            delete stappen.afgerond;
+            schrijf(a, { afhandeling: null, stappen, status: "behandeling" },
+              "Afhandeling ongedaan gemaakt.");
+          } }, "Afhandeling ongedaan maken")));
+      return kaart;
+    }
+
+    let keuze = null, bedrag = null;
+    const toelichting = el("textarea", { id: "afronding", style: "min-height:90px",
+      placeholder: "Wat is er afgesproken of besloten? Deze tekst ziet de huurder ook." });
+    const keuzes = el("div", { class: "keuzes" }, AFLOOP.map((o) =>
+      el("button", { class: "keuze", type: "button", "aria-pressed": "false", onclick: (e) => {
+        keuze = o.w;
+        for (const k of keuzes.querySelectorAll(".keuze")) k.setAttribute("aria-pressed", "false");
+        e.currentTarget.setAttribute("aria-pressed", "true");
+      } }, el("span", { class: "kt" }, o.l))));
+
+    kaart.append(
+      el("p", { class: "klein" }, "Leg vast hoe het is afgelopen. De huurder ziet de uitkomst op zijn eigen pagina."),
+      keuzes,
+      veld({ naam: "bedrag", label: "Daadwerkelijk gecorrigeerd bedrag (optioneel)", type: "bedrag",
+        hulp: "Laat leeg als er niets is gecorrigeerd of als het nog niet vaststaat." }, null, (v) => { bedrag = v; }),
+      el("div", { style: "margin-top:16px" }, el("label", { for: "afronding" }, "Toelichting"), toelichting),
+      el("div", { class: "knoppen" },
+        el("button", { class: "primair vol", type: "button", onclick: async () => {
+          if (!keuze) return melding("Kies eerst een uitkomst.", "fout");
+          const gekozen = AFLOOP.find((x) => x.w === keuze);
+          const nu = new Date().toISOString();
+          const afh = { uitkomst: keuze, bedrag: bedrag, op: nu, toelichting: toelichting.value.trim() };
+          await schrijf(a, Object.assign(
+            metNotitie(a, "Dossier afgerond",
+              gekozen.l + (bedrag != null ? " — gecorrigeerd: " + euro(bedrag) : "") +
+              (afh.toelichting ? " " + afh.toelichting : "")),
+            { afhandeling: afh, status: gekozen.st,
+              stappen: Object.assign({}, a.stappen, { afgerond: nu }) }),
+            "Dossier afgerond.");
+        } }, "Dossier afronden")));
+    return kaart;
+  }
+
+  function blokVerloop(a) {
+    const kaart = el("div", { class: "kaart", style: "margin-top:12px" },
+      el("p", { class: "oog" }, "Verloop"),
+      el("h2", {}, "Aantekeningen"));
+    if (a.notities && a.notities.length) {
+      kaart.append(el("ul", { class: "tijdlijn" }, a.notities.map((n) => el("li", {},
+        el("span", { class: "wie" }, n.titel || "Update"), el("div", {}, n.tekst),
+        el("div", { class: "wanneer" }, datumTijd(n.op))))));
+    } else {
+      kaart.append(el("p", { class: "klein" }, "Nog geen aantekeningen."));
+    }
+    const vak = el("textarea", { id: "notitie", style: "min-height:90px",
+      placeholder: "Aantekening bij het dossier — ook zichtbaar voor de huurder." });
+    kaart.append(el("div", { style: "margin-top:14px" },
+      el("label", { for: "notitie" }, "Aantekening toevoegen"), vak),
+      el("div", { class: "knoppen rij" },
+        el("button", { class: "primair", type: "button", onclick: async () => {
+          const tekst = vak.value.trim();
+          if (!tekst) return melding("Schrijf eerst een aantekening.", "fout");
+          await schrijf(a, metNotitie(a, "Update van de beoordelaar", tekst), "Aantekening opgeslagen.");
+        } }, "Aantekening opslaan"),
+        el("div", { class: "filters", style: "margin:0" },
+          Object.entries(STATUSSEN).map(([w, s]) => el("button", { type: "button",
+            "aria-pressed": String(a.status === w),
+            onclick: () => schrijf(a, { status: w }, "Status bijgewerkt naar " + s.label + ".") }, s.label)))));
+    return kaart;
+  }
+
   const herteken = () => {
     const a = Opslag.lijst().find((x) => x.id === geopendDossier);
     if (a) openDossier(a);
   };
 
-  /* ──────────────────────────────────────────────────────── rapport */
+  /* ══════════════════════════════════════════════════════════ rapport
+
+     Het rapport wordt als DOM opgebouwd en voor het afdrukken naar een nieuw
+     venster gekopieerd. Zo hoeft er nergens tekst in HTML te worden geplakt. */
+
+  /* Alleen .rapport-regels, zodat dezelfde stijl ook in het voorbeeldvenster
+     kan worden gebruikt zonder de rest van de pagina te raken. */
+  const RAPPORTPAPIER = `
+@page { margin: 18mm 15mm; }
+body { font: 10.5pt/1.5 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+       color: #14150f; margin: 0; background: #fff; }
+`;
+
+  const RAPPORTSTIJL = `
+.rapport { max-width: 720px; margin: 0 auto; }
+.rapport h1 { font-size: 1.82em; margin: 0 0 2mm; letter-spacing: -.02em; }
+.rapport h2 { font-size: 1.15em; margin: 8mm 0 2mm; padding-bottom: 1.5mm;
+              border-bottom: 1px solid #c9c6b9; page-break-after: avoid; }
+.rapport h3 { font-size: 1em; margin: 4mm 0 1mm; page-break-after: avoid; }
+.rapport p { margin: 0 0 2mm; max-width: none; }
+.rapport .oog { font-size: .76em; letter-spacing: .12em; text-transform: uppercase; color: #8b8d82;
+                font-weight: 700; margin-bottom: 1mm; }
+.rapport .mini { font-size: .81em; color: #5a5c53; }
+.rapport table { width: 100%; border-collapse: collapse; margin: 2mm 0 4mm; font-size: .9em; }
+.rapport th, .rapport td { text-align: left; padding: 1.6mm 2mm; border-bottom: 1px solid #e1dfd6;
+                           vertical-align: top; }
+.rapport th { font-size: .76em; text-transform: uppercase; letter-spacing: .07em; color: #5a5c53; }
+.rapport td.geld, .rapport th.geld { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rapport tr.som td { border-top: 1.5px solid #14150f; border-bottom: none; font-weight: 700; }
+.rapport .post { border-left: 2.5pt solid #c9c6b9; padding: 0 0 0 3mm; margin: 0 0 4mm;
+                 page-break-inside: avoid; }
+.rapport .post.ROOD { border-left-color: #d03b3b; }
+.rapport .post.ORANJE { border-left-color: #b87400; }
+.rapport .post.GROEN { border-left-color: #0ca30c; }
+.rapport .post.BUITEN_BEVOEGDHEID { border-left-color: #8b8d82; }
+.rapport .reken { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .81em;
+                  color: #5a5c53; margin: 1mm 0 0; }
+.rapport .regels { font-size: .76em; color: #8b8d82; margin-top: 1mm; }
+.rapport ul { margin: 1mm 0 2mm; padding-left: 5mm; }
+.rapport li { margin-bottom: 1mm; }
+.rapport .slot { margin-top: 8mm; padding-top: 3mm; border-top: 1px solid #c9c6b9;
+                 font-size: .81em; color: #5a5c53; }
+`;
+
+  function rapportNode(a) {
+    const h = a.huurder || {};
+    const r = el("div", { class: "rapport" });
+    const rij = (k, v) => el("tr", {}, el("th", {}, k), el("td", {}, v || "—"));
+
+    r.append(
+      el("p", { class: "oog" }, "Rapport servicekostencontrole"),
+      el("h1", {}, "Afrekening " + a.jaar + " — " + (h.naam || "huurder")),
+      el("p", { class: "mini" }, "Dossier " + a.id + " · opgesteld " + datumTijd(new Date().toISOString())));
+
+    r.append(el("h2", {}, "Gegevens"),
+      el("table", {}, el("tbody", {},
+        rij("Huurder", h.naam), rij("Adres", h.adres), rij("Verhuurder", h.verhuurder),
+        rij("Boekjaar", String(a.jaar)), rij("Ingediend", datumTijd(a.ingediend_op)),
+        rij("Aangeleverd als", a.bron),
+        a.herzien_op ? rij("Laatst herzien", datumTijd(a.herzien_op)) : null)));
+
+    const somrij = (k, v, som) => el("tr", { class: som ? "som" : "" },
+      el("td", {}, k), el("td", { class: "geld" }, v));
+    r.append(el("h2", {}, "Samenvatting"),
+      el("table", {}, el("tbody", {},
+        somrij("In rekening gebracht", euro(a.totaal_verhuurder)),
+        somrij("Toegestaan volgens het beleidsboek", euro(a.totaal_model)),
+        Number(a.onbeoordeeld) > 0
+          ? somrij("Nog niet te beoordelen", euro(a.onbeoordeeld)) : null,
+        somrij("Verschil", euro(a.correctie), true))));
+    if (Number(a.onbeoordeeld) > 0) {
+      r.append(el("p", { class: "mini" },
+        "Het verschil is het bedrag dat nu al vaststaat. Blijken de nog niet te beoordelen posten " +
+        "eveneens onterecht, dan loopt het op tot " + euro(a.bandbreedte_max) + ". Er wordt niets " +
+        "berekend zonder de gegevens die daarvoor nodig zijn."));
+    }
+    if (a.voorschot != null) {
+      r.append(el("p", {}, "Betaald voorschot: " + euro(a.voorschot) + ". " +
+        (a.saldo != null
+          ? (Number(a.saldo) >= 0 ? "Op basis van deze berekening staat daar " + euro(a.saldo) +
+             " tegenover die terugbetaald zou moeten worden."
+             : "Op basis van deze berekening resteert een bij te betalen bedrag van " + euro(Math.abs(a.saldo)) + ".")
+          : "")));
+    }
+
+    const ontv = a.ontvankelijkheid || a.blokkerend || [];
+    if (ontv.length) {
+      r.append(el("h2", {}, "Ontvankelijkheid"),
+        el("ul", {}, ontv.map((t) => el("li", {}, t.replace(/^(ROOD|ORANJE|OK|LET OP) - /, "")))));
+    }
+
+    r.append(el("h2", {}, "Bevindingen per post"));
+    for (const status of RANG) {
+      const posten = (a.bevindingen || []).filter((b) => b.status === status);
+      if (!posten.length) continue;
+      r.append(el("h3", {}, STAT[status].kop + " (" + posten.length + ")"));
+      for (const b of posten) {
+        const regelId = besteRegel(b);
+        const uitleg = regelId ? UITLEG[regelId] : null;
+        const vak = el("div", { class: "post " + b.status },
+          el("p", {}, el("b", {}, b.omschrijving), " — in rekening gebracht " + euro(b.bedrag_verhuurder) +
+            (b.bedrag_model !== null ? ", toegestaan " + euro(b.bedrag_model) : "") +
+            (b.verschil ? ", verschil " + euro(b.verschil) : "")));
+        if (uitleg) vak.append(el("p", {}, el("b", {}, uitleg.kop + ". "), uitleg.uitleg));
+        for (const t of b.toelichting) vak.append(el("p", { class: "mini" }, t));
+        for (const t of b.berekening) vak.append(el("p", { class: "reken" }, t));
+        for (const t of b.ontbrekende_informatie) vak.append(el("p", { class: "mini" }, "Nog nodig: " + t));
+        if (b.regels.length) vak.append(el("p", { class: "regels" }, "Regels: " + b.regels.join(", ")));
+        r.append(vak);
+      }
+    }
+
+    const open = (a.stukken || []).filter((s) => s.status !== "ontvangen");
+    if (open.length) {
+      r.append(el("h2", {}, "Nog op te vragen"),
+        el("p", {}, "Op grond van artikel 7:259 lid 4 BW heeft de huurder recht op inzage in de boeken " +
+          "en andere bescheiden die aan de afrekening ten grondslag liggen. Voor deze punten is dat nodig:"),
+        el("ul", {}, open.map((s) => el("li", {}, s.post + ": " + s.vraag +
+          (s.status === "opgevraagd" ? " (opgevraagd " + datum(s.op) + ")" : "")))));
+    }
+
+    r.append(el("h2", {}, "Conclusie"));
+    const rood = (a.tellingen || {}).ROOD || 0, oranje = (a.tellingen || {}).ORANJE || 0;
+    if (Number(a.correctie) > 0) {
+      r.append(el("p", {}, "Op " + rood + " " + (rood === 1 ? "post" : "posten") + " rekent de verhuurder " +
+        "meer dan het Beleidsboek Servicekosten toestaat. Het verschil bedraagt " + euro(a.correctie) + "."));
+    } else if (oranje) {
+      r.append(el("p", {}, "Er is geen harde afwijking vastgesteld, maar voor " + oranje + " " +
+        (oranje === 1 ? "post" : "posten") + " ontbreken gegevens die de verhuurder moet aanleveren."));
+    } else {
+      r.append(el("p", {}, "Alle beoordeelde posten passen binnen wat de Huurcommissie toestaat. " +
+        "Er is op basis van deze afrekening geen aanleiding voor bezwaar."));
+    }
+
+    const af = a.afhandeling;
+    if (af && af.uitkomst) {
+      const gek = AFLOOP.find((x) => x.w === af.uitkomst);
+      r.append(el("h2", {}, "Afhandeling"),
+        el("p", {}, ((gek && gek.l) || af.uitkomst) +
+          (af.bedrag != null ? " — daadwerkelijk gecorrigeerd: " + euro(af.bedrag) : "") + "."),
+        af.toelichting ? el("p", {}, af.toelichting) : null,
+        el("p", { class: "mini" }, "Vastgelegd op " + datumTijd(af.op)));
+    } else {
+      r.append(el("h2", {}, "Vervolgstappen"), el("ul", {}, [
+        Number(a.correctie) > 0
+          ? "Maak schriftelijk bezwaar bij de verhuurder en verzoek om correctie van " + euro(a.correctie) + "."
+          : null,
+        open.length ? "Vraag de ontbrekende stukken op; zonder die stukken blijft een deel onbeoordeeld." : null,
+        "Reageert de verhuurder niet binnen drie weken of neemt de reactie het bezwaar niet weg, " +
+        "leg het geschil dan voor aan de Huurcommissie (artikel 7:260 BW).",
+        "Let op de termijn: een verzoek kan tot tweeëneenhalf jaar na afloop van het kalenderjaar " +
+        "worden ingediend (Tabel 10, p. 56).",
+      ].filter(Boolean).map((t) => el("li", {}, t))));
+    }
+
+    if (a.notities && a.notities.length) {
+      r.append(el("h2", {}, "Verloop"),
+        el("ul", {}, a.notities.map((n) => el("li", {},
+          datumTijd(n.op) + " — " + (n.titel ? n.titel + ": " : "") + n.tekst))));
+    }
+
+    r.append(el("div", { class: "slot" },
+      el("p", {}, "Opgesteld op basis van het Beleidsboek Servicekosten van de Huurcommissie, " +
+        "versie 1 juli 2026. Bedragen zijn berekend volgens de daarin opgenomen normen, tarieven en " +
+        "verdeelsleutels; per post staat de toegepaste regel vermeld."),
+      el("p", {}, "Dit rapport is geen juridisch advies. De Huurcommissie handelt naar haar beleid " +
+        "maar kan daarvan gemotiveerd afwijken.")));
+    return r;
+  }
 
   function rapportTekst(a) {
-    const r = [];
+    const h = a.huurder || {};
     const lijn = "─".repeat(64);
-    r.push("RAPPORT SERVICEKOSTENCONTROLE", lijn, "");
+    const r = ["RAPPORT SERVICEKOSTENCONTROLE", lijn, ""];
     r.push("Dossier:      " + a.id);
-    r.push("Huurder:      " + ((a.huurder && a.huurder.naam) || "—"));
-    r.push("Adres:        " + ((a.huurder && a.huurder.adres) || "—"));
-    r.push("Verhuurder:   " + ((a.huurder && a.huurder.verhuurder) || "—"));
+    r.push("Huurder:      " + (h.naam || "—"));
+    r.push("Adres:        " + (h.adres || "—"));
+    r.push("Verhuurder:   " + (h.verhuurder || "—"));
     r.push("Boekjaar:     " + a.jaar);
     r.push("Ingediend:    " + datumTijd(a.ingediend_op));
+    if (a.herzien_op) r.push("Herzien:      " + datumTijd(a.herzien_op));
     r.push("Opgesteld:    " + datumTijd(new Date().toISOString()));
     r.push("", lijn, "SAMENVATTING", lijn, "");
-    r.push("In rekening gebracht:          " + euro(a.totaal_verhuurder));
+    r.push("In rekening gebracht:           " + euro(a.totaal_verhuurder));
     r.push("Toegestaan volgens beleidsboek: " + euro(a.totaal_model));
-    r.push("Verschil:                      " + euro(a.correctie));
+    r.push("Verschil:                       " + euro(a.correctie));
     if (Number(a.onbeoordeeld) > 0) {
-      r.push("Nog niet te beoordelen:        " + euro(a.onbeoordeeld));
-      r.push("Bandbreedte:                   " + euro(a.correctie) + " tot " + euro(a.bandbreedte_max));
+      r.push("Nog niet te beoordelen:         " + euro(a.onbeoordeeld));
+      r.push("Bandbreedte:                    " + euro(a.correctie) + " tot " + euro(a.bandbreedte_max));
     }
-    if (a.voorschot != null) r.push("Betaald voorschot:             " + euro(a.voorschot));
+    if (a.voorschot != null) r.push("Betaald voorschot:              " + euro(a.voorschot));
     r.push("");
-    if (a.blokkerend && a.blokkerend.length) {
+    const ontv = a.ontvankelijkheid || a.blokkerend || [];
+    if (ontv.length) {
       r.push(lijn, "ONTVANKELIJKHEID", lijn, "");
-      for (const b of a.blokkerend) r.push("- " + b.replace(/^ROOD - /, ""));
+      for (const t of ontv) r.push("- " + t.replace(/^(ROOD|ORANJE|OK|LET OP) - /, ""));
       r.push("");
     }
     for (const status of RANG) {
@@ -1143,10 +1742,13 @@
       if (!posten.length) continue;
       r.push(lijn, STAT[status].kop.toUpperCase() + " (" + posten.length + ")", lijn, "");
       for (const b of posten) {
+        const regelId = besteRegel(b);
+        const uitleg = regelId ? UITLEG[regelId] : null;
         r.push(b.omschrijving);
         r.push("  In rekening gebracht: " + euro(b.bedrag_verhuurder) +
           (b.bedrag_model !== null ? "   Toegestaan: " + euro(b.bedrag_model) : "") +
           (b.verschil ? "   Verschil: " + euro(b.verschil) : ""));
+        if (uitleg) r.push("  " + uitleg.kop + ". " + uitleg.uitleg);
         for (const t of b.toelichting) r.push("  " + t);
         for (const t of b.berekening) r.push("  " + t);
         for (const t of b.ontbrekende_informatie) r.push("  Nog nodig: " + t);
@@ -1154,9 +1756,24 @@
         r.push("");
       }
     }
+    const open = (a.stukken || []).filter((s) => s.status !== "ontvangen");
+    if (open.length) {
+      r.push(lijn, "NOG OP TE VRAGEN", lijn, "");
+      for (const s of open) r.push("- " + s.post + ": " + s.vraag);
+      r.push("");
+    }
+    const af = a.afhandeling;
+    if (af && af.uitkomst) {
+      const gek = AFLOOP.find((x) => x.w === af.uitkomst);
+      r.push(lijn, "AFHANDELING", lijn, "");
+      r.push(((gek && gek.l) || af.uitkomst) +
+        (af.bedrag != null ? " — daadwerkelijk gecorrigeerd: " + euro(af.bedrag) : ""));
+      if (af.toelichting) r.push(af.toelichting);
+      r.push("");
+    }
     if (a.notities && a.notities.length) {
-      r.push(lijn, "AANTEKENINGEN", lijn, "");
-      for (const n of a.notities) r.push(datumTijd(n.op) + " — " + n.tekst);
+      r.push(lijn, "VERLOOP", lijn, "");
+      for (const n of a.notities) r.push(datumTijd(n.op) + " — " + (n.titel ? n.titel + ": " : "") + n.tekst);
       r.push("");
     }
     r.push(lijn);
@@ -1165,37 +1782,70 @@
     return r.join("\n");
   }
 
+  function rapportstijlLaden() {
+    if (document.getElementById("rapportstijl")) return;
+    const st = document.createElement("style");
+    st.id = "rapportstijl";
+    st.textContent = RAPPORTSTIJL;
+    document.head.append(st);
+  }
+
   function toonRapport(a) {
-    const tekst = rapportTekst(a);
-    const vak = el("textarea", { spellcheck: "false", style: "min-height:340px;margin-top:14px" });
-    vak.value = tekst;
+    rapportstijlLaden();
+    const voorbeeld = el("div", { class: "rapportvoorbeeld" }, rapportNode(a));
     const blad = el("div", { class: "blad" },
       el("p", { class: "oog" }, "Rapport"),
       el("h2", {}, "Dossier " + a.id),
-      el("p", { class: "klein" }, "Klaar om te versturen of af te drukken. Je kunt de tekst hier nog aanpassen."),
-      vak);
+      el("p", { class: "klein" }, "Zo komt het eruit te zien. Afdrukken geeft dezelfde opmaak; " +
+        "de tekstversie is bedoeld om in een e-mail te plakken."),
+      voorbeeld);
     const achter = el("div", { class: "blad-achter", onclick: (e) => { if (e.target === achter) achter.remove(); } }, blad);
     blad.append(el("div", { class: "knoppen rij" },
-      el("button", { class: "primair", type: "button", onclick: async () => {
-        try { await navigator.clipboard.writeText(vak.value); melding("Rapport gekopieerd.", "ok"); }
-        catch { vak.select(); melding("Kopiëren lukte niet automatisch — de tekst is geselecteerd.", "letop"); }
-      } }, "Kopieer rapport"),
-      el("button", { type: "button", onclick: () => drukAf(a, vak.value) }, "Afdrukken of pdf"),
+      el("button", { class: "primair", type: "button", onclick: () => drukAf(a) }, "Afdrukken of pdf"),
+      el("button", { type: "button", onclick: async () => {
+        try { await navigator.clipboard.writeText(rapportTekst(a)); melding("Rapport als tekst gekopieerd.", "ok"); }
+        catch { melding("Kopiëren lukte niet. Gebruik 'Afdrukken of pdf'.", "letop"); }
+      } }, "Kopieer als tekst"),
       el("button", { class: "link", type: "button", onclick: () => achter.remove() }, "Sluiten")));
     document.body.append(achter);
   }
 
-  function drukAf(a, tekst) {
+  function drukAf(a) {
     const venster = window.open("", "_blank");
     if (!venster) return melding("Je browser blokkeerde het afdrukvenster.", "letop");
     const doc = venster.document;
-    doc.title = "Rapport " + a.id;
+    doc.title = "Rapport " + a.id + " — servicekosten " + a.jaar;
     const stijl = doc.createElement("style");
-    stijl.textContent = "body{font:12px/1.6 ui-monospace,Menlo,Consolas,monospace;margin:34px;white-space:pre-wrap;color:#111}";
+    stijl.textContent = RAPPORTPAPIER + RAPPORTSTIJL;
     doc.head.append(stijl);
-    doc.body.textContent = tekst;
+    doc.body.append(doc.importNode(rapportNode(a), true));
     venster.focus();
-    setTimeout(() => venster.print(), 300);
+    setTimeout(() => venster.print(), 350);
+  }
+
+  /* Brieven in de beheeromgeving werken op het opgeslagen dossier in plaats
+     van op de lopende controle. */
+  function toonBriefBlad(titel, tekst, a) {
+    const vak = el("textarea", { spellcheck: "false", style: "min-height:320px;margin-top:12px" });
+    vak.value = tekst;
+    const blad = el("div", { class: "blad" },
+      el("p", { class: "oog" }, "Concept"),
+      el("h2", {}, titel),
+      el("p", { class: "klein" }, "Controleer de stukken tussen [ ] en pas aan wat nodig is."),
+      vak);
+    const achter = el("div", { class: "blad-achter", onclick: (e) => { if (e.target === achter) achter.remove(); } }, blad);
+    blad.append(el("div", { class: "knoppen rij" },
+      el("button", { class: "primair", type: "button", onclick: async () => {
+        try { await navigator.clipboard.writeText(vak.value); melding("Brief gekopieerd.", "ok"); }
+        catch { vak.select(); melding("Kopiëren lukte niet automatisch — de tekst is geselecteerd.", "letop"); }
+      } }, "Kopieer de brief"),
+      a ? el("button", { type: "button", onclick: () => {
+        achter.remove();
+        schrijf(a, metNotitie(a, titel, "Concept opgesteld en aan de huurder verstrekt."),
+          "Vastgelegd in het verloop.");
+      } }, "Vastleggen in het dossier") : null,
+      el("button", { class: "link", type: "button", onclick: () => achter.remove() }, "Sluiten")));
+    document.body.append(achter);
   }
 
   /* ───────────────────────────────────────────────────────── brieven */
@@ -1203,15 +1853,23 @@
   const eu = (w) => "EUR " + Number(w).toFixed(2).replace(".", ",");
   const nlDat = (d) => d.toLocaleDateString("nl-NL", { day: "2-digit", month: "2-digit", year: "numeric" });
 
-  function bezwaarbrief() {
+  /* Eén tekst, twee bronnen: de lopende controle van de huurder en een
+     opgeslagen dossier in de beheeromgeving. */
+  const alsBrief = () => ({ huurder: dossier.huurder, jaar: uitkomst.jaar,
+    bevindingen: uitkomst.beoordelingen, correctie: uitkomst.financieel.potentiele_correctie });
+  const bezwaarbrief = () => bezwaarbriefUit(alsBrief());
+  const opvraagbrief = (jaar) => opvraagbriefUit({ huurder: dossier.huurder, jaar });
+
+  function bezwaarbriefUit(a) {
     const nu = new Date(), over3w = new Date(Date.now() + 21 * 864e5);
-    const rood = uitkomst.beoordelingen.filter((b) => b.status === "ROOD" && (b.verschil || 0) > 0);
-    const oranje = uitkomst.beoordelingen.filter((b) => b.status === "ORANJE");
-    const h = dossier.huurder;
+    const alle = a.bevindingen || [];
+    const rood = alle.filter((b) => b.status === "ROOD" && (b.verschil || 0) > 0);
+    const oranje = alle.filter((b) => b.status === "ORANJE");
+    const h = a.huurder || {};
     const r = [h.naam || "[Uw naam]", h.adres || "[Uw adres]", "", "Aan: " + (h.verhuurder || "[naam verhuurder]"),
       "[adres verhuurder]", "", "Datum: " + nlDat(nu),
-      "Betreft: bezwaar tegen de afrekening servicekosten " + uitkomst.jaar, "", "Geachte heer/mevrouw,", "",
-      "Op [datum] ontving ik van u de afrekening servicekosten over " + uitkomst.jaar + ". Ik ben het niet " +
+      "Betreft: bezwaar tegen de afrekening servicekosten " + a.jaar, "", "Geachte heer/mevrouw,", "",
+      "Op [datum] ontving ik van u de afrekening servicekosten over " + a.jaar + ". Ik ben het niet " +
       "eens met een aantal posten. Hieronder licht ik per kostenpost toe waarom, zoals artikel 7:260 BW en " +
       "het Beleidsboek Servicekosten van de Huurcommissie van mij verlangen.", ""];
     if (rood.length) {
@@ -1222,7 +1880,7 @@
         for (const t of b.berekening) r.push("   " + t);
         r.push("   Volgens het beleidsboek kom ik uit op " + eu(b.bedrag_model) + ". Ik verzoek u dit te corrigeren met " + eu(b.verschil) + ".", "");
       });
-      r.push("Het totaal van de door mij betwiste correcties bedraagt " + eu(uitkomst.financieel.potentiele_correctie) + ".", "");
+      r.push("Het totaal van de door mij betwiste correcties bedraagt " + eu(a.correctie) + ".", "");
     }
     if (oranje.length) {
       r.push((rood.length ? "2" : "1") + ". Posten waarvoor ik aanvullende informatie nodig heb", "",
@@ -1243,9 +1901,10 @@
     return r.join("\n");
   }
 
-  function opvraagbrief(jaar) {
+  function opvraagbriefUit(a) {
     const nu = new Date(), over3w = new Date(Date.now() + 21 * 864e5);
-    const h = dossier.huurder;
+    const jaar = Number(a.jaar);
+    const h = a.huurder || {};
     return [h.naam || "[Uw naam]", h.adres || "[Uw adres]", "", "Aan: " + (h.verhuurder || "[naam verhuurder]"),
       "[adres verhuurder]", "", "Datum: " + nlDat(nu), "Betreft: verzoek om de afrekening servicekosten " + jaar,
       "", "Geachte heer/mevrouw,", "",
@@ -1259,6 +1918,45 @@
       "betalingsverplichting voor aan de Huurcommissie (artikel 7:260 BW).", "", "Met vriendelijke groet,",
       "", h.naam || "[Uw naam]", "", "---",
       "Concept op basis van het Beleidsboek Servicekosten, paragraaf 6.3.2. Dit is geen juridisch advies."].join("\n");
+  }
+
+  /* Verzoek om inzage in de onderliggende stukken, per openstaand punt. */
+  function inzagebrief(a, stukken) {
+    const nu = new Date(), over3w = new Date(Date.now() + 21 * 864e5);
+    const h = a.huurder || {};
+    const open = (stukken || []).filter((s) => s.status !== "ontvangen");
+    const r = [h.naam || "[Uw naam]", h.adres || "[Uw adres]", "",
+      "Aan: " + (h.verhuurder || "[naam verhuurder]"), "[adres verhuurder]", "",
+      "Datum: " + nlDat(nu),
+      "Betreft: verzoek om inzage in de stukken bij de afrekening servicekosten " + a.jaar, "",
+      "Geachte heer/mevrouw,", "",
+      "Op grond van artikel 7:259 lid 4 BW heb ik recht op inzage in de boeken en andere bescheiden " +
+      "die aan de afrekening servicekosten over " + a.jaar + " ten grondslag liggen. Van een aantal " +
+      "posten kan ik zonder die stukken niet nagaan of het in rekening gebrachte bedrag juist is.", "",
+      "Ik verzoek u de volgende gegevens te verstrekken:", ""];
+    if (open.length) {
+      const perPost = new Map();
+      for (const s of open) {
+        if (!perPost.has(s.post)) perPost.set(s.post, []);
+        perPost.get(s.post).push(s.vraag);
+      }
+      for (const [post, vragen] of perPost) {
+        r.push("- " + post + ":");
+        for (const q of vragen) r.push("    " + q);
+      }
+    } else {
+      r.push("- [vul hier in welke stukken u nodig hebt]");
+    }
+    r.push("",
+      "Ik verzoek u deze stukken binnen drie weken, dus uiterlijk " + nlDat(over3w) + ", te verstrekken. " +
+      "Ontvang ik ze niet, dan leg ik de vaststelling van mijn betalingsverplichting voor aan de " +
+      "Huurcommissie (artikel 7:260 BW). Bij het ontbreken van een onderbouwing stelt de Huurcommissie " +
+      "de kosten vast op een wettelijk forfait, dat doorgaans lager uitvalt dan het in rekening " +
+      "gebrachte bedrag.", "",
+      "Met vriendelijke groet,", "", h.naam || "[Uw naam]", "", "---",
+      "Concept op basis van het Beleidsboek Servicekosten (versie 1 juli 2026), paragraaf 6.4. " +
+      "Controleer de gegevens tussen [ ] voordat u verstuurt. Dit is geen juridisch advies.");
+    return r.join("\n");
   }
 
   function toonBrief(tekst) {

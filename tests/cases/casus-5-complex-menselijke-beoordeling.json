@@ -1,0 +1,77 @@
+{
+  "referentie": "Casus 5 - Complexe zaak, menselijke beoordeling blijft nodig (boekjaar 2025, huurperiode jan t/m aug)",
+  "woonruimte": {
+    "zelfstandig": true,
+    "woningtype": "tussenwoning",
+    "oppervlakte_m2": 95,
+    "aantal_bewoners": 3,
+    "aantal_woonruimten_op_aansluiting": 1,
+    "aantal_woonruimten_complex": 24,
+    "totale_oppervlakte_complex_m2": 2100
+  },
+  "periode": { "jaar": 2025, "maand_van": 1, "maand_tot_en_met": 8 },
+  "procedure": {
+    "contract_gesloten_op": "2021-05-01",
+    "sector": "sociaal",
+    "afrekening_ontvangen": true,
+    "afrekening_ontvangen_op": "2026-06-15",
+    "bezwaar_gemaakt": true,
+    "verzoekdatum": "2026-09-01",
+    "huurder_woont_nog_op_adres": false
+  },
+  "voorschot_in_rekening_gebracht": "1600.00",
+  "kostenposten": [
+    {
+      "id": "P1", "categorie": "NUT-GAS-METER",
+      "omschrijving": "Gas eigen meter (meterstanden gemotiveerd betwist, collectieve ketel)",
+      "bedrag_verhuurder": "1180.00",
+      "overeengekomen": true,
+      "bewijs": ["facturen", "meterstanden"],
+      "parameters": {
+        "beginstand": 9120, "eindstand": 11380, "verbruik_verhuurder": 2260,
+        "meterstanden_betwist": true, "huurder_stelt_installatie_gebrekkig": true,
+        "inspectierapport_aanwezig": false
+      }
+    },
+    {
+      "id": "P2", "categorie": "SK-04-TUIN",
+      "omschrijving": "Tuinonderhoud (kijktuin, huurder kan de tuin niet betreden)",
+      "bedrag_verhuurder": "88.00",
+      "overeengekomen": true,
+      "bewijs": ["facturen", "specificatieformulier"],
+      "parameters": { "exclusief_gebruiksrecht": false }
+    },
+    {
+      "id": "P3", "categorie": "SK-03",
+      "omschrijving": "Zonnepanelen (roerend of onroerend nog niet vastgesteld)",
+      "bedrag_verhuurder": "420.00",
+      "overeengekomen": true,
+      "bewijs": ["facturen", "specificatieformulier"],
+      "parameters": { "soort": "zonnepanelen", "aanschafwaarde": "4500.00", "jaar_in_gebruik": 4 }
+    },
+    {
+      "id": "P4", "categorie": "SK-14-WKO",
+      "omschrijving": "Warmtelevering WKO-installatie (vaste kosten niet gesplitst)",
+      "bedrag_verhuurder": "540.00",
+      "overeengekomen": true,
+      "bewijs": ["facturen", "specificatieformulier"],
+      "parameters": { "werkelijke_kosten": "540.00", "bedrag_is_complextotaal": false }
+    },
+    {
+      "id": "P5", "categorie": "SK-04-SCHILDERWERK",
+      "omschrijving": "Schilderwerk gemeenschappelijke hal",
+      "bedrag_verhuurder": "65.00",
+      "overeengekomen": true,
+      "bewijs": ["facturen", "specificatieformulier"],
+      "parameters": { "werkelijke_kosten": "1560.00", "aantal_woonruimten": 24 }
+    },
+    {
+      "id": "P6", "categorie": "SK-13",
+      "omschrijving": "Ontstoppingsfonds",
+      "bedrag_verhuurder": "36.00",
+      "overeengekomen": true,
+      "bewijs": ["facturen", "specificatieformulier"],
+      "parameters": { "voldaan_aan_voorwaarden": ["de bijdrage is een redelijke vergoeding voor de levering of dienst"], "bedrag_is_complextotaal": false }
+    }
+  ]
+}

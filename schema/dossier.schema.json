@@ -1,0 +1,143 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/zahirk100/Servicekosten-/schema/dossier.schema.json",
+  "title": "Servicekostendossier",
+  "description": "Invoer voor het beoordelingsmodel servicekosten. Eén dossier beschrijft één boekjaar voor één woonruimte, conform art. 7:260 lid 2 BW (per kostensoort ten hoogste één tijdvak van twaalf maanden).",
+  "type": "object",
+  "required": ["periode", "kostenposten"],
+  "additionalProperties": false,
+  "properties": {
+    "referentie": { "type": "string", "description": "Vrije aanduiding van het dossier." },
+    "woonruimte": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "zelfstandig": { "type": "boolean", "default": true, "description": "Bepaalt welke Nibud-normen en welk forfait gelden." },
+        "woningtype": {
+          "type": ["string", "null"],
+          "enum": ["flatwoning_appartement", "tussenwoning", "hoekwoning", "twee_onder_een_kap", "vrijstaande_woning", null],
+          "description": "Vereist voor de gasnorm bij zelfstandige woonruimte (Tabel 1, p. 13)."
+        },
+        "oppervlakte_m2": { "type": ["number", "string", "null"], "description": "Vereist voor de gasnorm onzelfstandig (25 m3/m2, p. 14) en voor de verdeelsleutel gas (p. 26)." },
+        "aantal_bewoners": { "type": ["integer", "null"], "minimum": 1, "description": "Vereist voor de normen elektriciteit (Tabel 4) en water (Tabel 7); die tabellen lopen tot en met vijf bewoners." },
+        "aantal_woonruimten_op_aansluiting": { "type": "integer", "minimum": 1, "default": 1, "description": "Aantal woonruimten dat vastrecht en belastingteruggave deelt (voorbeelden p. 15, 19, 22)." },
+        "aantal_woonruimten_complex": { "type": ["integer", "null"], "minimum": 1, "description": "Noemer van de verdeelsleutels (p. 26-27, p. 29)." },
+        "totale_oppervlakte_complex_m2": { "type": ["number", "string", "null"], "description": "Vereist voor de 65%-component van de verdeelsleutel gas (p. 26)." },
+        "gebruikt_gemeenschappelijke_ruimten": { "type": "boolean", "default": true, "description": "False betekent: geen betalingsverplichting voor gemeenschappelijke voorzieningen (p. 29)." }
+      }
+    },
+    "periode": {
+      "type": "object",
+      "required": ["jaar"],
+      "additionalProperties": false,
+      "properties": {
+        "jaar": { "type": "integer", "description": "Boekjaar. Het beleidsboek bevat normen voor 2023 t/m 2025." },
+        "maand_van": { "type": "integer", "minimum": 1, "maximum": 12, "default": 1 },
+        "maand_tot_en_met": { "type": "integer", "minimum": 1, "maximum": 12, "default": 12 }
+      }
+    },
+    "procedure": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Gegevens voor de ontvankelijkheids- en bevoegdheidstoets (hoofdstuk 6).",
+      "properties": {
+        "contract_gesloten_op": { "type": ["string", "null"], "format": "date" },
+        "sector": { "type": ["string", "null"], "enum": ["sociaal", "middenhuur", "vrij", null] },
+        "afrekening_ontvangen": { "type": ["boolean", "null"] },
+        "afrekening_ontvangen_op": { "type": ["string", "null"], "format": "date" },
+        "bezwaar_gemaakt": { "type": ["boolean", "null"] },
+        "afrekening_opgevraagd": { "type": ["boolean", "null"] },
+        "verzoekdatum": { "type": ["string", "null"], "format": "date" },
+        "huurder_woont_nog_op_adres": { "type": ["boolean", "null"] }
+      }
+    },
+    "voorschot_in_rekening_gebracht": { "type": ["number", "string", "null"] },
+    "overeengekomen_maximum": { "type": ["number", "string", "null"], "description": "Overeengekomen vast bedrag of percentage; bindt de verhuurder (voetnoot 4, p. 11)." },
+    "kostenposten": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "categorie", "omschrijving", "bedrag_verhuurder"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "categorie": {
+            "type": "string",
+            "description": "Code uit docs/02-taxonomie.md.",
+            "enum": [
+              "NUT-GAS-METER", "NUT-ELK-METER", "NUT-WATER-METER",
+              "NUT-GAS-ZM", "NUT-ELK-ZM", "NUT-WATER-ZM",
+              "SK-01", "SK-02", "SK-03",
+              "SK-04-GLAS", "SK-04-SCHOONMAAK", "SK-04-TUIN", "SK-04-GLADHEID",
+              "SK-04-ONTSTOPPING", "SK-04-SCHOORSTEEN", "SK-04-LAMPEN",
+              "SK-04-ONGEDIERTE", "SK-04-INSTALLATIE", "SK-04-SCHILDERWERK",
+              "SK-05", "SK-06", "SK-06B", "SK-07", "SK-08",
+              "SK-09-OPSTAL", "SK-09-GLAS", "SK-09-INBOEDEL",
+              "SK-10", "SK-11", "SK-12", "SK-13", "SK-14-WKO",
+              "NSK-01", "NSK-02", "NSK-03"
+            ]
+          },
+          "omschrijving": { "type": "string", "description": "Tekst zoals die op de afrekening staat." },
+          "bedrag_verhuurder": { "type": ["number", "string"], "description": "Het bedrag dat de verhuurder voor deze post bij deze huurder in rekening heeft gebracht." },
+          "overeengekomen": { "type": ["boolean", "null"], "description": "null = onbekend, levert ORANJE op (R-ALG-01)." },
+          "bewijs": {
+            "type": "array",
+            "items": { "type": "string", "enum": ["facturen", "specificatieformulier", "meterstanden", "urenverantwoording", "aankoopfacturen", "inspectierapport", "polis", "vve_stukken"] },
+            "description": "Welke bewijsstukken tijdig zijn aangeleverd (par. 6.4.1 en 6.4.2)."
+          },
+          "levering_gemotiveerd_betwist": { "type": "boolean", "default": false, "description": "Betwist de huurder gemotiveerd dat de zaak of dienst is geleverd? Bepaalt of ontbrekend bewijs tot een forfait of tot EUR 0,00 leidt (p. 60-61)." },
+          "parameters": {
+            "type": "object",
+            "description": "Postspecifieke invoer. Zie docs/04-datamodel.md voor de betekenis per categorie.",
+            "additionalProperties": true,
+            "properties": {
+              "beginstand": { "type": ["number", "null"] },
+              "eindstand": { "type": ["number", "null"] },
+              "meterstanden_aanwezig": { "type": "boolean" },
+              "verbruik_verhuurder": { "type": ["number", "null"] },
+              "meterstanden_betwist": { "type": "boolean" },
+              "huurder_stelt_installatie_gebrekkig": { "type": "boolean" },
+              "inspectierapport_aanwezig": { "type": ["boolean", "null"] },
+              "rendement_ketel": { "type": ["number", "null"], "description": "Als fractie, bv. 0.78. Ondergrens 0,80 (p. 15)." },
+              "collectieve_factuur": { "type": "boolean" },
+              "totale_kosten_complex": { "type": ["number", "string", "null"] },
+              "werkelijke_kosten": { "type": ["number", "string", "null"] },
+              "bedrag_is_complextotaal": { "type": "boolean", "default": true },
+              "aantal_woonruimten": { "type": ["integer", "null"], "minimum": 1 },
+              "roerend": { "type": ["boolean", "null"] },
+              "soort": { "type": "string", "enum": ["standaard", "zonnepanelen", "brandbeveiliging", "camera", "wasapparatuur", "rookmelder"] },
+              "aanschafwaarde": { "type": ["number", "string", "null"] },
+              "geschatte_waarde": { "type": ["number", "string", "null"] },
+              "levensduur_jaren": { "type": ["integer", "null"], "enum": [5, 10, 15, null] },
+              "jaar_in_gebruik": { "type": ["integer", "null"], "minimum": 1, "description": "Hoeveelste gebruiksjaar; bepaalt eerste periode, herwaardering of nul (p. 32)." },
+              "vertegenwoordigt_nog_waarde": { "type": ["boolean", "null"] },
+              "uren": { "type": ["number", "null"] },
+              "totale_kosten": { "type": ["number", "string", "null"] },
+              "aandeel_huurders": { "type": ["number", "null"], "description": "Afwijking van de standaard 70% moet worden gemotiveerd (p. 41)." },
+              "gecertificeerd": { "type": ["boolean", "null"] },
+              "afrekening_verstrekt": { "type": ["boolean", "null"] },
+              "grondslag_warmtelevering": { "type": ["number", "string", "null"] },
+              "grondslag_overige_posten": { "type": ["number", "string", "null"] },
+              "meting_uitbesteed": { "type": "boolean" },
+              "kosten_gespecificeerd": { "type": ["boolean", "null"] },
+              "ruiten_bereikbaar": { "type": ["boolean", "null"] },
+              "betreft_mutatiekosten": { "type": ["boolean", "null"] },
+              "exclusief_gebruiksrecht": { "type": ["boolean", "null"] },
+              "leidingen_bereikbaar_en_individueel": { "type": ["boolean", "null"] },
+              "onderhoudscontract": { "type": "boolean" },
+              "kanaal_bereikbaar": { "type": ["boolean", "null"] },
+              "betreft_armaturen_of_installatie": { "type": ["boolean", "null"] },
+              "gevolg_bouwkundige_situatie": { "type": ["boolean", "null"] },
+              "eenvoudig_onderhoud_binnen_woonruimte": { "type": ["boolean", "null"] },
+              "uitdrukkelijk_overeengekomen_of_op_verzoek_huurder": { "type": ["boolean", "null"] },
+              "onderdeel_van_opstalverzekering": { "type": "boolean" },
+              "betreft_gemeenschappelijke_voorziening": { "type": "boolean" },
+              "vaste_kosten_gesplitst": { "type": ["boolean", "null"] },
+              "voldaan_aan_voorwaarden": { "type": "array", "items": { "type": "string" }, "description": "De fondsvoorwaarden uit p. 44 die zijn aangetoond." }
+            }
+          }
+        }
+      }
+    }
+  }
+}

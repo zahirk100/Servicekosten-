@@ -1,0 +1,36 @@
+{
+  "referentie": "Meerjaardossier Van Dijk - boekjaar 2024",
+  "woonruimte": {
+    "zelfstandig": true,
+    "woningtype": "flatwoning_appartement",
+    "oppervlakte_m2": 70,
+    "aantal_bewoners": 2,
+    "aantal_woonruimten_complex": 48
+  },
+  "periode": { "jaar": 2024, "maand_van": 1, "maand_tot_en_met": 12 },
+  "procedure": {
+    "contract_gesloten_op": "2023-02-01", "sector": "sociaal",
+    "afrekening_ontvangen": true, "bezwaar_gemaakt": true, "verzoekdatum": "2026-10-01"
+  },
+  "voorschot_in_rekening_gebracht": "1800.00",
+  "kostenposten": [
+    { "id": "P1", "categorie": "SK-06", "omschrijving": "Huismeester",
+      "bedrag_verhuurder": "226.67", "overeengekomen": true,
+      "bewijs": ["facturen", "urenverantwoording"],
+      "parameters": { "uren": 800, "totale_kosten": "34000.00", "aantal_woonruimten": 150 } },
+    { "id": "P2", "categorie": "SK-04-SCHOONMAAK", "omschrijving": "Schoonmaak gemeenschappelijke ruimten",
+      "bedrag_verhuurder": "210.00", "overeengekomen": true,
+      "bewijs": ["facturen", "specificatieformulier"],
+      "parameters": { "betreft_mutatiekosten": false, "werkelijke_kosten": "10080.00", "aantal_woonruimten": 48 } },
+    { "id": "P3", "categorie": "SK-09-OPSTAL", "omschrijving": "Opstalverzekering",
+      "bedrag_verhuurder": "88.00", "overeengekomen": true,
+      "bewijs": ["facturen", "specificatieformulier"], "parameters": {} },
+    { "id": "P4", "categorie": "SK-03", "omschrijving": "Gemeenschappelijke wasapparatuur",
+      "bedrag_verhuurder": "84.00", "overeengekomen": true,
+      "bewijs": ["facturen", "specificatieformulier"],
+      "parameters": { "roerend": true, "soort": "wasapparatuur", "aanschafwaarde": "48000.00", "jaar_in_gebruik": 5, "aantal_woonruimten": 48 } },
+    { "id": "P5", "categorie": "SK-11", "omschrijving": "Administratiekosten",
+      "bedrag_verhuurder": "95.00", "bewijs": ["specificatieformulier"],
+      "parameters": { "afrekening_verstrekt": true, "grondslag_overige_posten": "519.33" } }
+  ]
+}

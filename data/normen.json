@@ -1,0 +1,271 @@
+{
+  "$comment": "Alle waarden zijn letterlijk overgenomen uit het Beleidsboek Servicekosten van de Huurcommissie, versie 1 juli 2026. Per blok staat de paginaverwijzing (pagina = PDF-pagina = afgedrukt paginanummer).",
+  "bron": {
+    "document": "Beleidsboek Servicekosten",
+    "uitgever": "Huurcommissie",
+    "versie": "1 juli 2026",
+    "toepassingsbereik": "Verzoekschriften ingediend op of na 1 juli 2026 (p. 3)",
+    "laatste_databeschikbaarheid": "2025; voor 2026 zijn geen Nibud-verbruiken, -tarieven en graaddagen in het beleidsboek opgenomen"
+  },
+
+  "gas": {
+    "verbruiksnorm_zelfstandig_m3": {
+      "_bron": "Tabel 1, p. 13",
+      "flatwoning_appartement": { "2023": 840, "2024": 810, "2025": 750 },
+      "tussenwoning":           { "2023": 1170, "2024": 1090, "2025": 990 },
+      "hoekwoning":             { "2023": 1370, "2024": 1280, "2025": 1160 },
+      "twee_onder_een_kap":     { "2023": 1550, "2024": 1470, "2025": 1320 },
+      "vrijstaande_woning":     { "2023": 2040, "2024": 1960, "2025": 1740 }
+    },
+    "verbruiksnorm_onzelfstandig_m3_per_m2": {
+      "_bron": "p. 14",
+      "waarde": 25
+    },
+    "tarief": {
+      "_bron": "Tabel 2, p. 14",
+      "2023": { "tarief_per_m3": 1.45, "tarief_per_m3_boven_plafond": 1.77, "plafond_m3": 1200, "vastrecht_per_jaar": 223.56 },
+      "2024": { "tarief_per_m3": 1.31, "tarief_per_m3_boven_plafond": null, "plafond_m3": null, "vastrecht_per_jaar": 236.76 },
+      "2025": { "tarief_per_m3": 1.36, "tarief_per_m3_boven_plafond": null, "plafond_m3": null, "vastrecht_per_jaar": 323.16 }
+    },
+    "verdeelsleutel_zonder_eigen_meter": {
+      "_bron": "par. 4.2.1, p. 26",
+      "aandeel_vaste_kosten": 0.35,
+      "verdeling_vaste_kosten": "gelijk_over_aantal_woonruimten",
+      "aandeel_variabele_kosten": 0.65,
+      "verdeling_variabele_kosten": "naar_vloeroppervlakte"
+    },
+    "periodemethode_korter_dan_12_maanden": "graaddagenmethode (par. 3.1.3, p. 16)",
+    "rendement_ondergrens_stookinstallatie": {
+      "_bron": "par. 3.1.2, p. 15",
+      "waarde": 0.80
+    }
+  },
+
+  "elektriciteit": {
+    "verbruiksnorm_zelfstandig_kwh": {
+      "_bron": "Tabel 4, p. 18 (afhankelijk van aantal bewoners)",
+      "1": { "2023": 1830, "2024": 1750, "2025": 1640 },
+      "2": { "2023": 2850, "2024": 2700, "2025": 2550 },
+      "3": { "2023": 3430, "2024": 3250, "2025": 3080 },
+      "4": { "2023": 4010, "2024": 3790, "2025": 3600 },
+      "5": { "2023": 4350, "2024": 4150, "2025": 3980 }
+    },
+    "verbruiksnorm_onzelfstandig_kwh": {
+      "_bron": "p. 18",
+      "waarde": 1000
+    },
+    "tarief": {
+      "_bron": "Tabel 5, p. 18",
+      "2023": { "tarief_per_kwh": 0.40, "tarief_per_kwh_boven_plafond": 0.45, "plafond_kwh": 2900, "vastrecht_per_jaar": 350.52, "belastingteruggave_per_jaar": 596.86 },
+      "2024": { "tarief_per_kwh": 0.29, "tarief_per_kwh_boven_plafond": null, "plafond_kwh": null, "vastrecht_per_jaar": 412.44, "belastingteruggave_per_jaar": 631.39 },
+      "2025": { "tarief_per_kwh": 0.27, "tarief_per_kwh_boven_plafond": null, "plafond_kwh": null, "vastrecht_per_jaar": 561.36, "belastingteruggave_per_jaar": 635.19 }
+    },
+    "seizoenspatroon_percentage_per_maand": {
+      "_bron": "Tabel 6, p. 20. Deze percentages wijzigen niet en zijn elk jaar hetzelfde.",
+      "1": 0.10, "2": 0.08, "3": 0.09, "4": 0.08, "5": 0.08, "6": 0.07,
+      "7": 0.06, "8": 0.07, "9": 0.08, "10": 0.09, "11": 0.10, "12": 0.10
+    },
+    "verdeelsleutel_zonder_eigen_meter": {
+      "_bron": "par. 4.2.1, p. 27",
+      "verdeling": "gelijk_over_aantal_woonruimten"
+    },
+    "periodemethode_korter_dan_12_maanden": "seizoenspatronen (par. 3.2.3, p. 20)"
+  },
+
+  "water": {
+    "verbruiksnorm_m3": {
+      "_bron": "Tabel 7, p. 21 (afhankelijk van aantal bewoners; gelijk voor 2023-2025)",
+      "1": { "2023": 68, "2024": 68, "2025": 68 },
+      "2": { "2023": 95, "2024": 95, "2025": 95 },
+      "3": { "2023": 123, "2024": 123, "2025": 123 },
+      "4": { "2023": 163, "2024": 163, "2025": 163 },
+      "5": { "2023": 187, "2024": 187, "2025": 187 }
+    },
+    "tarief": {
+      "_bron": "Tabel 8, p. 22",
+      "2023": { "tarief_per_m3": 1.31, "vastrecht_per_jaar": 74.00 },
+      "2024": { "tarief_per_m3": 1.60, "vastrecht_per_jaar": 79.00 },
+      "2025": { "tarief_per_m3": 1.77, "vastrecht_per_jaar": 85.00 }
+    },
+    "verdeelsleutel_zonder_eigen_meter": {
+      "_bron": "par. 4.2.1, p. 27",
+      "verdeling": "gelijk_over_aantal_woonruimten"
+    },
+    "periodemethode_korter_dan_12_maanden": "evenredig deel van het jaar (par. 3.3.3, p. 23)"
+  },
+
+  "graaddagen": {
+    "_bron": "Tabel 3, p. 16. Weerstation De Bilt, stookgrens 18 graden C, etmaalgemiddelde binnentemperatuur 18 graden C.",
+    "2023": { "1": 417.12, "2": 379.72, "3": 340.90, "4": 223.04, "5": 112.64, "6": 17.52, "7": 19.84, "8": 28.08, "9": 34.80, "10": 148.30, "11": 336.60, "12": 378.95, "totaal": 2437.51 },
+    "2024": { "1": 481.14, "2": 313.17, "3": 280.50, "4": 173.68, "5": 66.08, "6": 66.88, "7": 22.80, "8": 6.32, "9": 70.64, "10": 183.90, "11": 365.31, "12": 406.89, "totaal": 2437.31 },
+    "2025": { "1": 496.32, "2": 433.62, "3": 336.70, "4": 156.08, "5": 99.20, "6": 26.32, "7": 7.52, "8": 21.12, "9": 76.96, "10": 185.30, "11": 338.25, "12": 406.45, "totaal": 2583.84 }
+  },
+
+  "roerende_zaken": {
+    "_bron": "par. 4.3.3, p. 30-35",
+    "afschrijving_per_levensduur": {
+      "5": 0.20,
+      "10": 0.10,
+      "15": 0.0667
+    },
+    "standaard_levensduur_jaren": 5,
+    "levensduur_10_jaar_voorbeelden": [
+      "gevelkachels", "kleine boilers", "geisers", "brandbeveiligingsmiddelen",
+      "huishoudelijke apparaten (bestemd voor een woonruimte)",
+      "technische apparaten (bestemd voor een woonruimte)",
+      "laminaat (bestemd voor een woonruimte)"
+    ],
+    "herwaardering_na_afschrijvingsperiode": 0.60,
+    "wettelijk_standaardbedrag_per_jaar_zonder_gegevens": 12.00,
+    "zonnepanelen": {
+      "levensduur_jaren": 15,
+      "afschrijvingspercentage": 0.0667,
+      "opslag_op_aanschafwaarde_eur": 2000.00,
+      "herwaardering": 0.60,
+      "tweede_periode_jaren": 15
+    },
+    "brandbeveiligingsmiddelen": {
+      "aandeel_waarde_huurder": 0.50,
+      "afschrijvingspercentage": 0.10,
+      "aandeel_onderhoudskosten_huurder": 0.50
+    },
+    "beveiligingscameras": {
+      "aandeel_waarde_huurder": 0.70,
+      "afschrijvingspercentage": 0.20,
+      "aandeel_onderhoudskosten_huurder": 0.70
+    },
+    "industriele_wasmachines_en_wasdrogers": {
+      "levensduur_jaren": 10,
+      "afschrijvingspercentage_eerste_periode": 0.10,
+      "afschrijvingspercentage_tweede_periode_over_oorspronkelijke_waarde": 0.06,
+      "maximum_per_woonruimte_per_maand_eur": 5.00,
+      "maximum_per_woonruimte_per_jaar_eur": 60.00
+    },
+    "rookmelders": {
+      "gebruiksvergoeding_toegestaan": false,
+      "toelichting": "Sinds 1 juli 2022 verplicht op grond van het Bouwbesluit; kosten voor rekening verhuurder (p. 33). Vervangen van batterijen kan wel als kleine herstelling worden afgesproken."
+    }
+  },
+
+  "huismeester": {
+    "_bron": "par. 4.3.6, Tabel 9, p. 40-41",
+    "maximaal_uurtarief_incl_btw": {
+      "2023": 40.00,
+      "2024": 40.00,
+      "2025": 41.00,
+      "2026": 41.00
+    },
+    "aandeel_huurders": 0.70,
+    "aandeel_verhuurder": 0.30,
+    "op_te_vragen_gegevens": ["functieomschrijving", "facturen dienstverleningsbedrijf", "urenverantwoording/kosten eigen beheer"]
+  },
+
+  "externe_beveiliging": {
+    "_bron": "par. 4.3.6, p. 41",
+    "aandeel_huurders": 0.70,
+    "aandeel_verhuurder": 0.30,
+    "maximaal_uurtarief": null,
+    "toelichting": "Geen maximaal uurtarief; facturen zijn uitgangspunt en worden aan de redelijkheid getoetst. Gecertificeerde dienst: factuur volstaat."
+  },
+
+  "administratiekosten": {
+    "_bron": "par. 4.3.11, p. 43",
+    "max_percentage_warmtelevering": 0.02,
+    "max_percentage_warmtelevering_uitbesteed": 0.01,
+    "max_percentage_overige_posten": 0.05,
+    "percentages_inclusief_btw": true,
+    "minimum_per_afrekening_per_woonruimte_eur": 7.50,
+    "maximum_per_afrekening_per_woonruimte_eur": 75.00
+  },
+
+  "forfaitaire_verdelingen": {
+    "glazenwassen_zonder_specificatie": {
+      "_bron": "par. 4.3.4, p. 36",
+      "aandeel_bereikbaar_maken_verhuurder": "2/3",
+      "aandeel_arbeidskosten_huurder": "1/3"
+    },
+    "ontstoppingscontract": {
+      "_bron": "par. 4.3.4, p. 37",
+      "aandeel_huurder": 0.50,
+      "aandeel_verhuurder": 0.50
+    },
+    "glasverzekering_binnen_opstalverzekering": {
+      "_bron": "par. 4.3.9, p. 43",
+      "aandeel_glasverzekering": 0.15
+    },
+    "onderhoudscontract_24uursservice": {
+      "_bron": "par. 4.3.12, p. 44",
+      "aandeel_24uursservice": 0.20
+    }
+  },
+
+  "fondsen": {
+    "_bron": "par. 4.3.13, p. 44",
+    "voorwaarden": [
+      "verhuurder geeft inzage in de hoogte van het fonds en de betalingen daaruit",
+      "de bijdrage is een redelijke vergoeding voor de levering of dienst",
+      "de omvang van het fonds is maximaal drie keer de jaaropbrengst",
+      "de inleg wordt alleen gebruikt voor de betreffende levering of dienst"
+    ],
+    "max_omvang_maal_jaaropbrengst": 3
+  },
+
+  "forfaits_bij_ontbrekende_onderbouwing": {
+    "_bron": "par. 6.4.2, Tabel 11, p. 60",
+    "wettelijk_vastgesteld_verbruik": {
+      "gas_m3":          { "zelfstandig": 400, "onzelfstandig": 250 },
+      "elektriciteit_kwh": { "zelfstandig": 800, "onzelfstandig": 500 },
+      "water_m3":        { "zelfstandig": 25,  "onzelfstandig": 25 }
+    },
+    "tariefbron": "Gemiddelde prijzen voor gas, elektra en water volgens het Nibud (voetnoot 16/18, p. 60-61); de concrete bedragen uit bijlage VIII Uitvoeringsregeling huurprijzen woonruimte staan NIET in het beleidsboek.",
+    "vast_bedrag_overige_kostenposten_per_jaar_eur": 12.00
+  },
+
+  "termijnen": {
+    "_bron": "par. 6.3 (Tabel 10, p. 56), par. 6.4.1, par. 3.4/6.5",
+    "afrekentermijn_maanden_na_kalenderjaar": 6,
+    "verzoektermijn_maanden_na_afrekentermijn": 24,
+    "wettelijke_indieningstermijn_jaren_na_kalenderjaar": 2.5,
+    "reactietermijn_verhuurder_weken": 3,
+    "aanlevertermijn_verhuurder_weken": 3,
+    "uitstel_verhuurder_max_weken": 3,
+    "maximale_aanlevertermijn_weken": 6,
+    "uiterste_datums_per_boekjaar": {
+      "2023": { "uiterste_afrekendatum": "2024-06-30", "uiterste_verzoekdatum": "2026-06-30" },
+      "2024": { "uiterste_afrekendatum": "2025-06-30", "uiterste_verzoekdatum": "2027-06-30" },
+      "2025": { "uiterste_afrekendatum": "2026-06-30", "uiterste_verzoekdatum": "2028-06-30" },
+      "2026": { "uiterste_afrekendatum": "2027-06-30", "uiterste_verzoekdatum": "2029-06-30" }
+    },
+    "voorschot_afrekening_max_ouderdom_jaren": 3
+  },
+
+  "drempelbedragen": {
+    "minimum_betwiste_kosten_jaarafrekening_eur": { "waarde": 36.00, "_bron": "par. 6.3.4, p. 59" },
+    "minimum_betwiste_kosten_voorschot_per_maand_eur": { "waarde": 3.00, "_bron": "par. 3.4, p. 24 en par. 6.5, p. 62" }
+  },
+
+  "niet_doorberekenbaar": {
+    "_bron": "par. 4.3.14 t/m 4.3.16, p. 44-45 en verspreide passages",
+    "posten": [
+      { "post": "leegstandsderving", "grond": "par. 4.3.14, p. 44", "gevolg": "niet toegestaan door te berekenen" },
+      { "post": "belastingen en heffingen", "grond": "par. 4.3.15, p. 44", "gevolg": "geen servicekosten; Huurcommissie niet bevoegd" },
+      { "post": "zorgservicekosten", "grond": "par. 4.3.16, p. 45", "gevolg": "geen woonservicekosten; Huurcommissie niet bevoegd" },
+      { "post": "mutatiekosten (begin- en eindschoonmaak bij verhuizing)", "grond": "par. 4.3.4, p. 36", "gevolg": "niet doorberekenbaar" },
+      { "post": "onroerende zaken (gebruiksvergoeding)", "grond": "par. 4.3.3, p. 31", "gevolg": "zit in de kale huurprijs" },
+      { "post": "rookmelders (gebruiksvergoeding)", "grond": "par. 4.3.3, p. 33", "gevolg": "voor rekening verhuurder" },
+      { "post": "kapitaals- en onderhoudslasten WKO-installatie", "grond": "par. 5.4, p. 49", "gevolg": "moeten uit de kale huurprijs worden gedekt" },
+      { "post": "opstal-, brand-, storm-, schade-, bedrijfsschade- en aansprakelijkheidsverzekering", "grond": "par. 4.3.9, p. 42-43", "gevolg": "voor rekening verhuurder" },
+      { "post": "periodiek onderhoud/klein onderhoud/keuringen aan aard- en nagelvaste installaties", "grond": "par. 4.3.4, p. 39", "gevolg": "onderhoudsplicht verhuurder" },
+      { "post": "kosten bereikbaar maken van ruiten (hoogwerker)", "grond": "par. 4.3.4, p. 36", "gevolg": "voor rekening verhuurder" },
+      { "post": "onderhoud kijktuin / groenvoorziening met openbaar karakter", "grond": "par. 4.3.4, p. 37", "gevolg": "voor rekening verhuurder" },
+      { "post": "ontstopping leidingen voor meerdere zelfstandige woonruimten of door technisch gebrek", "grond": "par. 4.3.4, p. 37", "gevolg": "voor rekening verhuurder" },
+      { "post": "armaturen vervangen, vernieuwen/repareren installatie, vandalismeschade", "grond": "par. 4.3.4, p. 38", "gevolg": "voor rekening verhuurder" },
+      { "post": "schilderwerk dat niet uitdrukkelijk is overeengekomen", "grond": "par. 4.3.4, p. 39", "gevolg": "geacht verricht om de woonruimte verhuurbaar te maken" }
+    ]
+  },
+
+  "btw": {
+    "_bron": "par. 2.3.3, p. 10",
+    "regel": "De btw over nutsvoorzieningen met een eigen meter en (overige) servicekosten mag volledig worden doorberekend aan de huurder, ongeacht of de verhuurder btw-plichtig is."
+  }
+}

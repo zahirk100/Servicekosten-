@@ -1,0 +1,108 @@
+{
+  "referentie": "Casus 4 - Meerdere verschillende foutieve kostenposten (boekjaar 2025)",
+  "woonruimte": {
+    "zelfstandig": true,
+    "woningtype": "flatwoning_appartement",
+    "oppervlakte_m2": 65,
+    "aantal_bewoners": 2,
+    "aantal_woonruimten_complex": 60
+  },
+  "periode": { "jaar": 2025, "maand_van": 1, "maand_tot_en_met": 12 },
+  "procedure": {
+    "contract_gesloten_op": "2024-11-01",
+    "sector": "vrij",
+    "afrekening_ontvangen": true,
+    "afrekening_ontvangen_op": "2026-05-30",
+    "bezwaar_gemaakt": true,
+    "verzoekdatum": "2026-08-01",
+    "huurder_woont_nog_op_adres": true
+  },
+  "voorschot_in_rekening_gebracht": "2100.00",
+  "kostenposten": [
+    {
+      "id": "P1", "categorie": "NSK-01",
+      "omschrijving": "Leegstandsderving servicekosten",
+      "bedrag_verhuurder": "85.00",
+      "overeengekomen": true,
+      "bewijs": ["specificatieformulier"],
+      "parameters": {}
+    },
+    {
+      "id": "P2", "categorie": "SK-04-SCHOONMAAK",
+      "omschrijving": "Mutatieschoonmaak bij verhuizing",
+      "bedrag_verhuurder": "140.00",
+      "overeengekomen": true,
+      "bewijs": ["facturen", "specificatieformulier"],
+      "parameters": { "betreft_mutatiekosten": true }
+    },
+    {
+      "id": "P3", "categorie": "SK-09-OPSTAL",
+      "omschrijving": "Opstalverzekering",
+      "bedrag_verhuurder": "92.00",
+      "overeengekomen": true,
+      "bewijs": ["facturen", "specificatieformulier"],
+      "parameters": {}
+    },
+    {
+      "id": "P4", "categorie": "SK-09-GLAS",
+      "omschrijving": "Glasverzekering (onderdeel van de opstalverzekering, niet gespecificeerd)",
+      "bedrag_verhuurder": "48.00",
+      "overeengekomen": true,
+      "bewijs": ["facturen", "specificatieformulier"],
+      "parameters": {
+        "onderdeel_van_opstalverzekering": true, "kosten_gespecificeerd": false,
+        "werkelijke_kosten": "48.00", "bedrag_is_complextotaal": false
+      }
+    },
+    {
+      "id": "P5", "categorie": "SK-04-GLAS",
+      "omschrijving": "Glazenwassen (totale kosten niet gespecificeerd)",
+      "bedrag_verhuurder": "72.00",
+      "overeengekomen": true,
+      "bewijs": ["facturen", "specificatieformulier"],
+      "parameters": {
+        "ruiten_bereikbaar": true, "kosten_gespecificeerd": false,
+        "werkelijke_kosten": "4320.00", "aantal_woonruimten": 60
+      }
+    },
+    {
+      "id": "P6", "categorie": "SK-03",
+      "omschrijving": "Gebruiksvergoeding cv-installatie en radiatoren",
+      "bedrag_verhuurder": "180.00",
+      "overeengekomen": true,
+      "bewijs": ["facturen", "specificatieformulier"],
+      "parameters": { "roerend": false, "aanschafwaarde": "1800.00", "jaar_in_gebruik": 3 }
+    },
+    {
+      "id": "P7", "categorie": "SK-03",
+      "omschrijving": "Rookmelders",
+      "bedrag_verhuurder": "15.00",
+      "overeengekomen": true,
+      "bewijs": ["facturen", "specificatieformulier"],
+      "parameters": { "roerend": true, "soort": "rookmelder" }
+    },
+    {
+      "id": "P8", "categorie": "SK-12",
+      "omschrijving": "Onderhoudscontract cv met 24-uursservice",
+      "bedrag_verhuurder": "110.00",
+      "overeengekomen": true,
+      "bewijs": ["facturen", "specificatieformulier"],
+      "parameters": { "kosten_gespecificeerd": false, "werkelijke_kosten": "110.00", "bedrag_is_complextotaal": false }
+    },
+    {
+      "id": "P9", "categorie": "NSK-02",
+      "omschrijving": "Gemeentelijke heffingen (rioolheffing)",
+      "bedrag_verhuurder": "130.00",
+      "overeengekomen": true,
+      "bewijs": ["specificatieformulier"],
+      "parameters": {}
+    },
+    {
+      "id": "P10", "categorie": "SK-11",
+      "omschrijving": "Administratiekosten",
+      "bedrag_verhuurder": "95.00",
+      "bewijs": ["specificatieformulier"],
+      "parameters": { "afrekening_verstrekt": true, "grondslag_overige_posten": "742.00" }
+    }
+  ]
+}

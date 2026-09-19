@@ -1,0 +1,65 @@
+{
+  "referentie": "Casus 3 - Ontbrekende bewijsstukken (verhuurder levert niets binnen de termijn, boekjaar 2024)",
+  "woonruimte": {
+    "zelfstandig": false,
+    "oppervlakte_m2": 18,
+    "aantal_bewoners": 1,
+    "aantal_woonruimten_op_aansluiting": 6,
+    "aantal_woonruimten_complex": 6
+  },
+  "periode": { "jaar": 2024, "maand_van": 1, "maand_tot_en_met": 12 },
+  "procedure": {
+    "contract_gesloten_op": "2024-08-15",
+    "sector": "sociaal",
+    "afrekening_ontvangen": true,
+    "afrekening_ontvangen_op": "2025-06-28",
+    "bezwaar_gemaakt": true,
+    "verzoekdatum": "2025-10-01",
+    "huurder_woont_nog_op_adres": true
+  },
+  "voorschot_in_rekening_gebracht": "1500.00",
+  "kostenposten": [
+    {
+      "id": "P1", "categorie": "NUT-GAS-METER",
+      "omschrijving": "Gas eigen meter (geen facturen aangeleverd)",
+      "bedrag_verhuurder": "780.00",
+      "overeengekomen": true,
+      "bewijs": [],
+      "parameters": { "verbruik_verhuurder": 560 }
+    },
+    {
+      "id": "P2", "categorie": "SK-04-SCHOONMAAK",
+      "omschrijving": "Schoonmaak (geen specificatieformulier, geen facturen)",
+      "bedrag_verhuurder": "240.00",
+      "overeengekomen": true,
+      "bewijs": [],
+      "levering_gemotiveerd_betwist": false,
+      "parameters": { "betreft_mutatiekosten": false }
+    },
+    {
+      "id": "P3", "categorie": "SK-04-TUIN",
+      "omschrijving": "Tuinonderhoud (karakter groenvoorziening onbekend)",
+      "bedrag_verhuurder": "95.00",
+      "overeengekomen": true,
+      "bewijs": ["facturen", "specificatieformulier"],
+      "parameters": { "werkelijke_kosten": "570.00", "aantal_woonruimten": 6 }
+    },
+    {
+      "id": "P4", "categorie": "SK-03",
+      "omschrijving": "Meubilering en stoffering (geen aankoopfacturen, geen samenstelling)",
+      "bedrag_verhuurder": "300.00",
+      "overeengekomen": true,
+      "bewijs": ["specificatieformulier"],
+      "parameters": { "roerend": true }
+    },
+    {
+      "id": "P5", "categorie": "SK-07",
+      "omschrijving": "Signaallevering (levering gemotiveerd betwist, geen facturen)",
+      "bedrag_verhuurder": "132.00",
+      "overeengekomen": true,
+      "bewijs": [],
+      "levering_gemotiveerd_betwist": true,
+      "parameters": {}
+    }
+  ]
+}

@@ -1,0 +1,1503 @@
+{
+  "$comment": "Machineleesbare beslisregeltabel. Bron: Beleidsboek Servicekosten Huurcommissie, versie 1 juli 2026. docs/07-beslisregels.md wordt hieruit gegenereerd met tools/genereer_regeltabel.py.",
+  "regels": [
+    {
+      "id": "R-ALG-00",
+      "categorie": "Alle",
+      "onderwerp": "Onderscheid meter / geen meter",
+      "input": [
+        "individuele_meter_aanwezig"
+      ],
+      "voorwaarde": "Gas, elektriciteit of water met een eigen meter in het woonruimtegedeelte",
+      "berekening": "IF individuele_meter_aanwezig THEN route=HOOFDSTUK_3 ELSE route=HOOFDSTUK_4",
+      "output": "Routekeuze",
+      "bewijs": [
+        "huurovereenkomst",
+        "afrekening",
+        "meterstandenopgave"
+      ],
+      "uitzonderingen": "Doorslaggevend is of het individuele verbruik bepaalbaar is (voetnoot 2, p. 8)",
+      "automatiseerbaarheid": "semi-automatisch",
+      "menselijke_controle": true,
+      "bron": "par. 2.1, p. 8"
+    },
+    {
+      "id": "R-ALG-01",
+      "categorie": "Alle",
+      "onderwerp": "Juridische grondslag",
+      "input": [
+        "overeengekomen"
+      ],
+      "voorwaarde": "Huurder en verhuurder zijn (al dan niet stilzwijgend) overeengekomen dat de kosten voor rekening van de huurder komen",
+      "berekening": "IF overeengekomen==FALSE THEN bedrag=0,00 ELSE IF overeengekomen IS NULL THEN ORANJE",
+      "output": "EUR 0,00 of doorgang",
+      "bewijs": [
+        "huurovereenkomst",
+        "algemene voorwaarden",
+        "eerdere afrekeningen"
+      ],
+      "uitzonderingen": "Administratiekosten hoeven niet uitdrukkelijk overeengekomen te zijn (p. 43)",
+      "automatiseerbaarheid": "semi-automatisch",
+      "menselijke_controle": true,
+      "bron": "p. 9; p. 75"
+    },
+    {
+      "id": "R-ALG-02",
+      "categorie": "Alle",
+      "onderwerp": "Werkelijk gemaakte kosten",
+      "input": [
+        "facturen",
+        "bedrag_verhuurder"
+      ],
+      "voorwaarde": "Kosten zijn feitelijk gemaakt en met facturen of andere betaalbewijzen onderbouwd",
+      "berekening": "bedrag_model = factuurbedrag toegerekend aan de huurder",
+      "output": "Toegestaan bedrag",
+      "bewijs": [
+        "facturen",
+        "betaalbewijzen"
+      ],
+      "uitzonderingen": "Afwijken alleen als een partij aannemelijk maakt dat de kosten geen reële afspiegeling zijn (p. 11, p. 25)",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": false,
+      "bron": "p. 9, 11, 25"
+    },
+    {
+      "id": "R-ALG-03",
+      "categorie": "Alle",
+      "onderwerp": "Overeengekomen vast bedrag of percentage",
+      "input": [
+        "overeengekomen_maximum",
+        "bedrag_model"
+      ],
+      "voorwaarde": "Partijen zijn een vast bedrag of percentage overeengekomen",
+      "berekening": "bedrag = MIN(bedrag_model, overeengekomen_maximum)",
+      "output": "Begrensd bedrag",
+      "bewijs": [
+        "huurovereenkomst"
+      ],
+      "uitzonderingen": "De verhuurder is gebonden, de huurder niet; overstijgt het overeengekomen bedrag de werkelijke kosten, dan kan de betalingsverplichting op verzoek van de huurder worden verlaagd",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": false,
+      "bron": "voetnoot 4, p. 11"
+    },
+    {
+      "id": "R-ALG-04",
+      "categorie": "Alle",
+      "onderwerp": "Hogere vaststelling mogelijk",
+      "input": [
+        "bedrag_model",
+        "bedrag_verhuurder"
+      ],
+      "voorwaarde": "Het model komt hoger uit dan de verhuurder heeft afgerekend",
+      "berekening": "verschil = bedrag_verhuurder - bedrag_model  (mag negatief zijn)",
+      "output": "Negatieve correctie = risico voor de huurder",
+      "bewijs": [],
+      "uitzonderingen": "Bijvoorbeeld bij een rekenfout of een andere redelijke verdeelsleutel",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": false,
+      "bron": "par. 2.3.3, p. 10"
+    },
+    {
+      "id": "R-ALG-05",
+      "categorie": "Alle",
+      "onderwerp": "BTW",
+      "input": [
+        "btw_bedrag"
+      ],
+      "voorwaarde": "Altijd",
+      "berekening": "btw is nooit een correctiegrond",
+      "output": "Geen correctie",
+      "bewijs": [],
+      "uitzonderingen": "Geldt ongeacht of de verhuurder btw-plichtig is",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": false,
+      "bron": "par. 2.3.3, p. 10"
+    },
+    {
+      "id": "R-NUT-01",
+      "categorie": "NUT-*-METER",
+      "onderwerp": "Meterstanden zijn uitgangspunt",
+      "input": [
+        "beginstand",
+        "eindstand",
+        "facturen"
+      ],
+      "voorwaarde": "Begin- en eindstand bekend en niet gemotiveerd betwist",
+      "berekening": "bedrag_model = factuurbedrag",
+      "output": "Toegestaan bedrag",
+      "bewijs": [
+        "meterstanden",
+        "factuur leverancier"
+      ],
+      "uitzonderingen": "Feiten of omstandigheden kunnen maken dat de standen niet zonder meer worden gevolgd",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": false,
+      "bron": "p. 11-12"
+    },
+    {
+      "id": "R-NUT-02",
+      "categorie": "NUT-*-METER",
+      "onderwerp": "Meterstanden ontbreken",
+      "input": [
+        "woningtype of aantal_bewoners of oppervlakte_m2",
+        "jaar",
+        "periode",
+        "verbruik_verhuurder"
+      ],
+      "voorwaarde": "Begin- of eindstand ontbreekt",
+      "berekening": "normbedrag = Nibud-verbruik x Nibud-tarief + vastrecht-aandeel (elektriciteit: min belastingteruggave); IF afwijking in belangrijke mate zonder goede verklaring THEN bedrag = normbedrag",
+      "output": "Normbedrag of factuurbedrag",
+      "bewijs": [
+        "afrekening",
+        "woningtype/bewonersaantal/oppervlakte"
+      ],
+      "uitzonderingen": "Tenzij toepassing van de norm tot een onredelijk resultaat leidt (p. 13). Een strenge winter kan een verklaring zijn (p. 12)",
+      "automatiseerbaarheid": "semi-automatisch",
+      "menselijke_controle": true,
+      "bron": "p. 12; par. 3.1.1 p. 13; 3.2.1 p. 17; 3.3.1 p. 21"
+    },
+    {
+      "id": "R-NUT-03",
+      "categorie": "NUT-*-METER",
+      "onderwerp": "Meterstanden gemotiveerd betwist",
+      "input": [
+        "meterstanden_betwist",
+        "onderbouwing huurder"
+      ],
+      "voorwaarde": "Huurder betwist gemotiveerd en overtuigend het geadministreerde verbruik",
+      "berekening": "bedrag = normbedrag volgens Nibud",
+      "output": "Normbedrag",
+      "bewijs": [
+        "onderbouwing huurder",
+        "verbruik voorgaande jaren (elektriciteit)"
+      ],
+      "uitzonderingen": "Is er een plausibele verklaring voor het hoge verbruik, dan blijft het factuurbedrag uitgangspunt",
+      "automatiseerbaarheid": "semi-automatisch",
+      "menselijke_controle": true,
+      "bron": "par. 3.1.2 p. 15; 3.2.2 p. 19; 3.3.2 p. 23"
+    },
+    {
+      "id": "R-NUT-04",
+      "categorie": "NUT-GAS-METER",
+      "onderwerp": "Rendement stookinstallatie",
+      "input": [
+        "inspectierapport_aanwezig",
+        "rendement_ketel"
+      ],
+      "voorwaarde": "Huurder stelt dat de collectieve stookinstallatie onvoldoende functioneert",
+      "berekening": "IF inspectierapport ontbreekt OR rendement < 0,80 THEN bedrag = normbedrag",
+      "output": "Normbedrag",
+      "bewijs": [
+        "inspectierapport met ketelrendement"
+      ],
+      "uitzonderingen": "Rendement >= 80% en een plausibele verklaring: factuurbedrag blijft uitgangspunt",
+      "automatiseerbaarheid": "semi-automatisch",
+      "menselijke_controle": true,
+      "bron": "par. 3.1.2, p. 15"
+    },
+    {
+      "id": "R-NUT-05",
+      "categorie": "NUT-*-METER",
+      "onderwerp": "Collectieve factuur",
+      "input": [
+        "collectieve_factuur",
+        "verdeelsleutel"
+      ],
+      "voorwaarde": "De factuur betreft meerdere woonruimten (één aansluiting)",
+      "berekening": "Toets de verdeelsleutel en de toepassing daarvan",
+      "output": "ORANJE tot getoetst",
+      "bewijs": [
+        "factuur",
+        "verdeelsleutelberekening"
+      ],
+      "uitzonderingen": "De Huurcommissie toetst desgevraagd",
+      "automatiseerbaarheid": "semi-automatisch",
+      "menselijke_controle": true,
+      "bron": "voetnoot 3, p. 11; p. 12"
+    },
+    {
+      "id": "R-NUT-06",
+      "categorie": "NUT-*-METER",
+      "onderwerp": "Kosten verbruiksmeters en kostenverdeling",
+      "input": [
+        "kosten_meters",
+        "kosten_verdeelbedrijf"
+      ],
+      "voorwaarde": "Kosten van roerende verbruiksmeters en van een gespecialiseerd verdeelbedrijf",
+      "berekening": "Doorberekenbaar als onderdeel van de nutsvoorzieningspost",
+      "output": "Toegestaan",
+      "bewijs": [
+        "facturen"
+      ],
+      "uitzonderingen": "",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": false,
+      "bron": "par. 3.1 p. 13; par. 3.2 p. 17"
+    },
+    {
+      "id": "R-PER-01",
+      "categorie": "Gas",
+      "onderwerp": "Graaddagenmethode",
+      "input": [
+        "periode",
+        "jaar",
+        "jaarverbruik"
+      ],
+      "voorwaarde": "Huur- of factuurperiode korter dan twaalf maanden",
+      "berekening": "verbruik = jaarverbruik x (som graaddagen periode / jaartotaal), afgerond op hele m3; vastrecht x maanden/12",
+      "output": "Periodeverbruik en -kosten",
+      "bewijs": [
+        "huurperiode",
+        "factuurperiode"
+      ],
+      "uitzonderingen": "Graaddagen alleen beschikbaar voor 2023-2025",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": false,
+      "bron": "par. 3.1.3, Tabel 3, p. 16"
+    },
+    {
+      "id": "R-PER-02",
+      "categorie": "Elektriciteit",
+      "onderwerp": "Seizoenspatronen",
+      "input": [
+        "periode",
+        "jaarverbruik"
+      ],
+      "voorwaarde": "Huur- of factuurperiode korter dan twaalf maanden",
+      "berekening": "verbruik = jaarverbruik x som(maandpercentages); vastrecht en belastingteruggave x maanden/12",
+      "output": "Periodeverbruik en -kosten",
+      "bewijs": [
+        "huurperiode",
+        "factuurperiode"
+      ],
+      "uitzonderingen": "Percentages zijn elk jaar gelijk",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": false,
+      "bron": "par. 3.2.3, Tabel 6, p. 20"
+    },
+    {
+      "id": "R-PER-03",
+      "categorie": "Water",
+      "onderwerp": "Evenredig deel",
+      "input": [
+        "periode"
+      ],
+      "voorwaarde": "Huur- of factuurperiode korter dan twaalf maanden",
+      "berekening": "kosten = jaarkosten x maanden/12",
+      "output": "Periodekosten",
+      "bewijs": [
+        "huurperiode"
+      ],
+      "uitzonderingen": "Grondslag: waterverbruik is gelijkmatig over het jaar verdeeld",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": false,
+      "bron": "par. 3.3.3, p. 23"
+    },
+    {
+      "id": "R-PER-04",
+      "categorie": "Alle",
+      "onderwerp": "Gebroken boekjaar",
+      "input": [
+        "factuurperiode_leverancier"
+      ],
+      "voorwaarde": "De afrekenperiode van de leverancier loopt niet gelijk met het kalenderjaar",
+      "berekening": "uiterste_afrekendatum = 30 juni van (eindjaar afwijkende periode + 1)",
+      "output": "Uiterste afrekendatum",
+      "bewijs": [
+        "facturen leverancier"
+      ],
+      "uitzonderingen": "Verhuizing tijdens de afwijkende periode heeft geen invloed op de uiterste afrekendatum",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": false,
+      "bron": "par. 5.2, p. 47-48; art. 7:259 lid 2 BW"
+    },
+    {
+      "id": "R-VDS-01",
+      "categorie": "NUT-GAS-ZM",
+      "onderwerp": "Verdeelsleutel gas zonder meter",
+      "input": [
+        "totale_kosten_complex",
+        "aantal_woonruimten",
+        "oppervlakte_m2",
+        "totale_oppervlakte_complex_m2"
+      ],
+      "voorwaarde": "Totaalfactuur voor meerdere woonruimten, geen eigen meter",
+      "berekening": "aandeel = (0,35 x totaal / n) + (0,65 x totaal x opp / totale_opp)",
+      "output": "Aandeel huurder",
+      "bewijs": [
+        "factuur",
+        "oppervlaktegegevens",
+        "aantal woonruimten"
+      ],
+      "uitzonderingen": "Dit is de voorkeursverdeling van de Huurcommissie",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": false,
+      "bron": "par. 4.2.1, p. 26"
+    },
+    {
+      "id": "R-VDS-02",
+      "categorie": "NUT-ELK-ZM, NUT-WATER-ZM",
+      "onderwerp": "Verdeelsleutel elektriciteit en water zonder meter",
+      "input": [
+        "totale_kosten_complex",
+        "aantal_woonruimten"
+      ],
+      "voorwaarde": "Totaalfactuur voor meerdere woonruimten, geen eigen meter",
+      "berekening": "aandeel = totaal / aantal_woonruimten",
+      "output": "Aandeel huurder",
+      "bewijs": [
+        "factuur",
+        "aantal woonruimten"
+      ],
+      "uitzonderingen": "",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": false,
+      "bron": "par. 4.2.1, p. 27"
+    },
+    {
+      "id": "R-VDS-03",
+      "categorie": "SK-*",
+      "onderwerp": "Verdeelsleutel overige zaken en diensten",
+      "input": [
+        "verdeelsleutel_overeengekomen",
+        "aantal_woonruimten_met_gebruiksrecht"
+      ],
+      "voorwaarde": "Kosten van gemeenschappelijke zaken of diensten",
+      "berekening": "IF sleutel overeengekomen of meerdere jaren gebruikt THEN die sleutel ELSE gelijk over het aantal woonruimten dat gebruik (kan) maken",
+      "output": "Aandeel huurder",
+      "bewijs": [
+        "huurovereenkomst",
+        "eerdere afrekeningen"
+      ],
+      "uitzonderingen": "De Huurcommissie kan van een overeengekomen sleutel afwijken als die niet redelijk is",
+      "automatiseerbaarheid": "semi-automatisch",
+      "menselijke_controle": true,
+      "bron": "p. 29"
+    },
+    {
+      "id": "R-VDS-04",
+      "categorie": "SK-*",
+      "onderwerp": "Geen gebruik van gemeenschappelijke ruimten",
+      "input": [
+        "gebruikt_gemeenschappelijke_ruimten"
+      ],
+      "voorwaarde": "Huurder maakt geen gebruik en hoeft ook geen gebruik te maken van de voorziening",
+      "berekening": "bedrag = 0,00",
+      "output": "EUR 0,00",
+      "bewijs": [
+        "plattegrond",
+        "feitelijke situatie",
+        "eventueel onderzoek ter plaatse"
+      ],
+      "uitzonderingen": "Voorbeeld: begane grond met eigen toegang, zonder berging of brievenbus in de gemeenschappelijke ruimten",
+      "automatiseerbaarheid": "semi-automatisch",
+      "menselijke_controle": true,
+      "bron": "p. 29"
+    },
+    {
+      "id": "R-SK-01",
+      "categorie": "SK-01",
+      "onderwerp": "Warmtevoorzieningen gemeenschappelijke gedeelten",
+      "input": [
+        "facturen",
+        "berekeningen"
+      ],
+      "voorwaarde": "Levering van energie voor het verwarmen van gemeenschappelijke gedeelten; gebruik en aflezen van meters daarvan",
+      "berekening": "werkelijke kosten x verdeelsleutel",
+      "output": "Toegestaan bedrag",
+      "bewijs": [
+        "facturen",
+        "toerekeningsberekening"
+      ],
+      "uitzonderingen": "",
+      "automatiseerbaarheid": "semi-automatisch",
+      "menselijke_controle": true,
+      "bron": "par. 4.3.1, p. 30"
+    },
+    {
+      "id": "R-SK-02",
+      "categorie": "SK-02",
+      "onderwerp": "Nutsvoorzieningen gemeenschappelijke gedeelten",
+      "input": [
+        "facturen",
+        "berekeningen"
+      ],
+      "voorwaarde": "Elektriciteit, gas en water voor gemeenschappelijke gedeelten en voorzieningen; meteropname en administratieve toedeling",
+      "berekening": "werkelijke kosten x verdeelsleutel",
+      "output": "Toegestaan bedrag",
+      "bewijs": [
+        "facturen",
+        "toerekeningsberekening"
+      ],
+      "uitzonderingen": "",
+      "automatiseerbaarheid": "semi-automatisch",
+      "menselijke_controle": true,
+      "bron": "par. 4.3.2, p. 30"
+    },
+    {
+      "id": "R-ROE-01",
+      "categorie": "SK-03",
+      "onderwerp": "Roerend of onroerend",
+      "input": [
+        "roerend"
+      ],
+      "voorwaarde": "Gebruiksvergoeding mag alleen voor roerende zaken worden berekend",
+      "berekening": "IF NOT roerend THEN bedrag = 0,00",
+      "output": "EUR 0,00 of doorgang",
+      "bewijs": [
+        "foto's",
+        "omschrijving",
+        "montagewijze",
+        "eventueel onderzoek ter plaatse"
+      ],
+      "uitzonderingen": "Zonnepanelen: geïntegreerd in het dak = onroerend; op het dak gemonteerd = roerend (p. 33)",
+      "automatiseerbaarheid": "semi-automatisch",
+      "menselijke_controle": true,
+      "bron": "par. 4.3.3, p. 30-31, 33"
+    },
+    {
+      "id": "R-ROE-02",
+      "categorie": "SK-03",
+      "onderwerp": "Waardebepaling",
+      "input": [
+        "aanschafwaarde",
+        "geschatte_waarde"
+      ],
+      "voorwaarde": "Waarde nodig voor de gebruiksvergoeding",
+      "berekening": "IF aankoopfactuur THEN factuurwaarde ELSE IF inzicht in samenstelling THEN geschatte verkoopwaarde begin boekjaar ELSE 12,00 per jaar",
+      "output": "Waardegrondslag of EUR 12,00",
+      "bewijs": [
+        "aankoopfacturen",
+        "opgave soort en aantal"
+      ],
+      "uitzonderingen": "EUR 12,00 is het wettelijk vastgestelde standaardbedrag",
+      "automatiseerbaarheid": "semi-automatisch",
+      "menselijke_controle": true,
+      "bron": "par. 4.3.3, p. 31; par. 6.4.2, p. 61"
+    },
+    {
+      "id": "R-ROE-03",
+      "categorie": "SK-03",
+      "onderwerp": "Afschrijving en herwaardering",
+      "input": [
+        "waarde",
+        "levensduur_jaren",
+        "jaar_in_gebruik"
+      ],
+      "voorwaarde": "Roerende zaak met vastgestelde waarde",
+      "berekening": "5 jaar -> 20%; 10 jaar -> 10%; 15 jaar -> 6,67%. Na de eerste periode herwaardering op 60% van de oorspronkelijke waarde; daarna opnieuw hetzelfde percentage. Na twee perioden 0,00",
+      "output": "Jaarlijkse gebruiksvergoeding",
+      "bewijs": [
+        "aankoopfactuur",
+        "aanschafjaar"
+      ],
+      "uitzonderingen": "10 jaar voor gevelkachels, kleine boilers, geisers, brandbeveiliging, huishoudelijke/technische apparaten en laminaat voor één woonruimte. De Huurcommissie kan afwijken",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": false,
+      "bron": "par. 4.3.3, p. 31-32"
+    },
+    {
+      "id": "R-ROE-04",
+      "categorie": "SK-03",
+      "onderwerp": "Industriële wasmachines en wasdrogers",
+      "input": [
+        "aanschafwaarde",
+        "jaar_in_gebruik",
+        "aantal_woonruimten"
+      ],
+      "voorwaarde": "Industriële wasapparatuur, ook bij gemeenschappelijk gebruik",
+      "berekening": "eerste 10 jaar 10% van de aanschafwaarde; tweede 10 jaar 6% van de oorspronkelijke waarde; delen door aantal woonruimten; MAX EUR 5,00 per woonruimte per maand",
+      "output": "Begrensd bedrag",
+      "bewijs": [
+        "aankoopfactuur of factuur derde partij met opgave soort en aantal"
+      ],
+      "uitzonderingen": "Het maximum geldt ongeacht de samenstelling van de wasfaciliteiten",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": false,
+      "bron": "par. 4.3.3, p. 34-35"
+    },
+    {
+      "id": "R-ROE-05",
+      "categorie": "SK-03",
+      "onderwerp": "Zonnepanelen",
+      "input": [
+        "aanschafwaarde",
+        "jaar_in_gebruik"
+      ],
+      "voorwaarde": "Roerende zonnepanelen",
+      "berekening": "jaarbedrag = (aanschafwaarde + 2.000,00) x 6,67%; na 15 jaar herwaardering op 60% en opnieuw 15 jaar x 6,67%",
+      "output": "Jaarlijkse gebruiksvergoeding",
+      "bewijs": [
+        "aankoopfactuur",
+        "montagewijze"
+      ],
+      "uitzonderingen": "De opslag van EUR 2.000 dekt onderhoud, monitoring en vervanging van omvormers",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": false,
+      "bron": "par. 4.3.3, p. 32"
+    },
+    {
+      "id": "R-ROE-06",
+      "categorie": "SK-03",
+      "onderwerp": "Brandbeveiliging en beveiligingscamera's",
+      "input": [
+        "waarde",
+        "onderhoudskosten"
+      ],
+      "voorwaarde": "Roerende brandbeveiligingsmiddelen of beveiligingscamera's",
+      "berekening": "brandbeveiliging: 50% van de waarde x 10%; onderhoud 50%. Camera's: 70% van de waarde x 20%; onderhoud 70%",
+      "output": "Gebruiksvergoeding en onderhoudsaandeel",
+      "bewijs": [
+        "aankoopfactuur",
+        "onderhoudsfacturen"
+      ],
+      "uitzonderingen": "Alleen als het een roerende voorziening betreft",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": false,
+      "bron": "par. 4.3.3, p. 33-34"
+    },
+    {
+      "id": "R-ROE-07",
+      "categorie": "SK-03",
+      "onderwerp": "Rookmelders",
+      "input": [
+        "soort"
+      ],
+      "voorwaarde": "Rookmelders in bestaande bouw",
+      "berekening": "gebruiksvergoeding = 0,00",
+      "output": "EUR 0,00",
+      "bewijs": [],
+      "uitzonderingen": "Vervanging van batterijen kan wel als kleine herstelling worden afgesproken",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": false,
+      "bron": "par. 4.3.3, p. 33"
+    },
+    {
+      "id": "R-KH-00",
+      "categorie": "SK-04-*",
+      "onderwerp": "Kleine herstellingen: hoofdregel",
+      "input": [
+        "werkzaamheid",
+        "uitgevoerd_door_verhuurder"
+      ],
+      "voorwaarde": "Kleine herstelling die krachtens de huurovereenkomst door de verhuurder wordt verricht",
+      "berekening": "uitvoeringskosten zijn doorberekenbaar als servicekostenpost",
+      "output": "Toegestaan bedrag",
+      "bewijs": [
+        "huurovereenkomst",
+        "facturen"
+      ],
+      "uitzonderingen": "Is de herstelling gevolg van een gebrek dat de verhuurder niet tijdig opheft, dan komt zij voor rekening van de verhuurder (p. 82). De opsomming is niet limitatief",
+      "automatiseerbaarheid": "semi-automatisch",
+      "menselijke_controle": true,
+      "bron": "par. 4.3.4, p. 36; bijlage 4, p. 78-83"
+    },
+    {
+      "id": "R-KH-01",
+      "categorie": "SK-04-GLAS",
+      "onderwerp": "Glazen wassen",
+      "input": [
+        "ruiten_bereikbaar",
+        "kosten_gespecificeerd",
+        "totale_kosten"
+      ],
+      "voorwaarde": "De ruiten zijn voor de huurder bereikbaar",
+      "berekening": "IF NOT bereikbaar THEN 0,00 ELSE IF NOT gespecificeerd THEN totaal x 1/3 ELSE arbeidskosten",
+      "output": "Toegestaan bedrag",
+      "bewijs": [
+        "facturen",
+        "specificatie arbeid vs. bereikbaar maken"
+      ],
+      "uitzonderingen": "De kosten van bereikbaar maken (hoogwerker) blijven voor rekening van de verhuurder",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": true,
+      "bron": "par. 4.3.4, p. 36"
+    },
+    {
+      "id": "R-KH-02",
+      "categorie": "SK-04-SCHOONMAAK",
+      "onderwerp": "Schoonmaak gemeenschappelijke ruimten",
+      "input": [
+        "betreft_mutatiekosten",
+        "werkelijke_kosten"
+      ],
+      "voorwaarde": "Schoonmaak van gemeenschappelijke ruimten door of namens de verhuurder",
+      "berekening": "IF mutatiekosten THEN 0,00 ELSE werkelijke kosten x verdeelsleutel",
+      "output": "Toegestaan bedrag",
+      "bewijs": [
+        "facturen schoonmaakbedrijf"
+      ],
+      "uitzonderingen": "Mutatiekosten (begin- en eindschoonmaak bij verhuizing) nooit doorberekenbaar",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": false,
+      "bron": "par. 4.3.4, p. 36"
+    },
+    {
+      "id": "R-KH-03",
+      "categorie": "SK-04-TUIN",
+      "onderwerp": "Tuinonderhoud",
+      "input": [
+        "exclusief_gebruiksrecht",
+        "openbaar_karakter",
+        "kijktuin"
+      ],
+      "voorwaarde": "Huurder heeft het exclusieve gebruiksrecht van de groenvoorziening",
+      "berekening": "IF openbaar OR kijktuin THEN 0,00 ELSE werkelijke kosten x verdeelsleutel",
+      "output": "Toegestaan bedrag",
+      "bewijs": [
+        "foto's",
+        "plattegrond",
+        "eventueel onderzoek ter plaatse"
+      ],
+      "uitzonderingen": "Iedere groenvoorziening wordt per geval beoordeeld; hekken, bosschages en verbodsbordjes kunnen een rol spelen",
+      "automatiseerbaarheid": "handmatig",
+      "menselijke_controle": true,
+      "bron": "par. 4.3.4, p. 37"
+    },
+    {
+      "id": "R-KH-04",
+      "categorie": "SK-04-GLADHEID",
+      "onderwerp": "Gladheidsbestrijding",
+      "input": [
+        "exclusief_gebruiksrecht"
+      ],
+      "voorwaarde": "Huurder heeft het exclusieve (gezamenlijke) gebruiksrecht van de buitenruimte",
+      "berekening": "IF NOT exclusief THEN 0,00 ELSE werkelijke kosten x verdeelsleutel",
+      "output": "Toegestaan bedrag",
+      "bewijs": [
+        "facturen",
+        "feitelijke situatie"
+      ],
+      "uitzonderingen": "Buitenruimte kan groenvoorziening, parkeerterrein en gemeenschappelijk toegangspad omvatten",
+      "automatiseerbaarheid": "semi-automatisch",
+      "menselijke_controle": true,
+      "bron": "par. 4.3.4, p. 37"
+    },
+    {
+      "id": "R-KH-05",
+      "categorie": "SK-04-ONTSTOPPING",
+      "onderwerp": "Ontstoppen leidingen en riolering",
+      "input": [
+        "leidingen_bereikbaar_en_individueel",
+        "onderhoudscontract",
+        "technisch_gebrek"
+      ],
+      "voorwaarde": "Leidingen bevinden zich in of aan de woonruimte en zijn voor de huurder bereikbaar",
+      "berekening": "IF gedeelde leidingen OR technisch gebrek THEN 0,00 ELSE IF onderhoudscontract THEN totaal x 50% ELSE werkelijke kosten",
+      "output": "Toegestaan bedrag",
+      "bewijs": [
+        "facturen",
+        "contract",
+        "situatieschets"
+      ],
+      "uitzonderingen": "Leidingen voor meerdere zelfstandige woonruimten blijven voor rekening van de verhuurder",
+      "automatiseerbaarheid": "semi-automatisch",
+      "menselijke_controle": true,
+      "bron": "par. 4.3.4, p. 37"
+    },
+    {
+      "id": "R-KH-06",
+      "categorie": "SK-04-SCHOORSTEEN",
+      "onderwerp": "Schoorsteen en ventilatiekanalen",
+      "input": [
+        "kanaal_bereikbaar",
+        "brandstof"
+      ],
+      "voorwaarde": "De schoorsteen of het kanaal is voor de huurder bereikbaar",
+      "berekening": "IF NOT bereikbaar THEN 0,00 ELSE werkelijke kosten",
+      "output": "Toegestaan bedrag",
+      "bewijs": [
+        "facturen",
+        "type installatie"
+      ],
+      "uitzonderingen": "Jaarlijks vegen noodzakelijk bij hout, olie of kolen; bij gas alleen periodieke controle",
+      "automatiseerbaarheid": "semi-automatisch",
+      "menselijke_controle": true,
+      "bron": "par. 4.3.4, p. 38"
+    },
+    {
+      "id": "R-KH-07",
+      "categorie": "SK-04-LAMPEN",
+      "onderwerp": "Lampen vervangen",
+      "input": [
+        "betreft_armaturen_of_installatie"
+      ],
+      "voorwaarde": "Vervangen van lampen, tl-buizen, tl-starters; reparaties aan kapjes en schakelaars",
+      "berekening": "IF armaturen/installatie/vandalisme THEN 0,00 ELSE werkelijke kosten x verdeelsleutel",
+      "output": "Toegestaan bedrag",
+      "bewijs": [
+        "gespecificeerde facturen"
+      ],
+      "uitzonderingen": "Vervangen van armaturen, vernieuwen of repareren van de installatie en vandalismeschade blijven voor de verhuurder",
+      "automatiseerbaarheid": "semi-automatisch",
+      "menselijke_controle": true,
+      "bron": "par. 4.3.4, p. 38"
+    },
+    {
+      "id": "R-KH-08",
+      "categorie": "SK-04-ONGEDIERTE",
+      "onderwerp": "Ongediertebestrijding",
+      "input": [
+        "gevolg_bouwkundige_situatie"
+      ],
+      "voorwaarde": "Bestrijding van ongedierte, uitgevoerd door de verhuurder",
+      "berekening": "IF bouwkundige oorzaak aannemelijk gemaakt THEN 0,00 ELSE werkelijke kosten",
+      "output": "Toegestaan bedrag",
+      "bewijs": [
+        "rapportage bestrijder",
+        "bouwkundige onderbouwing (huurder)"
+      ],
+      "uitzonderingen": "De bewijslast voor een bouwkundige oorzaak ligt bij de huurder",
+      "automatiseerbaarheid": "semi-automatisch",
+      "menselijke_controle": true,
+      "bron": "par. 4.3.4, p. 38"
+    },
+    {
+      "id": "R-KH-09",
+      "categorie": "SK-04-INSTALLATIE",
+      "onderwerp": "Onderhoud installaties binnen de woonruimte",
+      "input": [
+        "eenvoudig_onderhoud_binnen_woonruimte",
+        "installatie_aard_en_nagelvast"
+      ],
+      "voorwaarde": "Onderhoudstechnisch eenvoudige werkzaamheden zonder specialistische kennis en zonder noemenswaardige kosten",
+      "berekening": "IF installatie onroerend THEN 0,00 ELSE werkelijke kosten",
+      "output": "Toegestaan bedrag",
+      "bewijs": [
+        "facturen",
+        "omschrijving werkzaamheden"
+      ],
+      "uitzonderingen": "Periodiek onderhoud, klein onderhoud en keuringskosten van aard- en nagelvaste installaties zijn niet doorberekenbaar",
+      "automatiseerbaarheid": "semi-automatisch",
+      "menselijke_controle": true,
+      "bron": "par. 4.3.4, p. 38-39"
+    },
+    {
+      "id": "R-KH-10",
+      "categorie": "SK-04-SCHILDERWERK",
+      "onderwerp": "Schilderwerkzaamheden",
+      "input": [
+        "uitdrukkelijk_overeengekomen_of_op_verzoek_huurder",
+        "onzelfstandige_woonruimte"
+      ],
+      "voorwaarde": "Uitdrukkelijk overeengekomen, of op verzoek van de huurder bij aangaan van de huurovereenkomst",
+      "berekening": "IF niet uitdrukkelijk overeengekomen THEN 0,00 ELSE kosten uitsmeren over 5 of 10 jaar x verdeelsleutel",
+      "output": "Jaarlijkse gebruiksvergoeding",
+      "bewijs": [
+        "huurovereenkomst",
+        "schriftelijk verzoek huurder",
+        "facturen"
+      ],
+      "uitzonderingen": "Bij onzelfstandige woonruimten kan schilderwerk in gemeenschappelijke ruimten worden doorberekend, mits uitdrukkelijk overeengekomen, met een gelijke verdeelsleutel",
+      "automatiseerbaarheid": "handmatig",
+      "menselijke_controle": true,
+      "bron": "par. 4.3.4, p. 39"
+    },
+    {
+      "id": "R-SK-05",
+      "categorie": "SK-05",
+      "onderwerp": "Huisvuil",
+      "input": [
+        "kostprijs_vuilniszakken",
+        "transportkosten",
+        "container_huur"
+      ],
+      "voorwaarde": "De verhuurder verstrekt vuilniszakken of stelt een container ter beschikking",
+      "berekening": "kostprijs zakken + transport naar de openbare weg; container: huur of gebruiksvergoeding",
+      "output": "Toegestaan bedrag",
+      "bewijs": [
+        "facturen"
+      ],
+      "uitzonderingen": "Kan ook onderdeel zijn van de taken van huismeester of schoonmaakbedrijf: let op dubbeltelling",
+      "automatiseerbaarheid": "semi-automatisch",
+      "menselijke_controle": true,
+      "bron": "par. 4.3.5, p. 39-40"
+    },
+    {
+      "id": "R-HUI-01",
+      "categorie": "SK-06",
+      "onderwerp": "Huismeester",
+      "input": [
+        "uren",
+        "totale_kosten",
+        "aantal_woonruimten",
+        "jaar"
+      ],
+      "voorwaarde": "Huismeester in loondienst of ingehuurd",
+      "berekening": "MIN(gefactureerd, uren x max_uurtarief) x 70% / aantal_woonruimten",
+      "output": "Toegestaan bedrag per woonruimte",
+      "bewijs": [
+        "functieomschrijving",
+        "facturen dienstverleningsbedrijf",
+        "urenverantwoording/kosten eigen beheer"
+      ],
+      "uitzonderingen": "Max uurtarief incl. btw: 2023/2024 EUR 40,00; 2025/2026 EUR 41,00. De Huurcommissie kan van 70/30 afwijken",
+      "automatiseerbaarheid": "semi-automatisch",
+      "menselijke_controle": true,
+      "bron": "par. 4.3.6, Tabel 9, p. 40-41"
+    },
+    {
+      "id": "R-HUI-02",
+      "categorie": "SK-06B",
+      "onderwerp": "Externe beveiliging",
+      "input": [
+        "totale_kosten",
+        "gecertificeerd",
+        "aantal_woonruimten"
+      ],
+      "voorwaarde": "Overeengekomen gebruik van een externe beveiligingsdienst",
+      "berekening": "totale kosten x 70% / aantal_woonruimten, getoetst aan de redelijkheid",
+      "output": "Toegestaan bedrag",
+      "bewijs": [
+        "facturen",
+        "certificering; anders onderliggende stukken"
+      ],
+      "uitzonderingen": "Geen maximaal uurtarief",
+      "automatiseerbaarheid": "semi-automatisch",
+      "menselijke_controle": true,
+      "bron": "par. 4.3.6, p. 41"
+    },
+    {
+      "id": "R-SK-07",
+      "categorie": "SK-07",
+      "onderwerp": "Signaallevering",
+      "input": [
+        "abonnementskosten",
+        "auteursrechten",
+        "apparatuur"
+      ],
+      "voorwaarde": "Centrale opvang en doorlevering van signaal voor radio, tv, internet",
+      "berekening": "werkelijke kosten x verdeelsleutel",
+      "output": "Toegestaan bedrag",
+      "bewijs": [
+        "facturen",
+        "abonnement"
+      ],
+      "uitzonderingen": "Inclusief roerende elektronische apparatuur, auteursrechten en alarmtelefoon in de lift",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": false,
+      "bron": "par. 4.3.7, p. 42"
+    },
+    {
+      "id": "R-SK-08",
+      "categorie": "SK-08",
+      "onderwerp": "Elektronische apparatuur",
+      "input": [
+        "apparatuurkosten"
+      ],
+      "voorwaarde": "In gebruik geven van roerende elektronische randapparatuur en kleine herstellingen daaraan",
+      "berekening": "werkelijke kosten x verdeelsleutel; voor camera's geldt R-ROE-06",
+      "output": "Toegestaan bedrag",
+      "bewijs": [
+        "facturen"
+      ],
+      "uitzonderingen": "Alleen roerende apparatuur",
+      "automatiseerbaarheid": "semi-automatisch",
+      "menselijke_controle": true,
+      "bron": "par. 4.3.8, p. 42"
+    },
+    {
+      "id": "R-VZ-01",
+      "categorie": "SK-09-OPSTAL",
+      "onderwerp": "Verzekeringen verhuurder",
+      "input": [
+        "type_verzekering"
+      ],
+      "voorwaarde": "Verzekering houdt direct verband met de onroerende zaak",
+      "berekening": "bedrag = 0,00",
+      "output": "EUR 0,00",
+      "bewijs": [
+        "polis"
+      ],
+      "uitzonderingen": "Betreft opstal, brand, storm, schade, bedrijfsschade en aansprakelijkheid",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": false,
+      "bron": "par. 4.3.9, p. 42-43"
+    },
+    {
+      "id": "R-VZ-02",
+      "categorie": "SK-09-GLAS",
+      "onderwerp": "Glasverzekering",
+      "input": [
+        "onderdeel_van_opstalverzekering",
+        "kosten_gespecificeerd",
+        "premie_opstal"
+      ],
+      "voorwaarde": "Glasverzekering, al dan niet als onderdeel van de opstalverzekering",
+      "berekening": "IF onderdeel van opstal AND niet gespecificeerd THEN premie_opstal x 15% ELSE gespecificeerde glaspremie",
+      "output": "Toegestaan bedrag",
+      "bewijs": [
+        "polis",
+        "premiespecificatie"
+      ],
+      "uitzonderingen": "",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": false,
+      "bron": "par. 4.3.9, p. 43"
+    },
+    {
+      "id": "R-VZ-03",
+      "categorie": "SK-09-INBOEDEL",
+      "onderwerp": "Inboedelverzekering roerende zaken",
+      "input": [
+        "premie"
+      ],
+      "voorwaarde": "Verzekering voor in gebruik gegeven roerende zaken; aanwijsbaar voordeel voor de huurder; jaarlijkse rekening en verantwoording",
+      "berekening": "werkelijke premie x verdeelsleutel",
+      "output": "Toegestaan bedrag",
+      "bewijs": [
+        "polis",
+        "jaarlijkse verantwoording"
+      ],
+      "uitzonderingen": "Uitkeringen mogen alleen voor het doel van de verzekering worden aangewend",
+      "automatiseerbaarheid": "semi-automatisch",
+      "menselijke_controle": true,
+      "bron": "par. 4.3.9, p. 43; bijlage 3 post 9, p. 74"
+    },
+    {
+      "id": "R-SK-10",
+      "categorie": "SK-10",
+      "onderwerp": "Gemeenschappelijke ruimten",
+      "input": [
+        "samenstellende posten"
+      ],
+      "voorwaarde": "Zaken en diensten ten behoeve van het gebruiksrecht van de gemeenschappelijke gedeelten",
+      "berekening": "Uitsplitsen naar de onderliggende posten; daarna de regels per post",
+      "output": "Toegestaan bedrag",
+      "bewijs": [
+        "specificatieformulier",
+        "facturen"
+      ],
+      "uitzonderingen": "Verzamelpost: zonder uitsplitsing geldt R-BEW-02",
+      "automatiseerbaarheid": "semi-automatisch",
+      "menselijke_controle": true,
+      "bron": "par. 4.3.10, p. 43"
+    },
+    {
+      "id": "R-ADM-01",
+      "categorie": "SK-11",
+      "onderwerp": "Administratiekosten: percentages en grenzen",
+      "input": [
+        "grondslag_warmtelevering",
+        "grondslag_overige_posten",
+        "meting_uitbesteed"
+      ],
+      "voorwaarde": "Administratieve handelingen om tot een servicekostenafrekening te komen",
+      "berekening": "MIN(MAX(2% (of 1% bij uitbesteding) x warmtegrondslag + 5% x overige grondslag, 7,50), 75,00)",
+      "output": "Toegestaan bedrag",
+      "bewijs": [
+        "specificatieformulier",
+        "afrekening"
+      ],
+      "uitzonderingen": "Percentages zijn inclusief btw. Deze post hoeft niet uitdrukkelijk overeengekomen te zijn",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": false,
+      "bron": "par. 4.3.11, p. 43"
+    },
+    {
+      "id": "R-ADM-02",
+      "categorie": "SK-11",
+      "onderwerp": "Administratiekosten alleen bij verstrekte afrekening",
+      "input": [
+        "afrekening_verstrekt"
+      ],
+      "voorwaarde": "Er is een afrekening aan de huurder verstrekt",
+      "berekening": "IF NOT afrekening_verstrekt THEN 0,00",
+      "output": "EUR 0,00 of doorgang",
+      "bewijs": [
+        "afrekening",
+        "verzenddatum"
+      ],
+      "uitzonderingen": "Ook bij een te late afrekening mogen administratiekosten in rekening worden gebracht",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": false,
+      "bron": "par. 4.3.11, p. 43"
+    },
+    {
+      "id": "R-SK-12",
+      "categorie": "SK-12",
+      "onderwerp": "Onderhoudscontract met 24-uursservice",
+      "input": [
+        "totale_onderhoudskosten",
+        "kosten_gespecificeerd"
+      ],
+      "voorwaarde": "Het onderhoudscontract bevat een 24-uursservice",
+      "berekening": "IF NOT gespecificeerd THEN totaal x 20% ELSE gespecificeerde servicekosten",
+      "output": "Toegestaan bedrag",
+      "bewijs": [
+        "onderhoudscontract",
+        "facturen"
+      ],
+      "uitzonderingen": "Alleen de kosten van de extra service zijn doorberekenbaar; het periodieke onderhoud zelf aan onroerende installaties niet",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": false,
+      "bron": "par. 4.3.12, p. 44"
+    },
+    {
+      "id": "R-SK-13",
+      "categorie": "SK-13",
+      "onderwerp": "Fondsen",
+      "input": [
+        "fondsomvang",
+        "jaaropbrengst",
+        "inzage",
+        "bestedingsdoel"
+      ],
+      "voorwaarde": "Vier voorwaarden: inzage in hoogte en betalingen; redelijke vergoeding; omvang maximaal 3x de jaaropbrengst; inleg alleen voor de betreffende levering of dienst",
+      "berekening": "IF NOT alle voorwaarden aangetoond THEN ORANJE ELSE toets bijdrage aan werkelijke kosten",
+      "output": "Toegestaan bedrag of ORANJE",
+      "bewijs": [
+        "fondsadministratie",
+        "overzicht betalingen"
+      ],
+      "uitzonderingen": "Voorbeelden: ontstoppingsfonds, glasfonds, lampenfonds",
+      "automatiseerbaarheid": "semi-automatisch",
+      "menselijke_controle": true,
+      "bron": "par. 4.3.13, p. 44"
+    },
+    {
+      "id": "R-NSK-01",
+      "categorie": "NSK-01",
+      "onderwerp": "Leegstandsderving",
+      "input": [],
+      "voorwaarde": "Gederfde servicekosten als gevolg van leegstand",
+      "berekening": "bedrag = 0,00",
+      "output": "EUR 0,00",
+      "bewijs": [],
+      "uitzonderingen": "Geen",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": false,
+      "bron": "par. 4.3.14, p. 44"
+    },
+    {
+      "id": "R-NSK-02",
+      "categorie": "NSK-02",
+      "onderwerp": "Belastingen en heffingen",
+      "input": [],
+      "voorwaarde": "Belastingen en/of heffingen",
+      "berekening": "post valt buiten de berekening",
+      "output": "BUITEN BEVOEGDHEID",
+      "bewijs": [],
+      "uitzonderingen": "De huurder is wel verplicht heffingen aan de verhuurder te betalen als die ze op eigen naam heeft voldaan",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": false,
+      "bron": "par. 4.3.15, p. 44; par. 6.1, p. 51"
+    },
+    {
+      "id": "R-NSK-03",
+      "categorie": "NSK-03",
+      "onderwerp": "Zorgservicekosten",
+      "input": [],
+      "voorwaarde": "Maaltijdverstrekking, verpleging, alarmservice en vergelijkbare zorgkosten",
+      "berekening": "post valt buiten de berekening",
+      "output": "BUITEN BEVOEGDHEID",
+      "bewijs": [],
+      "uitzonderingen": "De Huurcommissie doet alleen uitspraak over woonservicekosten",
+      "automatiseerbaarheid": "semi-automatisch",
+      "menselijke_controle": true,
+      "bron": "par. 4.3.16, p. 45"
+    },
+    {
+      "id": "R-EIG-01",
+      "categorie": "Procedure",
+      "onderwerp": "Eigendomsoverdracht",
+      "input": [
+        "overdrachtsdatum",
+        "datum_afrekening_verstrekt",
+        "uiterste_afrekendatum"
+      ],
+      "voorwaarde": "De woonruimte heeft een nieuwe eigenaar gekregen",
+      "berekening": "IF afrekening verstrekt vóór overdracht THEN oude eigenaar ELSE IF overdracht <= uiterste afrekendatum THEN nieuwe eigenaar ELSE oude eigenaar",
+      "output": "Partij in de zaak",
+      "bewijs": [
+        "eigendomsgegevens",
+        "afrekening met datum"
+      ],
+      "uitzonderingen": "Verandert de verhuurder niet (bv. beheerder op eigen naam), dan blijven partijen gelijk",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": false,
+      "bron": "par. 5.1, p. 46-47"
+    },
+    {
+      "id": "R-ZON-01",
+      "categorie": "Zonnepanelen",
+      "onderwerp": "Teruglevering",
+      "input": [
+        "panelen_roerend",
+        "gebruiksvergoeding_betaald",
+        "energieprestatievergoeding"
+      ],
+      "voorwaarde": "Teruglevering van zonnestroom",
+      "berekening": "IF onroerend OR energieprestatievergoeding THEN opbrengsten naar huurder ELSE IF gebruiksvergoeding betaald THEN opbrengsten naar huurder (tenzij verhuurder onredelijkheid aantoont) ELSE opbrengsten naar verhuurder",
+      "output": "Toedeling opbrengsten",
+      "bewijs": [
+        "huurovereenkomst",
+        "afspraken over financiering",
+        "opbrengstgegevens"
+      ],
+      "uitzonderingen": "De Huurcommissie beslist over de verdeling als de verhuurder aantoont dat volledige toedeling onredelijk is",
+      "automatiseerbaarheid": "semi-automatisch",
+      "menselijke_controle": true,
+      "bron": "par. 5.3, p. 48"
+    },
+    {
+      "id": "R-WKO-01",
+      "categorie": "SK-14-WKO",
+      "onderwerp": "Warmtelevering via WKO",
+      "input": [
+        "vaste_kosten_gesplitst",
+        "energieleverancier",
+        "vereenzelviging"
+      ],
+      "voorwaarde": "De woonruimte wordt verwarmd/gekoeld door een WKO-installatie",
+      "berekening": "kapitaals- en onderhoudslasten = 0,00; variabel verbruik + overige vaste kosten doorberekenbaar. IF vaste kosten niet gesplitst THEN ORANJE",
+      "output": "Toegestaan bedrag of ORANJE",
+      "bewijs": [
+        "splitsing vaste kosten",
+        "energieleveringsovereenkomst"
+      ],
+      "uitzonderingen": "Levert een derde partij, dan kan de post niet in een servicekostenprocedure worden beoordeeld, tenzij de verhuurder met die leverancier kan worden vereenzelvigd",
+      "automatiseerbaarheid": "handmatig",
+      "menselijke_controle": true,
+      "bron": "par. 5.4, p. 49-50"
+    },
+    {
+      "id": "R-PRC-01",
+      "categorie": "Procedure",
+      "onderwerp": "Omvang van het geschil",
+      "input": [
+        "betwiste_posten"
+      ],
+      "voorwaarde": "Alleen posten waarover partijen het oneens zijn en die in het verzoekschrift zijn genoemd",
+      "berekening": "beoordeling beperkt tot betwiste_posten",
+      "output": "Scope van de beoordeling",
+      "bewijs": [
+        "verzoekschrift",
+        "bezwaarschrift"
+      ],
+      "uitzonderingen": "Andere kostenposten worden ongewijzigd overgenomen",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": false,
+      "bron": "par. 6.1, p. 51"
+    },
+    {
+      "id": "R-PRC-02",
+      "categorie": "Procedure",
+      "onderwerp": "Bevoegdheid Wet betaalbare huur",
+      "input": [
+        "contract_gesloten_op",
+        "aanvangshuurprijs",
+        "sector"
+      ],
+      "voorwaarde": "Datum huurcontract vóór of vanaf 1 juli 2024, en de sector",
+      "berekening": "IF contract >= 2024-07-01 THEN uitspraak ELSE IF sector==sociaal THEN uitspraak ELSE alleen advies met schriftelijke instemming van beide partijen",
+      "output": "Uitspraak, advies of niets",
+      "bewijs": [
+        "huurovereenkomst",
+        "aanvangshuurprijs"
+      ],
+      "uitzonderingen": "Overgangsrecht: vrijesectorwoning met minder dan 143 punten op peildatum 1 juli 2024 kan vanaf 1 juli 2025 huurprijstoetsing vragen; daarna staat ook de servicekostenprocedure open, ook voor eerdere boekjaren",
+      "automatiseerbaarheid": "semi-automatisch",
+      "menselijke_controle": true,
+      "bron": "par. 6.2, p. 51-55"
+    },
+    {
+      "id": "R-PRC-03",
+      "categorie": "Procedure",
+      "onderwerp": "Termijnen en uiterste verzoekdatum",
+      "input": [
+        "boekjaar",
+        "verzoekdatum"
+      ],
+      "voorwaarde": "Verzoek binnen 24 maanden na het verstrijken van de afrekentermijn van zes maanden",
+      "berekening": "uiterste_verzoekdatum = 30 juni van (boekjaar + 3); IF verzoekdatum > uiterste THEN niet-ontvankelijk",
+      "output": "Ontvankelijk of niet",
+      "bewijs": [
+        "verzoekschrift met datum"
+      ],
+      "uitzonderingen": "Per kostensoort ten hoogste één tijdvak van twaalf maanden (art. 7:260 lid 2 BW)",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": false,
+      "bron": "par. 6.3, Tabel 10, p. 55-57"
+    },
+    {
+      "id": "R-PRC-04",
+      "categorie": "Procedure",
+      "onderwerp": "Bezwaarplicht",
+      "input": [
+        "afrekening_ontvangen",
+        "bezwaar_gemaakt",
+        "bezwaardatum"
+      ],
+      "voorwaarde": "De afrekening is verstrekt en de huurder is het er niet mee eens",
+      "berekening": "IF NOT schriftelijk bezwaar THEN niet-ontvankelijk; verhuurder krijgt 3 weken om te reageren",
+      "output": "Ontvankelijk of niet",
+      "bewijs": [
+        "schriftelijk bezwaar met datum en motivering per kostenpost"
+      ],
+      "uitzonderingen": "R-PRC-06 bij naderende indieningstermijn. De verhuurder kan zelf een verzoek indienen vanaf 3 weken na verstrekking",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": false,
+      "bron": "par. 6.3.1, p. 56"
+    },
+    {
+      "id": "R-PRC-05",
+      "categorie": "Procedure",
+      "onderwerp": "Opvraagplicht",
+      "input": [
+        "afrekening_ontvangen",
+        "afrekening_opgevraagd",
+        "opvraagdatum"
+      ],
+      "voorwaarde": "Geen afrekening ontvangen en de halfjaartermijn is verstreken",
+      "berekening": "IF NOT schriftelijk opgevraagd THEN niet-ontvankelijk; verhuurder krijgt 3 weken",
+      "output": "Ontvankelijk of niet",
+      "bewijs": [
+        "schriftelijke opvraag met datum"
+      ],
+      "uitzonderingen": "R-PRC-06. De verhuurder kan géén verzoek indienen als hij geen afrekening heeft verstrekt",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": false,
+      "bron": "par. 6.3.2, p. 57"
+    },
+    {
+      "id": "R-PRC-06",
+      "categorie": "Procedure",
+      "onderwerp": "Uitzondering naderende indieningstermijn",
+      "input": [
+        "uiterste_verzoekdatum",
+        "huidige_datum"
+      ],
+      "voorwaarde": "De huurder kan de opvraag- of bezwaarplicht en de driewekentermijn niet meer uitvoeren vóór het einde van de indieningstermijn",
+      "berekening": "IF resterende termijn < 21 dagen AND verzoek wordt tijdig ingediend THEN ontvankelijk",
+      "output": "Ontvankelijk",
+      "bewijs": [
+        "verzoekschrift met datum"
+      ],
+      "uitzonderingen": "Alleen als het verzoek vóór het verstrijken van de indieningstermijn is ingediend",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": false,
+      "bron": "par. 6.3.3, p. 57-58"
+    },
+    {
+      "id": "R-PRC-07",
+      "categorie": "Procedure",
+      "onderwerp": "Minimumbedrag betwiste kosten",
+      "input": [
+        "totaal_betwist"
+      ],
+      "voorwaarde": "Jaarafrekening: minimaal EUR 36,00. Voorschot: minimaal EUR 3,00 per maand",
+      "berekening": "IF totaal_betwist < drempel THEN niet in behandeling",
+      "output": "Ontvankelijk of niet",
+      "bewijs": [
+        "verzoekschrift"
+      ],
+      "uitzonderingen": "Geen",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": false,
+      "bron": "par. 6.3.4, p. 59; p. 24, p. 62"
+    },
+    {
+      "id": "R-PRC-08",
+      "categorie": "Procedure",
+      "onderwerp": "Aanlevertermijn verhuurder",
+      "input": [
+        "datum_informatieverzoek",
+        "datum_aanlevering",
+        "uitstel_gevraagd"
+      ],
+      "voorwaarde": "De Huurcommissie verzoekt de verhuurder om informatie",
+      "berekening": "termijn = 3 weken; eenmaal uitstel van maximaal 3 weken, mits binnen de eerste 3 weken gevraagd; maximaal 6 weken. Nadien aangeleverde informatie wordt buiten beschouwing gelaten",
+      "output": "Informatie telt mee of niet",
+      "bewijs": [
+        "correspondentie Huurcommissie"
+      ],
+      "uitzonderingen": "Uitstel gevraagd na de eerste drie weken wordt afgewezen",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": false,
+      "bron": "par. 6.4.1, p. 59"
+    },
+    {
+      "id": "R-BEW-00",
+      "categorie": "Bewijs",
+      "onderwerp": "Onderbouwingsplicht verhuurder",
+      "input": [
+        "facturen",
+        "specificatieformulier",
+        "meterstanden"
+      ],
+      "voorwaarde": "De verhuurder moet de opgevoerde kosten onderbouwen",
+      "berekening": "checklist per post: factuur aanwezig? specificatieformulier aanwezig? meterstanden aanwezig?",
+      "output": "Bewijspositie per post",
+      "bewijs": [
+        "facturen of betaalbewijzen",
+        "specificatieformulier bijlage VII",
+        "meterstanden en verbruiksberekening"
+      ],
+      "uitzonderingen": "Een grootboekkaart of overzicht van facturen is NIET voldoende. VvE-verhuurder: jaarrekening VvE + ALV-verslag + VvE-afrekening + afrekening aan huurder",
+      "automatiseerbaarheid": "semi-automatisch",
+      "menselijke_controle": true,
+      "bron": "par. 6.4.2, p. 59-60; par. 6.7, p. 63"
+    },
+    {
+      "id": "R-BEW-01",
+      "categorie": "Bewijs",
+      "onderwerp": "Nutsvoorzieningen met meter zonder onderbouwing",
+      "input": [
+        "facturen",
+        "levering_gemotiveerd_betwist",
+        "zelfstandig"
+      ],
+      "voorwaarde": "De verhuurder levert de gevraagde informatie niet binnen de gestelde termijn",
+      "berekening": "IF levering gemotiveerd betwist THEN 0,00 ELSE wettelijk vastgesteld verbruik (gas 400/250 m3; elektra 800/500 kWh; water 25/25 m3) x tarief",
+      "output": "Forfait of EUR 0,00",
+      "bewijs": [
+        "facturen (ontbrekend)"
+      ],
+      "uitzonderingen": "Het tarief volgt uit bijlage VIII Uitvoeringsregeling huurprijzen woonruimte; die bedragen staan niet in het beleidsboek",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": true,
+      "bron": "par. 6.4.2 categorie 1, Tabel 11, p. 60"
+    },
+    {
+      "id": "R-BEW-02",
+      "categorie": "Bewijs",
+      "onderwerp": "Overige servicekosten zonder onderbouwing",
+      "input": [
+        "facturen",
+        "specificatieformulier",
+        "levering_gemotiveerd_betwist"
+      ],
+      "voorwaarde": "Specificatieformulier en/of facturen ontbreken, levering niet gemotiveerd betwist",
+      "berekening": "nutsvoorzieningen: wettelijk verbruik x tarief; overige kostenposten: EUR 12,00 per jaar per kostenpost",
+      "output": "Forfait",
+      "bewijs": [
+        "specificatieformulier (ontbrekend)",
+        "facturen (ontbrekend)"
+      ],
+      "uitzonderingen": "Voor roerende zaken geldt eerst R-ROE-02 (aankoopfactuur, dan schatting, dan EUR 12,00)",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": true,
+      "bron": "par. 6.4.2 categorie 2, p. 60-61; art. 18 lid 4 Uhw"
+    },
+    {
+      "id": "R-BEW-03",
+      "categorie": "Bewijs",
+      "onderwerp": "Gemotiveerd betwiste levering zonder facturen",
+      "input": [
+        "levering_gemotiveerd_betwist",
+        "facturen"
+      ],
+      "voorwaarde": "De huurder betwist gemotiveerd dat de zaak of dienst is geleverd en de verhuurder legt geen facturen over",
+      "berekening": "bedrag = 0,00",
+      "output": "EUR 0,00",
+      "bewijs": [
+        "gemotiveerde betwisting door de huurder"
+      ],
+      "uitzonderingen": "Vereist een actieve, gemotiveerde betwisting; bij passiviteit geldt het forfait",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": true,
+      "bron": "par. 6.4.2, p. 60-61; art. 18 lid 4 Uhw"
+    },
+    {
+      "id": "R-VS-01",
+      "categorie": "VS-NUT",
+      "onderwerp": "Reikwijdte voorschotprocedure",
+      "input": [
+        "kostensoort"
+      ],
+      "voorwaarde": "Het verzoek betreft het maandelijkse voorschotbedrag",
+      "berekening": "IF kostensoort NOT IN {gas, elektriciteit, water met eigen meter} THEN verzoek valt buiten de voorschotprocedure",
+      "output": "Wel of geen voorschottoetsing",
+      "bewijs": [
+        "huurovereenkomst",
+        "voorschotspecificatie"
+      ],
+      "uitzonderingen": "Toetsing van het voorschot kan niet zien op (overige) servicekosten",
+      "automatiseerbaarheid": "automatisch",
+      "menselijke_controle": false,
+      "bron": "par. 2.3.2, p. 10; par. 3.4, p. 23"
+    },
+    {
+      "id": "R-VS-02",
+      "categorie": "VS-NUT",
+      "onderwerp": "Toetsing voorschotbedrag",
+      "input": [
+        "voorschotbedrag",
+        "recente_afrekening",
+        "ouderdom_afrekening",
+        "huurder_woont_nog_op_adres",
+        "betwist_per_maand"
+      ],
+      "voorwaarde": "Alleen nutsvoorzieningen met een eigen meter; huurder woont nog op het adres; minimaal EUR 3,00 per maand betwist",
+      "berekening": "grondslag = afrekening (max 3 jaar oud) verhoogd met CPI-stijging; IF geen afrekening THEN Nibud-norm; nieuw voorschot = grondslag/12, afgerond op hele euro's; ingangsdatum = eerste van de maand na ontvangst van het verzoek",
+      "output": "Nieuw voorschotbedrag",
+      "bewijs": [
+        "recente afrekening niet ouder dan drie jaar"
+      ],
+      "uitzonderingen": "Alleen als het voorschot 'in aanzienlijke mate' afwijkt; die maatstaf is niet gekwantificeerd. Het CPI-percentage staat niet in het beleidsboek",
+      "automatiseerbaarheid": "semi-automatisch",
+      "menselijke_controle": true,
+      "bron": "par. 3.4, p. 23-24; par. 6.5, p. 62; art. 19 Uhw"
+    },
+    {
+      "id": "R-PRC-09",
+      "categorie": "Procedure",
+      "onderwerp": "Anonimiseren processtukken",
+      "input": [
+        "processtukken"
+      ],
+      "voorwaarde": "De verhuurder levert processtukken aan",
+      "berekening": "stukken moeten ontdaan zijn van persoonsgegevens van derden",
+      "output": "Voldoet of niet",
+      "bewijs": [
+        "processtukken"
+      ],
+      "uitzonderingen": "",
+      "automatiseerbaarheid": "semi-automatisch",
+      "menselijke_controle": true,
+      "bron": "par. 6.6, p. 62"
+    },
+    {
+      "id": "R-PRC-10",
+      "categorie": "Procedure",
+      "onderwerp": "Onderzoek ter plaatse",
+      "input": [
+        "geschilpunt",
+        "betwisting_gemotiveerd",
+        "weerwoord_verhuurder",
+        "beeldmateriaal"
+      ],
+      "voorwaarde": "Een van vier gevallen: betwist verbruik, roerende zaken, tuinonderhoud, verdeelsleutel",
+      "berekening": "IF geschilpunt IN {verbruik, roerende zaken, tuin, verdeelsleutel} AND gemotiveerd betwist AND geen overtuigend weerwoord AND geen betrouwbaar beeld THEN onderzoek ter plaatse mogelijk",
+      "output": "Signaal: onderzoek ter plaatse mogelijk",
+      "bewijs": [
+        "foto's",
+        "inspectierapport",
+        "weerwoord verhuurder"
+      ],
+      "uitzonderingen": "Voor overige situaties ziet de Huurcommissie op voorhand geen aanleiding; bijzondere omstandigheden kunnen afwijking rechtvaardigen",
+      "automatiseerbaarheid": "semi-automatisch",
+      "menselijke_controle": true,
+      "bron": "par. 6.8, p. 63-64"
+    },
+    {
+      "id": "R-SK-OPEN",
+      "categorie": "Restcategorie",
+      "onderwerp": "Niet-limitatieve opsomming",
+      "input": [
+        "omschrijving_kostenpost"
+      ],
+      "voorwaarde": "De post past niet in de taxonomie",
+      "berekening": "status = ORANJE; vraag om specificatie",
+      "output": "ORANJE",
+      "bewijs": [
+        "specificatie van de post"
+      ],
+      "uitzonderingen": "Zowel het Besluit servicekosten als het Besluit kleine herstellingen is niet limitatief; een onbekende post mag nooit automatisch op EUR 0,00 worden gezet",
+      "automatiseerbaarheid": "handmatig",
+      "menselijke_controle": true,
+      "bron": "p. 29; p. 75; p. 82"
+    }
+  ]
+}

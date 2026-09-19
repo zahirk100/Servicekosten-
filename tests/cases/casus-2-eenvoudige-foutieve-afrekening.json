@@ -1,0 +1,57 @@
+{
+  "referentie": "Casus 2 - Eenvoudige foutieve afrekening (drie posten boven de norm, boekjaar 2024)",
+  "woonruimte": {
+    "zelfstandig": true,
+    "woningtype": "flatwoning_appartement",
+    "oppervlakte_m2": 68,
+    "aantal_bewoners": 1,
+    "aantal_woonruimten_complex": 150
+  },
+  "periode": { "jaar": 2024, "maand_van": 1, "maand_tot_en_met": 12 },
+  "procedure": {
+    "contract_gesloten_op": "2024-09-01",
+    "sector": "middenhuur",
+    "afrekening_ontvangen": true,
+    "afrekening_ontvangen_op": "2025-06-20",
+    "bezwaar_gemaakt": true,
+    "verzoekdatum": "2025-09-15",
+    "huurder_woont_nog_op_adres": true
+  },
+  "voorschot_in_rekening_gebracht": "1080.00",
+  "kostenposten": [
+    {
+      "id": "P1", "categorie": "SK-06",
+      "omschrijving": "Huismeester (uurtarief boven het maximum)",
+      "bedrag_verhuurder": "226.67",
+      "overeengekomen": true,
+      "bewijs": ["facturen", "urenverantwoording"],
+      "parameters": { "uren": 800, "totale_kosten": "34000.00", "aantal_woonruimten": 150 }
+    },
+    {
+      "id": "P2", "categorie": "SK-11",
+      "omschrijving": "Administratiekosten",
+      "bedrag_verhuurder": "120.00",
+      "bewijs": ["specificatieformulier"],
+      "parameters": { "afrekening_verstrekt": true, "grondslag_overige_posten": "800.00" }
+    },
+    {
+      "id": "P3", "categorie": "SK-03",
+      "omschrijving": "Gemeenschappelijke wasmachines en wasdrogers",
+      "bedrag_verhuurder": "66.66",
+      "overeengekomen": true,
+      "bewijs": ["facturen", "specificatieformulier"],
+      "parameters": {
+        "roerend": true, "soort": "wasapparatuur", "aanschafwaarde": "50000.00",
+        "jaar_in_gebruik": 4, "aantal_woonruimten": 75
+      }
+    },
+    {
+      "id": "P4", "categorie": "SK-04-SCHOONMAAK",
+      "omschrijving": "Schoonmaak gemeenschappelijke ruimten",
+      "bedrag_verhuurder": "150.00",
+      "overeengekomen": true,
+      "bewijs": ["facturen", "specificatieformulier"],
+      "parameters": { "betreft_mutatiekosten": false, "werkelijke_kosten": "22500.00", "aantal_woonruimten": 150 }
+    }
+  ]
+}

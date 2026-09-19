@@ -26,31 +26,31 @@
   </section>
 
   <!-- ═════════════ HUURDER · gegevens ═════════════ -->
-  <section id="s-gegevens" class="wrap scherm" hidden>
+  <section id="s-gegevens" class="wrap scherm met-balk" hidden>
     <div class="voortgang" id="vg-gegevens" aria-hidden="true"></div>
     <p class="oog">Stap 1 van 4 · Jouw gegevens</p>
     <h1 class="vraagkop">Bij wie horen deze servicekosten?</h1>
     <p class="klein">We hebben dit nodig om contact met je op te nemen over je dossier. Je gegevens blijven
       op dit apparaat totdat je zelf op indienen drukt.</p>
     <div class="veldrij twee">
-      <div><label for="g-naam">Je naam</label><input type="text" id="g-naam" autocomplete="name" placeholder="Voor- en achternaam"></div>
-      <div><label for="g-email">E-mailadres</label><input type="email" id="g-email" autocomplete="email" placeholder="jij@voorbeeld.nl"></div>
+      <div><label for="g-naam">Je naam</label><input type="text" id="g-naam" autocomplete="name" enterkeyhint="next" placeholder="Voor- en achternaam"></div>
+      <div><label for="g-email">E-mailadres</label><input type="email" id="g-email" autocomplete="email" inputmode="email" enterkeyhint="next" placeholder="jij@voorbeeld.nl"></div>
     </div>
     <div class="veldrij twee">
-      <div><label for="g-tel">Telefoon <span class="mini">(optioneel)</span></label><input type="tel" id="g-tel" autocomplete="tel" placeholder="06 12345678"></div>
+      <div><label for="g-tel">Telefoon <span class="mini">(optioneel)</span></label><input type="tel" id="g-tel" autocomplete="tel" inputmode="tel" enterkeyhint="next" placeholder="06 12345678"></div>
       <div><label for="g-verhuurder">Naam van je verhuurder <span class="mini">(optioneel)</span></label><input type="text" id="g-verhuurder" placeholder="Woningcorporatie of particulier"></div>
     </div>
     <div class="veldrij">
       <div><label for="g-adres">Adres van de woning</label><input type="text" id="g-adres" autocomplete="street-address" placeholder="Straat, huisnummer, postcode en plaats"></div>
     </div>
-    <div class="knoppen">
-      <button class="primair vol" type="button" id="gegevens-verder">Verder</button>
+    <div class="actiebalk">
       <button class="link" type="button" id="gegevens-terug">Terug</button>
+      <button class="primair vol" type="button" id="gegevens-verder">Verder</button>
     </div>
   </section>
 
   <!-- ═════════════ HUURDER · invoer ═════════════ -->
-  <section id="s-invoer" class="wrap scherm" hidden>
+  <section id="s-invoer" class="wrap scherm met-balk" hidden>
     <div class="voortgang" id="vg-invoer" aria-hidden="true"></div>
     <p class="oog">Stap 2 van 4 · Je afrekening</p>
     <h1 class="vraagkop">Hoe wil je je afrekening invoeren?</h1>
@@ -74,8 +74,8 @@
     </div>
 
     <div id="handblok" hidden style="margin-top:22px">
-      <p class="klein">Neem de posten over zoals ze op je afrekening staan, met het bedrag dat bij jou in
-        rekening is gebracht.</p>
+      <h2 id="handkop">Je posten</h2>
+      <p class="klein" id="handuitleg"></p>
       <div id="handposten"></div>
       <div class="knoppen">
         <button type="button" id="hand-toevoegen">+ Nog een post</button>
@@ -83,24 +83,39 @@
       </div>
     </div>
 
-    <div class="knoppen"><button class="link" type="button" id="invoer-terug">Terug</button></div>
+    <div class="kaart" style="margin-top:22px">
+      <p class="oog">Optioneel</p>
+      <h2>Foto van je afrekening</h2>
+      <p class="klein">Maak een foto van de papieren afrekening of de brief van je verhuurder. Onze
+        beoordelaar kijkt er met de hand naar — ook als de posten hierboven niet goed zijn ingelezen.</p>
+      <input type="file" id="fotoinvoer" accept="image/*" multiple class="sr">
+      <div class="knoppen">
+        <button class="fotoknop vol" type="button" id="foto-toevoegen">Foto maken of kiezen</button>
+      </div>
+      <div class="fotostrook" id="fotostrook"></div>
+    </div>
+
+    <div class="actiebalk">
+      <button class="link" type="button" id="invoer-terug">Terug</button>
+      <button class="primair vol" type="button" id="invoer-verder">Ga verder</button>
+    </div>
   </section>
 
   <!-- ═════════════ HUURDER · vragen ═════════════ -->
-  <section id="s-vragen" class="wrap scherm" hidden>
+  <section id="s-vragen" class="wrap scherm met-balk" hidden>
     <div class="voortgang" id="voortgang" aria-hidden="true"></div>
     <p class="oog" id="vraagteller"></p>
     <h1 class="vraagkop" id="vraagkop"></h1>
     <p class="klein" id="vraaghulp"></p>
     <div id="vraaginhoud" style="margin-top:22px"></div>
-    <div class="knoppen">
-      <button class="primair vol" type="button" id="v-volgende">Volgende</button>
+    <div class="actiebalk">
       <button class="link" type="button" id="v-vorige">Vorige</button>
+      <button class="primair vol" type="button" id="v-volgende">Volgende</button>
     </div>
   </section>
 
   <!-- ═════════════ HUURDER · uitkomst ═════════════ -->
-  <section id="s-uitkomst" class="wrap breed scherm" hidden>
+  <section id="s-uitkomst" class="wrap breed scherm met-balk" hidden>
     <div class="strook" id="voorbeeldstrook" hidden>
       <span><b>Voorbeeld.</b> Een verzonnen afrekening, zodat je ziet hoe het werkt.</span>
       <button class="primair klein" type="button" id="voorbeeld-stop">Nu mijn eigen afrekening</button>
@@ -116,12 +131,16 @@
     <div id="ontvankelijk" style="margin-top:14px"></div>
     <div id="groepen"></div>
 
+    <div class="actiebalk" id="indienbalk">
+      <button class="link" type="button" id="uitkomst-terug">Terug</button>
+      <button class="primair vol" type="button" id="doe-indienen">Dien mijn dossier in</button>
+    </div>
+
     <div class="kaart" id="indienkaart" style="margin-top:30px">
       <p class="oog">Volgende stap</p>
       <h2 id="indien-kop">Laat je dossier beoordelen</h2>
       <p class="klein" id="advies"></p>
       <div class="knoppen">
-        <button class="primair vol" type="button" id="doe-indienen">Dien mijn dossier in</button>
         <button class="vol" type="button" id="doe-brief">Zelf een bezwaarbrief maken</button>
         <button class="vol" type="button" id="doe-aanpassen">Antwoorden aanpassen</button>
       </div>
@@ -153,6 +172,10 @@
     <h1>Aanvragen</h1>
     <p class="klein" id="beheer-modus"></p>
     <div class="kpi" id="kpi" style="margin-top:20px"></div>
+    <div class="zoekrij">
+      <input type="search" id="zoek" placeholder="Zoek op naam, adres, dossiernummer of jaar"
+             autocomplete="off" enterkeyhint="search" aria-label="Zoek in aanvragen">
+    </div>
     <div class="filters" id="filters"></div>
     <div id="dossierlijst"></div>
   </section>
@@ -182,5 +205,6 @@
 <script>window.SERVICEKOSTEN_DATA = /*__DATA__*/;</script>
 <script>/*__KERN__*/</script>
 <script>/*__PARSER__*/</script>
+<script>/*__FOTOS__*/</script>
 <script>/*__OPSLAG__*/</script>
 <script>/*__UI__*/</script>

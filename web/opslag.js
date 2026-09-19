@@ -91,18 +91,51 @@
     return "A" + stempel + "-" + Math.random().toString(36).slice(2, 6).toUpperCase();
   }
 
+  /* Bijlagen staan los van het hoofddocument: een foto van ~170 kB past niet
+     samen met de bevindingen binnen de documentlimiet. */
+  async function schrijfBijlagen(id, bijlagen) {
+    if (!bijlagen || !bijlagen.length) return;
+    if (modus === "gedeeld") {
+      for (let i = 0; i < bijlagen.length; i++) {
+        await db.collection(COLLECTIE).doc(id).collection("bijlagen").doc("b" + i).set(bijlagen[i]);
+      }
+    } else {
+      const alles = lokaalLees();
+      if (alles[id]) { alles[id]._bijlagen = bijlagen; lokaalSchrijf(alles); }
+    }
+  }
+
+  async function laadBijlagen(id) {
+    if (modus === "gedeeld") {
+      try {
+        const snap = await db.collection(COLLECTIE).doc(id).collection("bijlagen").get();
+        return snap.docs.map((d) => d.data());
+      } catch { return []; }
+    }
+    const alles = lokaalLees();
+    return (alles[id] && alles[id]._bijlagen) || [];
+  }
+
   async function dienIn(aanvraag) {
     const id = nieuwId();
-    const doc = Object.assign({}, aanvraag, {
+    const bijlagen = aanvraag.bijlagen || [];
+    const kaal = Object.assign({}, aanvraag);
+    delete kaal.bijlagen;
+    const doc = Object.assign({}, kaal, {
       id, ingediend_op: new Date().toISOString(), status: "nieuw",
-      notities: [], viewer_id: viewerId || null,
+      notities: [], viewer_id: viewerId || null, aantal_bijlagen: bijlagen.length,
     });
     if (modus === "gedeeld") {
       await db.collection(COLLECTIE).doc(id).set(doc);
+      await schrijfBijlagen(id, bijlagen);
     } else {
       const alles = lokaalLees();
       alles[id] = doc;
-      if (!lokaalSchrijf(alles)) throw new Error("Opslaan lukte niet. Staat de opslag van je browser uit?");
+      alles[id]._bijlagen = bijlagen;
+      if (!lokaalSchrijf(alles)) {
+        throw new Error("Opslaan lukte niet — mogelijk zijn de foto's samen te groot voor de opslag van " +
+          "deze browser. Verwijder een foto en probeer het opnieuw.");
+      }
       meld();
     }
     return doc;
@@ -131,11 +164,38 @@
     }
   }
 
+  /* Een halfingevulde controle overleeft het sluiten van het tabblad. Alleen
+     op dit apparaat, en alleen tot indienen. */
+  const CONCEPT = "servicekosten.concept.v1";
+
+  function bewaarConcept(staat) {
+    try {
+      localStorage.setItem(CONCEPT, JSON.stringify(Object.assign({ bewaard_op: Date.now() }, staat)));
+      return true;
+    } catch {
+      // Opslag vol of uitgezet: het concept is een gemak, geen voorwaarde. De
+      // aanroeper mag het opnieuw proberen zonder de foto's.
+      return false;
+    }
+  }
+  function leesConcept() {
+    try {
+      const rauw = localStorage.getItem(CONCEPT);
+      if (!rauw) return null;
+      const staat = JSON.parse(rauw);
+      // Ouder dan een week: niet meer aanbieden.
+      if (Date.now() - (staat.bewaard_op || 0) > 7 * 864e5) { wisConcept(); return null; }
+      return staat;
+    } catch { return null; }
+  }
+  function wisConcept() { try { localStorage.removeItem(CONCEPT); } catch { /* niets */ } }
+
   const Opslag = {
     aanvragen: [], geladen: false, isBeheerder: false, magSchrijven: null, foutcode: null,
     get modus() { return modus; },
     get viewerId() { return viewerId; },
-    start, lijst, dienIn, werkBij, verwijder,
+    start, lijst, dienIn, werkBij, verwijder, laadBijlagen,
+    bewaarConcept, leesConcept, wisConcept,
     opWijziging(fn) { luisteraars.add(fn); return () => luisteraars.delete(fn); },
     stop() { if (stopSnapshot) stopSnapshot(); },
   };

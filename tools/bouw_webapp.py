@@ -23,11 +23,13 @@ def main() -> int:
     categorieen = json.loads(lees(WORTEL / "data" / "categorieen.json"))
     classificatie = json.loads(lees(WORTEL / "data" / "classificatie.json"))
     beslisregels = json.loads(lees(WORTEL / "data" / "beslisregels.json"))
+    uitleg = json.loads(lees(WORTEL / "data" / "uitleg.json"))
 
     data = {
         "normen": normen,
         "categorieen": categorieen,
         "classificatie": classificatie,
+        "uitleg": uitleg,
         # Alleen wat de interface toont: onderwerp en bron per regel-ID.
         "beslisregels": {"regels": [{"id": r["id"], "onderwerp": r["onderwerp"], "bron": r["bron"]}
                                     for r in beslisregels["regels"]]},

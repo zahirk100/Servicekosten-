@@ -47,6 +47,7 @@ def main() -> int:
         "/*__DATA__*/": json.dumps(data, ensure_ascii=False, separators=(",", ":")),
         "/*__KERN__*/": lees(WEB / "kern.js"),
         "/*__PARSER__*/": lees(WEB / "parser.js"),
+        "/*__OPSLAG__*/": lees(WEB / "opslag.js"),
         "/*__UI__*/": lees(WEB / "ui.js"),
     }
     for sleutel, inhoud in vervangingen.items():

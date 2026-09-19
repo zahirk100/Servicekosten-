@@ -1,15 +1,18 @@
-<title>Servicekosten-check</title>
+<title>Servicekosten</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;650;700&family=Source+Serif+4:opsz,wght@8..60,600&family=IBM+Plex+Mono&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Public+Sans:wght@400;500;600;650;700&family=IBM+Plex+Mono&display=swap">
 <style>/*__STIJL__*/</style>
 
-<header class="top">
+<header class="balk">
   <div class="wrap breed">
-    <span class="logo">Servicekosten-check</span>
-    <span class="top-rechts">
-      <button class="stil" id="thema" type="button">Thema</button>
-      <button class="stil" id="opnieuw" type="button" hidden>Opnieuw</button>
+    <span class="merk"><span class="punt"></span>Servicekosten</span>
+    <span class="balk-rechts">
+      <span class="rollen" id="rollen" role="tablist" aria-label="Kies je rol">
+        <button role="tab" id="rol-huurder" aria-selected="true" type="button">Huurder</button>
+        <button role="tab" id="rol-beheer" aria-selected="false" type="button">Beheer</button>
+      </span>
+      <button class="stil" id="thema" type="button" aria-label="Licht of donker">◑</button>
     </span>
   </div>
 </header>
@@ -17,89 +20,114 @@
 <main>
   <div class="wrap breed" id="meldingen" aria-live="polite" style="padding-top:14px"></div>
 
-  <!-- ══════════ HOME ══════════ -->
-  <section id="scherm-home" class="wrap">
-    <h1 class="hero-titel">Betaal je te veel servicekosten?</h1>
-    <p class="hero-sub">Deze check rekent je jaarafrekening na volgens de regels waar de Huurcommissie
-      zich aan houdt. Je ziet per post wat is toegestaan — en wat je mogelijk kunt terugvragen.</p>
-
-    <ol class="stappenlijst">
-      <li><span class="nr">1</span><span><b>Je afrekening erin</b>Upload het bestand, plak de tekst, of typ de posten zelf over.</span></li>
-      <li><span class="nr">2</span><span><b>Vijf korte vragen</b>Over je woning en wat je verhuurder heeft aangeleverd.</span></li>
-      <li><span class="nr">3</span><span><b>Je uitkomst</b>Per post in gewone taal, met een kant-en-klare bezwaarbrief.</span></li>
-    </ol>
-
-    <div class="knoppen">
-      <button class="primair groot" type="button" id="begin">Begin de check</button>
-      <button class="groot" type="button" id="toon-voorbeeld">Bekijk eerst een voorbeeld</button>
-    </div>
-
-    <p class="geruststelling">Gratis, en alles blijft op je eigen toestel. Je afrekening wordt in dit
-      tabblad verwerkt en nergens heen gestuurd of opgeslagen.</p>
+  <!-- ═════════════ HUURDER · dashboard ═════════════ -->
+  <section id="s-dash" class="wrap breed scherm" hidden>
+    <div id="dash-inhoud"></div>
   </section>
 
-  <!-- ══════════ INVOER ══════════ -->
-  <section id="scherm-invoer" class="wrap" hidden>
-    <h1>Hoe wil je je afrekening invoeren?</h1>
-    <p class="klein">Je hoeft niets over te typen als je het bestand hebt.</p>
+  <!-- ═════════════ HUURDER · gegevens ═════════════ -->
+  <section id="s-gegevens" class="wrap scherm" hidden>
+    <div class="voortgang" id="vg-gegevens" aria-hidden="true"></div>
+    <p class="oog">Stap 1 van 4 · Jouw gegevens</p>
+    <h1 class="vraagkop">Bij wie horen deze servicekosten?</h1>
+    <p class="klein">We hebben dit nodig om contact met je op te nemen over je dossier. Je gegevens blijven
+      op dit apparaat totdat je zelf op indienen drukt.</p>
+    <div class="veldrij twee">
+      <div><label for="g-naam">Je naam</label><input type="text" id="g-naam" autocomplete="name" placeholder="Voor- en achternaam"></div>
+      <div><label for="g-email">E-mailadres</label><input type="email" id="g-email" autocomplete="email" placeholder="jij@voorbeeld.nl"></div>
+    </div>
+    <div class="veldrij twee">
+      <div><label for="g-tel">Telefoon <span class="mini">(optioneel)</span></label><input type="tel" id="g-tel" autocomplete="tel" placeholder="06 12345678"></div>
+      <div><label for="g-verhuurder">Naam van je verhuurder <span class="mini">(optioneel)</span></label><input type="text" id="g-verhuurder" placeholder="Woningcorporatie of particulier"></div>
+    </div>
+    <div class="veldrij">
+      <div><label for="g-adres">Adres van de woning</label><input type="text" id="g-adres" autocomplete="street-address" placeholder="Straat, huisnummer, postcode en plaats"></div>
+    </div>
+    <div class="knoppen">
+      <button class="primair vol" type="button" id="gegevens-verder">Verder</button>
+      <button class="link" type="button" id="gegevens-terug">Terug</button>
+    </div>
+  </section>
 
+  <!-- ═════════════ HUURDER · invoer ═════════════ -->
+  <section id="s-invoer" class="wrap scherm" hidden>
+    <div class="voortgang" id="vg-invoer" aria-hidden="true"></div>
+    <p class="oog">Stap 2 van 4 · Je afrekening</p>
+    <h1 class="vraagkop">Hoe wil je je afrekening invoeren?</h1>
     <div class="keuzes">
-      <button class="keuze" type="button" id="kies-bestand">
-        <span><span class="k-titel">Bestand kiezen</span>
-        <span class="k-sub">PDF, CSV of tekstbestand van je verhuurder</span></span></button>
-      <button class="keuze" type="button" id="kies-plakken">
-        <span><span class="k-titel">Tekst plakken</span>
-        <span class="k-sub">Werkt altijd — open je afrekening, selecteer alles en kopieer</span></span></button>
-      <button class="keuze" type="button" id="kies-handmatig">
-        <span><span class="k-titel">Zelf invoeren</span>
-        <span class="k-sub">Neem de posten over van papier</span></span></button>
+      <button class="keuze" type="button" id="k-bestand">
+        <span class="kt">Bestand uploaden</span>
+        <span class="ks">PDF, CSV of tekstbestand van je verhuurder</span></button>
+      <button class="keuze" type="button" id="k-plakken">
+        <span class="kt">Tekst plakken</span>
+        <span class="ks">Werkt altijd — open je afrekening, selecteer alles en kopieer</span></button>
+      <button class="keuze" type="button" id="k-handmatig">
+        <span class="kt">Posten zelf invoeren</span>
+        <span class="ks">Neem ze over van papier, regel voor regel</span></button>
     </div>
     <input type="file" id="bestand" accept=".pdf,.csv,.tsv,.txt,.md" class="sr">
 
-    <div id="plakblok" hidden style="margin-top:20px">
+    <div id="plakblok" hidden style="margin-top:22px">
       <label for="plakvak">Plak hier de tekst van je afrekening</label>
-      <textarea id="plakvak" placeholder="Bijvoorbeeld:&#10;Schoonmaak gemeenschappelijke ruimten    € 210,00&#10;Huismeester                              € 226,67&#10;Opstalverzekering                        € 88,00"></textarea>
-      <div class="knoppen"><button class="primair groot" type="button" id="plak-lezen">Lees dit in</button></div>
+      <textarea id="plakvak" placeholder="Schoonmaak gemeenschappelijke ruimten    € 210,00&#10;Huismeester                              € 226,67&#10;Opstalverzekering                        € 88,00"></textarea>
+      <div class="knoppen"><button class="primair vol" type="button" id="plak-lezen">Lees dit in</button></div>
     </div>
 
-    <div class="knoppen"><button class="tekst" type="button" id="invoer-terug">Terug</button></div>
+    <div id="handblok" hidden style="margin-top:22px">
+      <p class="klein">Neem de posten over zoals ze op je afrekening staan, met het bedrag dat bij jou in
+        rekening is gebracht.</p>
+      <div id="handposten"></div>
+      <div class="knoppen">
+        <button type="button" id="hand-toevoegen">+ Nog een post</button>
+        <button class="primair vol" type="button" id="hand-klaar">Klaar, ga verder</button>
+      </div>
+    </div>
+
+    <div class="knoppen"><button class="link" type="button" id="invoer-terug">Terug</button></div>
   </section>
 
-  <!-- ══════════ VRAGEN ══════════ -->
-  <section id="scherm-vragen" class="wrap" hidden>
+  <!-- ═════════════ HUURDER · vragen ═════════════ -->
+  <section id="s-vragen" class="wrap scherm" hidden>
     <div class="voortgang" id="voortgang" aria-hidden="true"></div>
-    <div class="vraagteller" id="vraagteller"></div>
-    <h1 class="vraag-h" id="vraagkop"></h1>
-    <p class="vraag-hulp" id="vraaghulp"></p>
-    <div id="vraaginhoud" style="margin-top:20px"></div>
+    <p class="oog" id="vraagteller"></p>
+    <h1 class="vraagkop" id="vraagkop"></h1>
+    <p class="klein" id="vraaghulp"></p>
+    <div id="vraaginhoud" style="margin-top:22px"></div>
     <div class="knoppen">
-      <button class="primair groot" type="button" id="vraag-volgende">Volgende</button>
-      <button class="tekst" type="button" id="vraag-vorige">Vorige</button>
+      <button class="primair vol" type="button" id="v-volgende">Volgende</button>
+      <button class="link" type="button" id="v-vorige">Vorige</button>
     </div>
   </section>
 
-  <!-- ══════════ UITKOMST ══════════ -->
-  <section id="scherm-uitkomst" class="wrap breed" hidden>
-    <div class="voorbeeldstrook" id="voorbeeldstrook" hidden>
+  <!-- ═════════════ HUURDER · uitkomst ═════════════ -->
+  <section id="s-uitkomst" class="wrap breed scherm" hidden>
+    <div class="strook" id="voorbeeldstrook" hidden>
       <span><b>Voorbeeld.</b> Een verzonnen afrekening, zodat je ziet hoe het werkt.</span>
-      <button class="primair" type="button" id="voorbeeld-stop">Nu mijn eigen afrekening</button>
+      <button class="primair klein" type="button" id="voorbeeld-stop">Nu mijn eigen afrekening</button>
+    </div>
+    <div class="voortgang" id="vg-uitkomst" aria-hidden="true"></div>
+    <p class="oog">Stap 4 van 4 · Voorlopige beoordeling</p>
+
+    <div class="uitslag">
+      <div class="uitslag-kop" id="uitslag-kop"></div>
+      <ul class="grootboek" id="grootboek"></ul>
     </div>
 
-    <div class="uitslag" id="uitslag"></div>
-    <div id="waarschuwingen" style="margin-top:14px"></div>
+    <div id="ontvankelijk" style="margin-top:14px"></div>
     <div id="groepen"></div>
 
-    <div class="kaart" style="margin-top:28px">
-      <h2>Wat kun je nu doen?</h2>
+    <div class="kaart" id="indienkaart" style="margin-top:30px">
+      <p class="oog">Volgende stap</p>
+      <h2 id="indien-kop">Laat je dossier beoordelen</h2>
       <p class="klein" id="advies"></p>
       <div class="knoppen">
-        <button class="primair groot" type="button" id="maak-brief">Maak een bezwaarbrief</button>
-        <button class="groot" type="button" id="pas-aan">Antwoorden aanpassen</button>
-        <button class="tekst" type="button" id="begin-opnieuw">Andere afrekening controleren</button>
+        <button class="primair vol" type="button" id="doe-indienen">Dien mijn dossier in</button>
+        <button class="vol" type="button" id="doe-brief">Zelf een bezwaarbrief maken</button>
+        <button class="vol" type="button" id="doe-aanpassen">Antwoorden aanpassen</button>
       </div>
-      <div id="briefblok" hidden style="margin-top:18px">
+      <div id="briefblok" hidden style="margin-top:20px">
         <label for="brief">Conceptbrief — vul de stukken tussen [ ] in</label>
-        <textarea id="brief" spellcheck="false"></textarea>
+        <textarea id="brief" spellcheck="false" style="min-height:260px"></textarea>
         <div class="knoppen rij">
           <button class="primair" type="button" id="kopieer">Kopieer de brief</button>
           <button type="button" id="opvraagbrief">Ik kreeg geen afrekening</button>
@@ -107,14 +135,41 @@
       </div>
     </div>
   </section>
+
+  <!-- ═════════════ HUURDER · bedankt ═════════════ -->
+  <section id="s-bedankt" class="wrap scherm" hidden>
+    <div id="bedankt-inhoud"></div>
+  </section>
+
+  <!-- ═════════════ HUURDER · eigen dossier ═════════════ -->
+  <section id="s-mijn" class="wrap breed scherm" hidden>
+    <div class="knoppen" style="margin:0 0 16px"><button class="link" type="button" id="mijn-terug">‹ Terug naar mijn dossiers</button></div>
+    <div id="mijn-inhoud"></div>
+  </section>
+
+  <!-- ═════════════ BEHEER · overzicht ═════════════ -->
+  <section id="s-beheer" class="wrap breed scherm" hidden>
+    <p class="oog">Beheeromgeving</p>
+    <h1>Aanvragen</h1>
+    <p class="klein" id="beheer-modus"></p>
+    <div class="kpi" id="kpi" style="margin-top:20px"></div>
+    <div class="filters" id="filters"></div>
+    <div id="dossierlijst"></div>
+  </section>
+
+  <!-- ═════════════ BEHEER · dossier ═════════════ -->
+  <section id="s-dossier" class="wrap breed scherm" hidden>
+    <div class="knoppen" style="margin:0 0 16px"><button class="link" type="button" id="dossier-terug">‹ Terug naar aanvragen</button></div>
+    <div id="dossier-inhoud"></div>
+  </section>
 </main>
 
 <footer class="wrap breed">
-  <p><b>Dit is geen juridisch advies.</b> De uitkomst is een berekening volgens het Beleidsboek
-    Servicekosten van de Huurcommissie (versie 1 juli 2026). De Huurcommissie handelt naar dat beleid,
-    maar kan gemotiveerd afwijken. Bij twijfel: vraag advies bij het Juridisch Loket of een
-    huurdersvereniging.</p>
-  <p>Alles rekent in je eigen browser. Er wordt niets verstuurd of opgeslagen.</p>
+  <p><b>Geen juridisch advies.</b> De uitkomst is een berekening volgens het Beleidsboek Servicekosten van
+    de Huurcommissie (versie 1 juli 2026). De Huurcommissie handelt naar dat beleid maar kan gemotiveerd
+    afwijken. Bij twijfel: het Juridisch Loket of een huurdersvereniging.</p>
+  <p id="privacy-regel">De berekening gebeurt in je browser. Alleen een dossier dat je zelf indient, wordt
+    opgeslagen.</p>
 </footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -127,4 +182,5 @@
 <script>window.SERVICEKOSTEN_DATA = /*__DATA__*/;</script>
 <script>/*__KERN__*/</script>
 <script>/*__PARSER__*/</script>
+<script>/*__OPSLAG__*/</script>
 <script>/*__UI__*/</script>

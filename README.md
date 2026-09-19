@@ -4,25 +4,46 @@ Een beoordelingsmodel waarmee de servicekostenafrekening van een huurder automat
 semi-automatisch kan worden gecontroleerd tegen het **Beleidsboek Servicekosten van de
 Huurcommissie, versie 1 juli 2026**.
 
-Deze repo bevat geen samenvatting van dat beleidsboek. Hij bevat de vertaling ervan naar een
-specificatie die een ontwikkelaar kan bouwen: een taxonomie, beslisbomen, een datamodel, 76
-beslisregels met paginaverwijzing, en een werkende referentie-implementatie die de rekenvoorbeelden
-uit het beleidsboek exact reproduceert.
+De repo bestaat uit twee delen: de **analyse** die het beleidsboek vertaalt naar 76 beslisregels
+met paginaverwijzing, en de **applicatie** die die regels uitvoert — een huurder uploadt zijn
+afrekening of voert de posten zelf in, en krijgt per kostenpost terug wat is toegestaan, wat niet,
+en wat er nog ontbreekt.
 
 ## Snel beginnen
 
 ```bash
-# Alle tests (inclusief de 17 rekenvoorbeelden uit het beleidsboek)
-python3 tests/run_all.py
+# De webapplicatie
+python3 -m pip install -r requirements.txt
+python3 -m app                       # http://127.0.0.1:8000
 
-# Een dossier beoordelen
+# Alleen de rekenkern: een dossier beoordelen
 python3 -m engine tests/cases/casus-2-eenvoudige-foutieve-afrekening.json
 
 # Meerdere boekjaren achter elkaar, met totaaloverzicht
 python3 -m engine tests/cases/meerjaar/2024.json tests/cases/meerjaar/2025.json
+
+# Alle tests (inclusief de 17 rekenvoorbeelden uit het beleidsboek)
+python3 tests/run_all.py
 ```
 
-Geen externe afhankelijkheden nodig; `jsonschema` is optioneel (alleen voor de schemavalidatietest).
+De rekenkern (`engine/`) draait op de standaardbibliotheek. De webapplicatie heeft FastAPI en
+pypdf nodig; zie `requirements.txt`.
+
+## De applicatie
+
+1. **Inlezen.** Sleep een PDF, CSV of tekstbestand in de dropzone, of voer de posten handmatig in.
+   De parser haalt kostenposten, bedragen, boekjaar, huurperiode, voorschot en meterstanden eruit
+   en koppelt elke post aan een categorie uit de taxonomie.
+2. **Controleren.** De parser stelt voor, u bevestigt. Meerdere bedragen op een regel worden als
+   alternatieven getoond; niet-herkende posten blijven leeg (het Besluit servicekosten is niet
+   limitatief). Per categorie verschijnen precies de vervolgvragen die de bijbehorende beslisregel
+   nodig heeft.
+3. **Beoordeling.** Per post: status, de berekening stap voor stap, de paginaverwijzing, en wat er
+   nog ontbreekt. Plus een werklijst van op te vragen documenten, gesorteerd op financieel belang,
+   en een conceptbezwaarbrief — zonder schriftelijk bezwaar is een verzoek bij de Huurcommissie
+   niet-ontvankelijk.
+
+Zie [`docs/10-applicatie.md`](docs/10-applicatie.md) voor de architectuur en de API.
 
 ## Wat het model per kostenpost oplevert
 
@@ -52,22 +73,32 @@ Huismeester - ROOD
 | [`docs/07-beslisregels.md`](docs/07-beslisregels.md) | De volledige beslisregeltabel (gegenereerd) |
 | [`docs/08-praktijktest.md`](docs/08-praktijktest.md) | Vijf casussen plus een meerjarendossier, doorgerekend door de engine (gegenereerd) |
 | [`docs/09-eindrapport.md`](docs/09-eindrapport.md) | Wat automatiseerbaar is, wat niet, en welke bronnen blokkerend zijn |
+| [`docs/10-applicatie.md`](docs/10-applicatie.md) | De applicatie: inleeslaag, formulier, resultaat, API, architectuur |
 
 ## Structuur
 
 ```
 data/normen.json           Alle normbedragen, tarieven, percentages en termijnen uit het beleidsboek
 data/beslisregels.json     De 76 beslisregels, machineleesbaar (bron voor docs/07)
+data/categorieen.json      Labels en vervolgvragen per categorie (stuurt het formulier aan)
+data/classificatie.json    Trefwoorden om een omschrijving aan een categorie te koppelen
 schema/dossier.schema.json JSON Schema van de invoer
-engine/                    Referentie-implementatie (Python, geen dependencies)
+engine/                    Rekenkern (Python, standaardbibliotheek)
   normen.py                Toegang tot de normen; werpt NormOntbreekt als het beleidsboek zwijgt
   model.py                 Datamodel: dossier, kostenpost, beoordeling
   regels.py                De beslisregels zelf
   motor.py                 Ontvankelijkheid en orkestratie
   rapport.py               Markdownrapportage
-tests/                     17 validaties tegen de rekenvoorbeelden + schemacontroles
+  serialisatie.py          Beoordeling -> JSON voor de API
+  brief.py                 Bezwaarbrief en opvraagbrief
+app/                       Webapplicatie
+  main.py                  FastAPI: API en statische interface
+  parsers/                 PDF/CSV/tekst -> conceptdossier
+  static/                  index.html, app.js, styles.css (geen buildstap, geen frameworks)
+tests/                     50 tests: rekenvoorbeelden, schema, parser, API
 tests/cases/               Zeven voorbeelddossiers
-tools/                     Generatoren voor docs/07 en docs/08
+voorbeelden/               Fictieve afrekeningen om de parser mee te proberen
+tools/                     Generatoren voor docs/07, docs/08, data/categorieen.json en de voorbeelden
 ```
 
 ## Drie ontwerpkeuzes die het gedrag bepalen
@@ -93,15 +124,21 @@ de huurder een verwachting geven die geen procedure bij de Huurcommissie kan waa
 objectieve maatstaf om te controleren of de implementatie de rekenwijze van de Huurcommissie volgt;
 wijkt een uitkomst af, dan is de implementatie fout, niet het beleidsboek.
 
+Daarnaast controleren `tests/test_parser.py` en `tests/test_api.py` de inleeslaag (Nederlandse
+bedragnotatie, classificatie, ruisfilters, PDF en CSV die dezelfde posten opleveren) en de
+endpoints. Samen 50 tests via `python3 tests/run_all.py`.
+
 ## Status en beperkingen
 
-Dit is een **prototype van het beoordelingsmodel**, niet van de hele applicatie. Wat er nog niet is:
+Wat er nog niet is:
 
-- **Documentverwerking.** Het inlezen van een PDF-afrekening naar het datamodel is een apart
-  probleem. De invoer is nu handmatig gestructureerde JSON.
+- **OCR.** Een gescande afrekening zonder tekstlaag wordt geweigerd met een uitleg, niet half
+  ingelezen.
 - **Versiebeheer van het beleidsboek.** De versie van 1 juli 2026 geldt alleen voor verzoeken die op
   of na die datum zijn ingediend (p. 3). Een productiesysteem moet meerdere versies naast elkaar
   kunnen draaien.
+- **Meerdere boekjaren in één sessie.** De rekenkern kan het; de interface toont één jaar tegelijk.
+- **Opslag.** De applicatie is stateless en bewaart geen dossiers.
 - **Vier externe bronnen die blokkerend zijn**: bijlage VII en VIII van de Uitvoeringsregeling
   huurprijzen woonruimte, de grensbedragen uit het beleidsboek Waarderingsstelsel, en de CBS-index
   voor de voorschottoetsing. Zie `docs/09-eindrapport.md`, paragraaf 8.

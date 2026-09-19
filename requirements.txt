@@ -1,0 +1,11 @@
+# De rekenkern (engine/) en de tests die haar valideren draaien op de standaardbibliotheek.
+# Onderstaande pakketten zijn alleen nodig voor de webapplicatie.
+fastapi>=0.110
+uvicorn[standard]>=0.27
+python-multipart>=0.0.9
+pypdf>=4.0            # tekst uit PDF-afrekeningen
+
+# Alleen voor ontwikkelen en testen
+httpx>=0.27           # fastapi.testclient
+jsonschema>=4.0       # validatie van tests/cases tegen schema/dossier.schema.json
+reportlab>=4.0        # tools/maak_voorbeeld_afrekening.py

@@ -1,0 +1,371 @@
+{
+  "$comment": "Trefwoorden om een omschrijving op een afrekening te koppelen aan een categorie uit docs/02-taxonomie.md. Specifieker trefwoord wint (langste match). 'vraag' wordt aan de gebruiker gesteld wanneer de classificatie niet eenduidig is.",
+  "categorieen": {
+    "NUT-GAS-METER": {
+      "trefwoorden": [
+        "gasverbruik",
+        "aardgas",
+        "gas eigen meter",
+        "gas individuele meter",
+        "stookkosten",
+        "verwarmingskosten",
+        "gas"
+      ],
+      "vraag": "Heeft u voor gas een eigen meter in de woning? Zo niet, dan valt deze post onder 'gas zonder eigen meter'."
+    },
+    "NUT-ELK-METER": {
+      "trefwoorden": [
+        "elektriciteitsverbruik",
+        "elektriciteit",
+        "elektra",
+        "stroomverbruik",
+        "stroom"
+      ],
+      "vraag": "Heeft u voor elektriciteit een eigen meter in de woning?"
+    },
+    "NUT-WATER-METER": {
+      "trefwoorden": [
+        "waterverbruik",
+        "drinkwater",
+        "koud water",
+        "warm water",
+        "water"
+      ],
+      "vraag": "Heeft u voor water een eigen meter in de woning?"
+    },
+    "NUT-GAS-ZM": {
+      "trefwoorden": [
+        "gas zonder eigen meter",
+        "collectief gas",
+        "gas collectief"
+      ]
+    },
+    "NUT-ELK-ZM": {
+      "trefwoorden": [
+        "elektra zonder eigen meter",
+        "collectieve elektra"
+      ]
+    },
+    "NUT-WATER-ZM": {
+      "trefwoorden": [
+        "water zonder eigen meter",
+        "collectief water"
+      ]
+    },
+    "SK-01": {
+      "trefwoorden": [
+        "verwarming gemeenschappelijke",
+        "warmte gemeenschappelijke",
+        "verwarming algemene ruimten",
+        "warmtemeter"
+      ]
+    },
+    "SK-02": {
+      "trefwoorden": [
+        "elektriciteit algemene ruimten",
+        "elektra algemene ruimten",
+        "elektra algemeen",
+        "algemeen elektra",
+        "stroom algemene ruimten",
+        "elektra gemeenschappelijk",
+        "water algemene ruimten",
+        "water algemeen",
+        "gas algemene ruimten"
+      ]
+    },
+    "SK-03": {
+      "trefwoorden": [
+        "roerende zaken",
+        "gebruiksvergoeding",
+        "meubilering",
+        "meubilair",
+        "stoffering",
+        "gordijnen",
+        "inboedel",
+        "koelkast",
+        "vaatwasser",
+        "magnetron",
+        "wasmachine",
+        "wasdroger",
+        "wasapparatuur",
+        "wasserette",
+        "zonnepanelen",
+        "zonnecollector",
+        "rookmelder",
+        "brandblusser",
+        "blusdeken",
+        "brandbeveiliging",
+        "beveiligingscamera",
+        "camera",
+        "laminaat",
+        "vloerbedekking",
+        "tapijt",
+        "geiser",
+        "boiler",
+        "gevelkachel"
+      ],
+      "vraag": "Is deze zaak roerend (weg te nemen zonder beschadiging van betekenis)? Voor onroerende zaken mag geen gebruiksvergoeding worden gevraagd."
+    },
+    "SK-04-GLAS": {
+      "trefwoorden": [
+        "glasbewassing",
+        "glazenwassen",
+        "glazenwasser",
+        "ramen wassen",
+        "ruiten wassen"
+      ]
+    },
+    "SK-04-SCHOONMAAK": {
+      "trefwoorden": [
+        "schoonmaakkosten",
+        "schoonmaak",
+        "schoonmaken",
+        "reiniging algemene ruimten",
+        "trappenhuis",
+        "portiekreiniging",
+        "mutatieschoonmaak"
+      ]
+    },
+    "SK-04-TUIN": {
+      "trefwoorden": [
+        "tuinonderhoud",
+        "groenvoorziening",
+        "groenonderhoud",
+        "hovenier",
+        "tuin"
+      ]
+    },
+    "SK-04-GLADHEID": {
+      "trefwoorden": [
+        "gladheidsbestrijding",
+        "gladheid",
+        "strooien",
+        "sneeuwruimen"
+      ]
+    },
+    "SK-04-ONTSTOPPING": {
+      "trefwoorden": [
+        "ontstoppingskosten",
+        "ontstopping",
+        "ontstoppen",
+        "rioolreiniging",
+        "riolering"
+      ]
+    },
+    "SK-04-SCHOORSTEEN": {
+      "trefwoorden": [
+        "schoorsteenvegen",
+        "schoorsteen",
+        "ventilatiekanaal",
+        "kanaalreiniging",
+        "afvoerkanaal"
+      ]
+    },
+    "SK-04-LAMPEN": {
+      "trefwoorden": [
+        "lampen vervangen",
+        "lampen",
+        "tl-buizen",
+        "verlichting algemene ruimten"
+      ]
+    },
+    "SK-04-ONGEDIERTE": {
+      "trefwoorden": [
+        "ongediertebestrijding",
+        "ongedierte",
+        "plaagdierbeheersing"
+      ]
+    },
+    "SK-04-INSTALLATIE": {
+      "trefwoorden": [
+        "cv-onderhoud",
+        "ketelonderhoud",
+        "onderhoud cv",
+        "onderhoud installatie",
+        "mechanische ventilatie",
+        "onderhoudsabonnement"
+      ]
+    },
+    "SK-04-SCHILDERWERK": {
+      "trefwoorden": [
+        "schilderwerk",
+        "schilderen",
+        "binnenschilderwerk"
+      ]
+    },
+    "SK-05": {
+      "trefwoorden": [
+        "huisvuil",
+        "vuilnis",
+        "vuilniszakken",
+        "afvalcontainer",
+        "afvoer huisvuil",
+        "containerhuur"
+      ]
+    },
+    "SK-06": {
+      "trefwoorden": [
+        "huismeester",
+        "conciërge",
+        "concierge",
+        "huismeesterkosten"
+      ]
+    },
+    "SK-06B": {
+      "trefwoorden": [
+        "externe beveiliging",
+        "beveiligingsdienst",
+        "surveillance",
+        "bewakingsdienst"
+      ]
+    },
+    "SK-07": {
+      "trefwoorden": [
+        "signaallevering",
+        "kabeltelevisie",
+        "cai",
+        "centrale antenne",
+        "televisie",
+        "internet",
+        "liftalarm",
+        "alarmtelefoon lift"
+      ]
+    },
+    "SK-08": {
+      "trefwoorden": [
+        "elektronische apparatuur",
+        "datanetwerk",
+        "intercom",
+        "videofoon",
+        "deurtelefoon"
+      ]
+    },
+    "SK-09-OPSTAL": {
+      "trefwoorden": [
+        "opstalverzekering",
+        "brandverzekering",
+        "stormverzekering",
+        "aansprakelijkheidsverzekering",
+        "bedrijfsschadeverzekering"
+      ]
+    },
+    "SK-09-GLAS": {
+      "trefwoorden": [
+        "glasverzekering"
+      ]
+    },
+    "SK-09-INBOEDEL": {
+      "trefwoorden": [
+        "inboedelverzekering"
+      ]
+    },
+    "SK-10": {
+      "trefwoorden": [
+        "gemeenschappelijke ruimten",
+        "algemene ruimten"
+      ]
+    },
+    "SK-11": {
+      "trefwoorden": [
+        "administratiekosten",
+        "administratievergoeding",
+        "administratiekosten servicekosten"
+      ]
+    },
+    "SK-12": {
+      "trefwoorden": [
+        "24-uursservice",
+        "24 uursservice",
+        "24-uurs service",
+        "storingsdienst"
+      ]
+    },
+    "SK-13": {
+      "trefwoorden": [
+        "ontstoppingsfonds",
+        "glasfonds",
+        "lampenfonds",
+        "fonds"
+      ]
+    },
+    "SK-14-WKO": {
+      "trefwoorden": [
+        "wko",
+        "warmte- en koudeopslag",
+        "warmtelevering",
+        "warmtepomp collectief"
+      ]
+    },
+    "NSK-01": {
+      "trefwoorden": [
+        "leegstandsderving",
+        "leegstand",
+        "derving"
+      ]
+    },
+    "NSK-02": {
+      "trefwoorden": [
+        "rioolheffing",
+        "zuiveringsheffing",
+        "waterschapsbelasting",
+        "onroerendezaakbelasting",
+        "ozb",
+        "gemeentelijke heffingen",
+        "heffing",
+        "belasting"
+      ]
+    },
+    "NSK-03": {
+      "trefwoorden": [
+        "maaltijdverstrekking",
+        "alarmering",
+        "zorgservicekosten",
+        "verpleging",
+        "zorgkosten"
+      ]
+    }
+  },
+  "negeerregels": [
+    "totaal",
+    "subtotaal",
+    "totaalbedrag",
+    "eindtotaal",
+    "voorschot",
+    "voorschotbedrag",
+    "betaald voorschot",
+    "reeds betaald",
+    "te betalen",
+    "te ontvangen",
+    "saldo",
+    "terug te ontvangen",
+    "na te betalen",
+    "btw",
+    "omzetbelasting",
+    "kale huur",
+    "huurprijs",
+    "netto huur",
+    "periode",
+    "adres",
+    "factuurnummer",
+    "debiteurnummer",
+    "klantnummer",
+    "datum",
+    "postbus",
+    "complex",
+    "huurder",
+    "verhuurder",
+    "woonstichting",
+    "woningstichting",
+    "afrekening",
+    "omschrijving",
+    "meterstand",
+    "meterstanden",
+    "bezwaar",
+    "contractnummer",
+    "relatienummer",
+    "iban",
+    "vervaldatum",
+    "blad",
+    "pagina"
+  ]
+}

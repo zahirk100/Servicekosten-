@@ -1,0 +1,1024 @@
+{
+  "$comment": "Gegenereerd met tools/genereer_categorieen.py. Stuurt het formulier in de webapplicatie aan.",
+  "algemene_velden": [
+    {
+      "naam": "overeengekomen",
+      "label": "Is deze post overeengekomen in het huurcontract?",
+      "type": "ja_nee_onbekend",
+      "hulp": "Zonder overeenstemming is er geen betalingsverplichting (p. 9). Administratiekosten hoeven niet uitdrukkelijk overeengekomen te zijn."
+    },
+    {
+      "naam": "levering_gemotiveerd_betwist",
+      "label": "Ik betwist gemotiveerd dat deze zaak of dienst is geleverd",
+      "type": "ja_nee",
+      "hulp": "Zonder facturen van de verhuurder leidt dit tot EUR 0,00 in plaats van een forfait (p. 60-61)."
+    }
+  ],
+  "bewijsopties": [
+    {
+      "waarde": "facturen",
+      "label": "Facturen of betaalbewijzen"
+    },
+    {
+      "waarde": "specificatieformulier",
+      "label": "Ingevuld specificatieformulier"
+    },
+    {
+      "waarde": "meterstanden",
+      "label": "Meterstanden en verbruiksberekening"
+    },
+    {
+      "waarde": "urenverantwoording",
+      "label": "Urenverantwoording"
+    },
+    {
+      "waarde": "aankoopfacturen",
+      "label": "Aankoopfacturen roerende zaken"
+    },
+    {
+      "waarde": "inspectierapport",
+      "label": "Inspectierapport installatie"
+    },
+    {
+      "waarde": "polis",
+      "label": "Verzekeringspolis"
+    },
+    {
+      "waarde": "vve_stukken",
+      "label": "VvE-jaarrekening en ALV-verslag"
+    }
+  ],
+  "categorieen": {
+    "NUT-GAS-METER": {
+      "label": "Gas met eigen meter",
+      "groep": "Nutsvoorzieningen met individuele meter",
+      "bron": "par. 3.1, p. 13-16",
+      "velden": [
+        {
+          "naam": "beginstand",
+          "label": "Beginstand meter",
+          "type": "getal"
+        },
+        {
+          "naam": "eindstand",
+          "label": "Eindstand meter",
+          "type": "getal"
+        },
+        {
+          "naam": "verbruik_verhuurder",
+          "label": "Door de verhuurder opgevoerd verbruik (m3)",
+          "type": "getal"
+        },
+        {
+          "naam": "meterstanden_betwist",
+          "label": "Ik betwist het geadministreerde verbruik gemotiveerd",
+          "type": "ja_nee",
+          "hulp": "Leidt tot toetsing aan de Nibud-normen (p. 15)."
+        },
+        {
+          "naam": "collectieve_factuur",
+          "label": "De factuur betreft meerdere woonruimten",
+          "type": "ja_nee",
+          "hulp": "Dan moet de verdeelsleutel worden getoetst (voetnoot 3, p. 11)."
+        },
+        {
+          "naam": "huurder_stelt_installatie_gebrekkig",
+          "label": "Ik stel dat de collectieve stookinstallatie onvoldoende functioneert",
+          "type": "ja_nee"
+        },
+        {
+          "naam": "inspectierapport_aanwezig",
+          "label": "Inspectierapport van de installatie aanwezig",
+          "type": "ja_nee_onbekend"
+        },
+        {
+          "naam": "rendement_ketel",
+          "label": "Ketelrendement volgens inspectierapport (bijv. 0.78)",
+          "type": "getal",
+          "hulp": "De Huurcommissie hanteert een ondergrens van 80% (p. 15)."
+        }
+      ]
+    },
+    "NUT-ELK-METER": {
+      "label": "Elektriciteit met eigen meter",
+      "groep": "Nutsvoorzieningen met individuele meter",
+      "bron": "par. 3.2, p. 17-20",
+      "velden": [
+        {
+          "naam": "beginstand",
+          "label": "Beginstand meter",
+          "type": "getal"
+        },
+        {
+          "naam": "eindstand",
+          "label": "Eindstand meter",
+          "type": "getal"
+        },
+        {
+          "naam": "verbruik_verhuurder",
+          "label": "Door de verhuurder opgevoerd verbruik (kWh)",
+          "type": "getal"
+        },
+        {
+          "naam": "meterstanden_betwist",
+          "label": "Ik betwist het geadministreerde verbruik gemotiveerd",
+          "type": "ja_nee",
+          "hulp": "Leidt tot toetsing aan de Nibud-normen (p. 15)."
+        },
+        {
+          "naam": "collectieve_factuur",
+          "label": "De factuur betreft meerdere woonruimten",
+          "type": "ja_nee",
+          "hulp": "Dan moet de verdeelsleutel worden getoetst (voetnoot 3, p. 11)."
+        }
+      ]
+    },
+    "NUT-WATER-METER": {
+      "label": "Water met eigen meter",
+      "groep": "Nutsvoorzieningen met individuele meter",
+      "bron": "par. 3.3, p. 21-23",
+      "velden": [
+        {
+          "naam": "beginstand",
+          "label": "Beginstand meter",
+          "type": "getal"
+        },
+        {
+          "naam": "eindstand",
+          "label": "Eindstand meter",
+          "type": "getal"
+        },
+        {
+          "naam": "verbruik_verhuurder",
+          "label": "Door de verhuurder opgevoerd verbruik (m3)",
+          "type": "getal"
+        },
+        {
+          "naam": "meterstanden_betwist",
+          "label": "Ik betwist het geadministreerde verbruik gemotiveerd",
+          "type": "ja_nee",
+          "hulp": "Leidt tot toetsing aan de Nibud-normen (p. 15)."
+        },
+        {
+          "naam": "collectieve_factuur",
+          "label": "De factuur betreft meerdere woonruimten",
+          "type": "ja_nee",
+          "hulp": "Dan moet de verdeelsleutel worden getoetst (voetnoot 3, p. 11)."
+        }
+      ]
+    },
+    "NUT-GAS-ZM": {
+      "label": "Gas zonder eigen meter",
+      "groep": "Nutsvoorzieningen zonder eigen meter",
+      "bron": "par. 4.2.1, p. 26",
+      "velden": [
+        {
+          "naam": "totale_kosten_complex",
+          "label": "Totale gaskosten van het complex",
+          "type": "bedrag",
+          "hulp": "Verdeeld als 35% vast (gelijk) en 65% variabel (naar oppervlakte)."
+        }
+      ]
+    },
+    "NUT-ELK-ZM": {
+      "label": "Elektriciteit zonder eigen meter",
+      "groep": "Nutsvoorzieningen zonder eigen meter",
+      "bron": "par. 4.2.1, p. 27",
+      "velden": [
+        {
+          "naam": "totale_kosten_complex",
+          "label": "Totale elektriciteitskosten van het complex",
+          "type": "bedrag"
+        }
+      ]
+    },
+    "NUT-WATER-ZM": {
+      "label": "Water zonder eigen meter",
+      "groep": "Nutsvoorzieningen zonder eigen meter",
+      "bron": "par. 4.2.1, p. 27",
+      "velden": [
+        {
+          "naam": "totale_kosten_complex",
+          "label": "Totale waterkosten van het complex",
+          "type": "bedrag"
+        }
+      ]
+    },
+    "SK-01": {
+      "label": "Warmte gemeenschappelijke gedeelten",
+      "groep": "Overige zaken en diensten",
+      "bron": "par. 4.3.1, p. 30",
+      "velden": [
+        {
+          "naam": "werkelijke_kosten",
+          "label": "Werkelijke kosten volgens factuur",
+          "type": "bedrag",
+          "hulp": "Laat leeg als het bedrag op de afrekening al uw aandeel is."
+        },
+        {
+          "naam": "bedrag_is_complextotaal",
+          "label": "Bovenstaand bedrag is het totaal voor het hele complex",
+          "type": "ja_nee",
+          "standaard": true
+        },
+        {
+          "naam": "aantal_woonruimten",
+          "label": "Aantal woonruimten dat gebruik (kan) maken",
+          "type": "geheel",
+          "hulp": "In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."
+        },
+        {
+          "naam": "betreft_gemeenschappelijke_voorziening",
+          "label": "Betreft een gemeenschappelijke ruimte of voorziening",
+          "type": "ja_nee"
+        }
+      ]
+    },
+    "SK-02": {
+      "label": "Nutsvoorzieningen gemeenschappelijke gedeelten",
+      "groep": "Overige zaken en diensten",
+      "bron": "par. 4.3.2, p. 30",
+      "velden": [
+        {
+          "naam": "werkelijke_kosten",
+          "label": "Werkelijke kosten volgens factuur",
+          "type": "bedrag",
+          "hulp": "Laat leeg als het bedrag op de afrekening al uw aandeel is."
+        },
+        {
+          "naam": "bedrag_is_complextotaal",
+          "label": "Bovenstaand bedrag is het totaal voor het hele complex",
+          "type": "ja_nee",
+          "standaard": true
+        },
+        {
+          "naam": "aantal_woonruimten",
+          "label": "Aantal woonruimten dat gebruik (kan) maken",
+          "type": "geheel",
+          "hulp": "In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."
+        },
+        {
+          "naam": "betreft_gemeenschappelijke_voorziening",
+          "label": "Betreft een gemeenschappelijke ruimte of voorziening",
+          "type": "ja_nee"
+        }
+      ]
+    },
+    "SK-03": {
+      "label": "Roerende zaken (gebruiksvergoeding)",
+      "groep": "Overige zaken en diensten",
+      "bron": "par. 4.3.3, p. 30-35",
+      "velden": [
+        {
+          "naam": "roerend",
+          "label": "De zaak is roerend",
+          "type": "ja_nee_onbekend",
+          "hulp": "Weg te nemen zonder beschadiging van betekenis. Voor onroerende zaken mag geen vergoeding (p. 31)."
+        },
+        {
+          "naam": "soort",
+          "label": "Soort zaak",
+          "type": "keuze",
+          "opties": [
+            "standaard",
+            "zonnepanelen",
+            "brandbeveiliging",
+            "camera",
+            "wasapparatuur",
+            "rookmelder"
+          ]
+        },
+        {
+          "naam": "aanschafwaarde",
+          "label": "Aanschafwaarde volgens aankoopfactuur",
+          "type": "bedrag"
+        },
+        {
+          "naam": "geschatte_waarde",
+          "label": "Geschatte waarde (als er geen factuur is)",
+          "type": "bedrag",
+          "hulp": "Verkoopwaarde aan het begin van het boekjaar (p. 31)."
+        },
+        {
+          "naam": "levensduur_jaren",
+          "label": "Geschatte levensduur",
+          "type": "keuze",
+          "opties": [
+            "5",
+            "10",
+            "15"
+          ],
+          "hulp": "5 jaar = 20% per jaar, 10 jaar = 10%, 15 jaar = 6,67% (p. 31)."
+        },
+        {
+          "naam": "jaar_in_gebruik",
+          "label": "Hoeveelste gebruiksjaar is dit?",
+          "type": "geheel",
+          "hulp": "Bepaalt of de eerste periode, de herwaardering op 60% of EUR 0,00 geldt (p. 32)."
+        },
+        {
+          "naam": "aantal_woonruimten",
+          "label": "Aantal woonruimten dat gebruik (kan) maken",
+          "type": "geheel",
+          "hulp": "In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."
+        }
+      ]
+    },
+    "SK-04-GLAS": {
+      "label": "Glazen wassen",
+      "groep": "Kleine herstellingen",
+      "bron": "par. 4.3.4, p. 36",
+      "velden": [
+        {
+          "naam": "ruiten_bereikbaar",
+          "label": "De ruiten zijn voor mij bereikbaar",
+          "type": "ja_nee_onbekend",
+          "hulp": "Zijn ze dat niet, dan zijn de kosten niet doorberekenbaar (p. 36)."
+        },
+        {
+          "naam": "kosten_gespecificeerd",
+          "label": "De verhuurder heeft de kosten gespecificeerd",
+          "type": "ja_nee_onbekend"
+        },
+        {
+          "naam": "werkelijke_kosten",
+          "label": "Werkelijke kosten volgens factuur",
+          "type": "bedrag",
+          "hulp": "Laat leeg als het bedrag op de afrekening al uw aandeel is."
+        },
+        {
+          "naam": "bedrag_is_complextotaal",
+          "label": "Bovenstaand bedrag is het totaal voor het hele complex",
+          "type": "ja_nee",
+          "standaard": true
+        },
+        {
+          "naam": "aantal_woonruimten",
+          "label": "Aantal woonruimten dat gebruik (kan) maken",
+          "type": "geheel",
+          "hulp": "In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."
+        }
+      ]
+    },
+    "SK-04-SCHOONMAAK": {
+      "label": "Schoonmaak gemeenschappelijke ruimten",
+      "groep": "Kleine herstellingen",
+      "bron": "par. 4.3.4, p. 36",
+      "velden": [
+        {
+          "naam": "betreft_mutatiekosten",
+          "label": "Dit betreft mutatiekosten (schoonmaak bij verhuizing)",
+          "type": "ja_nee",
+          "hulp": "Mutatiekosten mogen niet worden doorberekend (p. 36)."
+        },
+        {
+          "naam": "werkelijke_kosten",
+          "label": "Werkelijke kosten volgens factuur",
+          "type": "bedrag",
+          "hulp": "Laat leeg als het bedrag op de afrekening al uw aandeel is."
+        },
+        {
+          "naam": "bedrag_is_complextotaal",
+          "label": "Bovenstaand bedrag is het totaal voor het hele complex",
+          "type": "ja_nee",
+          "standaard": true
+        },
+        {
+          "naam": "aantal_woonruimten",
+          "label": "Aantal woonruimten dat gebruik (kan) maken",
+          "type": "geheel",
+          "hulp": "In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."
+        }
+      ]
+    },
+    "SK-04-TUIN": {
+      "label": "Tuinonderhoud",
+      "groep": "Kleine herstellingen",
+      "bron": "par. 4.3.4, p. 37",
+      "velden": [
+        {
+          "naam": "exclusief_gebruiksrecht",
+          "label": "Ik heb het exclusieve gebruiksrecht van de groenvoorziening",
+          "type": "ja_nee_onbekend",
+          "hulp": "Bij een openbaar karakter of een kijktuin blijven de kosten voor de verhuurder (p. 37)."
+        },
+        {
+          "naam": "werkelijke_kosten",
+          "label": "Werkelijke kosten volgens factuur",
+          "type": "bedrag",
+          "hulp": "Laat leeg als het bedrag op de afrekening al uw aandeel is."
+        },
+        {
+          "naam": "bedrag_is_complextotaal",
+          "label": "Bovenstaand bedrag is het totaal voor het hele complex",
+          "type": "ja_nee",
+          "standaard": true
+        },
+        {
+          "naam": "aantal_woonruimten",
+          "label": "Aantal woonruimten dat gebruik (kan) maken",
+          "type": "geheel",
+          "hulp": "In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."
+        }
+      ]
+    },
+    "SK-04-GLADHEID": {
+      "label": "Gladheidsbestrijding",
+      "groep": "Kleine herstellingen",
+      "bron": "par. 4.3.4, p. 37",
+      "velden": [
+        {
+          "naam": "exclusief_gebruiksrecht",
+          "label": "Ik heb het exclusieve (gezamenlijke) gebruiksrecht van de buitenruimte",
+          "type": "ja_nee_onbekend"
+        },
+        {
+          "naam": "werkelijke_kosten",
+          "label": "Werkelijke kosten volgens factuur",
+          "type": "bedrag",
+          "hulp": "Laat leeg als het bedrag op de afrekening al uw aandeel is."
+        },
+        {
+          "naam": "bedrag_is_complextotaal",
+          "label": "Bovenstaand bedrag is het totaal voor het hele complex",
+          "type": "ja_nee",
+          "standaard": true
+        },
+        {
+          "naam": "aantal_woonruimten",
+          "label": "Aantal woonruimten dat gebruik (kan) maken",
+          "type": "geheel",
+          "hulp": "In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."
+        }
+      ]
+    },
+    "SK-04-ONTSTOPPING": {
+      "label": "Ontstoppen leidingen en riolering",
+      "groep": "Kleine herstellingen",
+      "bron": "par. 4.3.4, p. 37",
+      "velden": [
+        {
+          "naam": "leidingen_bereikbaar_en_individueel",
+          "label": "De leidingen zitten in of aan mijn woning en zijn bereikbaar",
+          "type": "ja_nee_onbekend",
+          "hulp": "Gedeelde leidingen of een technisch gebrek: kosten voor de verhuurder (p. 37)."
+        },
+        {
+          "naam": "onderhoudscontract",
+          "label": "Het gaat om een ontstoppingscontract",
+          "type": "ja_nee",
+          "hulp": "Dan geldt een verdeling van 50% huurder / 50% verhuurder (p. 37)."
+        },
+        {
+          "naam": "kosten_gespecificeerd",
+          "label": "De verhuurder heeft de kosten gespecificeerd",
+          "type": "ja_nee_onbekend"
+        },
+        {
+          "naam": "werkelijke_kosten",
+          "label": "Werkelijke kosten volgens factuur",
+          "type": "bedrag",
+          "hulp": "Laat leeg als het bedrag op de afrekening al uw aandeel is."
+        },
+        {
+          "naam": "bedrag_is_complextotaal",
+          "label": "Bovenstaand bedrag is het totaal voor het hele complex",
+          "type": "ja_nee",
+          "standaard": true
+        },
+        {
+          "naam": "aantal_woonruimten",
+          "label": "Aantal woonruimten dat gebruik (kan) maken",
+          "type": "geheel",
+          "hulp": "In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."
+        }
+      ]
+    },
+    "SK-04-SCHOORSTEEN": {
+      "label": "Schoorsteen en ventilatiekanalen",
+      "groep": "Kleine herstellingen",
+      "bron": "par. 4.3.4, p. 38",
+      "velden": [
+        {
+          "naam": "kanaal_bereikbaar",
+          "label": "De schoorsteen of het kanaal is voor mij bereikbaar",
+          "type": "ja_nee_onbekend"
+        },
+        {
+          "naam": "werkelijke_kosten",
+          "label": "Werkelijke kosten volgens factuur",
+          "type": "bedrag",
+          "hulp": "Laat leeg als het bedrag op de afrekening al uw aandeel is."
+        },
+        {
+          "naam": "bedrag_is_complextotaal",
+          "label": "Bovenstaand bedrag is het totaal voor het hele complex",
+          "type": "ja_nee",
+          "standaard": true
+        },
+        {
+          "naam": "aantal_woonruimten",
+          "label": "Aantal woonruimten dat gebruik (kan) maken",
+          "type": "geheel",
+          "hulp": "In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."
+        }
+      ]
+    },
+    "SK-04-LAMPEN": {
+      "label": "Lampen vervangen",
+      "groep": "Kleine herstellingen",
+      "bron": "par. 4.3.4, p. 38",
+      "velden": [
+        {
+          "naam": "betreft_armaturen_of_installatie",
+          "label": "Het gaat (mede) om armaturen, de installatie zelf of vandalismeschade",
+          "type": "ja_nee",
+          "hulp": "Die kosten blijven voor de verhuurder (p. 38)."
+        },
+        {
+          "naam": "werkelijke_kosten",
+          "label": "Werkelijke kosten volgens factuur",
+          "type": "bedrag",
+          "hulp": "Laat leeg als het bedrag op de afrekening al uw aandeel is."
+        },
+        {
+          "naam": "bedrag_is_complextotaal",
+          "label": "Bovenstaand bedrag is het totaal voor het hele complex",
+          "type": "ja_nee",
+          "standaard": true
+        },
+        {
+          "naam": "aantal_woonruimten",
+          "label": "Aantal woonruimten dat gebruik (kan) maken",
+          "type": "geheel",
+          "hulp": "In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."
+        }
+      ]
+    },
+    "SK-04-ONGEDIERTE": {
+      "label": "Ongediertebestrijding",
+      "groep": "Kleine herstellingen",
+      "bron": "par. 4.3.4, p. 38",
+      "velden": [
+        {
+          "naam": "gevolg_bouwkundige_situatie",
+          "label": "Het ongedierte is gevolg van een bouwkundige situatie",
+          "type": "ja_nee",
+          "hulp": "U moet dit aannemelijk maken (p. 38)."
+        },
+        {
+          "naam": "werkelijke_kosten",
+          "label": "Werkelijke kosten volgens factuur",
+          "type": "bedrag",
+          "hulp": "Laat leeg als het bedrag op de afrekening al uw aandeel is."
+        },
+        {
+          "naam": "bedrag_is_complextotaal",
+          "label": "Bovenstaand bedrag is het totaal voor het hele complex",
+          "type": "ja_nee",
+          "standaard": true
+        },
+        {
+          "naam": "aantal_woonruimten",
+          "label": "Aantal woonruimten dat gebruik (kan) maken",
+          "type": "geheel",
+          "hulp": "In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."
+        }
+      ]
+    },
+    "SK-04-INSTALLATIE": {
+      "label": "Onderhoud installaties in de woning",
+      "groep": "Kleine herstellingen",
+      "bron": "par. 4.3.4, p. 38-39",
+      "velden": [
+        {
+          "naam": "eenvoudig_onderhoud_binnen_woonruimte",
+          "label": "Het gaat om eenvoudig onderhoud zonder specialistische kennis binnen mijn woning",
+          "type": "ja_nee_onbekend",
+          "hulp": "Periodiek onderhoud en keuringen van aard- en nagelvaste installaties zijn niet doorberekenbaar (p. 39)."
+        },
+        {
+          "naam": "werkelijke_kosten",
+          "label": "Werkelijke kosten volgens factuur",
+          "type": "bedrag",
+          "hulp": "Laat leeg als het bedrag op de afrekening al uw aandeel is."
+        },
+        {
+          "naam": "bedrag_is_complextotaal",
+          "label": "Bovenstaand bedrag is het totaal voor het hele complex",
+          "type": "ja_nee",
+          "standaard": true
+        },
+        {
+          "naam": "aantal_woonruimten",
+          "label": "Aantal woonruimten dat gebruik (kan) maken",
+          "type": "geheel",
+          "hulp": "In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."
+        }
+      ]
+    },
+    "SK-04-SCHILDERWERK": {
+      "label": "Schilderwerkzaamheden",
+      "groep": "Kleine herstellingen",
+      "bron": "par. 4.3.4, p. 39",
+      "velden": [
+        {
+          "naam": "uitdrukkelijk_overeengekomen_of_op_verzoek_huurder",
+          "label": "Het schilderwerk is uitdrukkelijk overeengekomen of op mijn verzoek uitgevoerd",
+          "type": "ja_nee_onbekend"
+        },
+        {
+          "naam": "werkelijke_kosten",
+          "label": "Werkelijke kosten volgens factuur",
+          "type": "bedrag",
+          "hulp": "Laat leeg als het bedrag op de afrekening al uw aandeel is."
+        },
+        {
+          "naam": "bedrag_is_complextotaal",
+          "label": "Bovenstaand bedrag is het totaal voor het hele complex",
+          "type": "ja_nee",
+          "standaard": true
+        },
+        {
+          "naam": "aantal_woonruimten",
+          "label": "Aantal woonruimten dat gebruik (kan) maken",
+          "type": "geheel",
+          "hulp": "In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."
+        }
+      ]
+    },
+    "SK-05": {
+      "label": "Huisvuil",
+      "groep": "Overige zaken en diensten",
+      "bron": "par. 4.3.5, p. 39-40",
+      "velden": [
+        {
+          "naam": "werkelijke_kosten",
+          "label": "Werkelijke kosten volgens factuur",
+          "type": "bedrag",
+          "hulp": "Laat leeg als het bedrag op de afrekening al uw aandeel is."
+        },
+        {
+          "naam": "bedrag_is_complextotaal",
+          "label": "Bovenstaand bedrag is het totaal voor het hele complex",
+          "type": "ja_nee",
+          "standaard": true
+        },
+        {
+          "naam": "aantal_woonruimten",
+          "label": "Aantal woonruimten dat gebruik (kan) maken",
+          "type": "geheel",
+          "hulp": "In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."
+        }
+      ]
+    },
+    "SK-06": {
+      "label": "Huismeester",
+      "groep": "Overige zaken en diensten",
+      "bron": "par. 4.3.6, p. 40-41",
+      "velden": [
+        {
+          "naam": "uren",
+          "label": "Aantal gewerkte uren in het jaar",
+          "type": "getal",
+          "vereist": true
+        },
+        {
+          "naam": "totale_kosten",
+          "label": "Totale huismeesterkosten volgens factuur",
+          "type": "bedrag",
+          "vereist": true
+        },
+        {
+          "naam": "aantal_woonruimten",
+          "label": "Aantal woonruimten dat gebruik (kan) maken",
+          "type": "geheel",
+          "hulp": "In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."
+        },
+        {
+          "naam": "aandeel_huurders",
+          "label": "Afwijkend aandeel huurders (standaard 0.70)",
+          "type": "getal",
+          "hulp": "Afwijken van 70/30 moet worden gemotiveerd (p. 41)."
+        }
+      ]
+    },
+    "SK-06B": {
+      "label": "Externe beveiliging",
+      "groep": "Overige zaken en diensten",
+      "bron": "par. 4.3.6, p. 41",
+      "velden": [
+        {
+          "naam": "totale_kosten",
+          "label": "Totale kosten beveiligingsdienst",
+          "type": "bedrag",
+          "vereist": true
+        },
+        {
+          "naam": "gecertificeerd",
+          "label": "De beveiligingsdienst is gecertificeerd",
+          "type": "ja_nee_onbekend"
+        },
+        {
+          "naam": "aantal_woonruimten",
+          "label": "Aantal woonruimten dat gebruik (kan) maken",
+          "type": "geheel",
+          "hulp": "In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."
+        }
+      ]
+    },
+    "SK-07": {
+      "label": "Signaallevering (radio, tv, internet)",
+      "groep": "Overige zaken en diensten",
+      "bron": "par. 4.3.7, p. 42",
+      "velden": [
+        {
+          "naam": "werkelijke_kosten",
+          "label": "Werkelijke kosten volgens factuur",
+          "type": "bedrag",
+          "hulp": "Laat leeg als het bedrag op de afrekening al uw aandeel is."
+        },
+        {
+          "naam": "bedrag_is_complextotaal",
+          "label": "Bovenstaand bedrag is het totaal voor het hele complex",
+          "type": "ja_nee",
+          "standaard": true
+        },
+        {
+          "naam": "aantal_woonruimten",
+          "label": "Aantal woonruimten dat gebruik (kan) maken",
+          "type": "geheel",
+          "hulp": "In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."
+        }
+      ]
+    },
+    "SK-08": {
+      "label": "Elektronische apparatuur",
+      "groep": "Overige zaken en diensten",
+      "bron": "par. 4.3.8, p. 42",
+      "velden": [
+        {
+          "naam": "werkelijke_kosten",
+          "label": "Werkelijke kosten volgens factuur",
+          "type": "bedrag",
+          "hulp": "Laat leeg als het bedrag op de afrekening al uw aandeel is."
+        },
+        {
+          "naam": "bedrag_is_complextotaal",
+          "label": "Bovenstaand bedrag is het totaal voor het hele complex",
+          "type": "ja_nee",
+          "standaard": true
+        },
+        {
+          "naam": "aantal_woonruimten",
+          "label": "Aantal woonruimten dat gebruik (kan) maken",
+          "type": "geheel",
+          "hulp": "In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."
+        }
+      ]
+    },
+    "SK-09-OPSTAL": {
+      "label": "Opstal- of aanverwante verzekering",
+      "groep": "Verzekeringen",
+      "bron": "par. 4.3.9, p. 42-43",
+      "velden": []
+    },
+    "SK-09-GLAS": {
+      "label": "Glasverzekering",
+      "groep": "Verzekeringen",
+      "bron": "par. 4.3.9, p. 43",
+      "velden": [
+        {
+          "naam": "onderdeel_van_opstalverzekering",
+          "label": "De glasverzekering zit in de opstalverzekering",
+          "type": "ja_nee",
+          "hulp": "Zonder specificatie rekent de Huurcommissie 15% van de opstalpremie (p. 43)."
+        },
+        {
+          "naam": "kosten_gespecificeerd",
+          "label": "De verhuurder heeft de kosten gespecificeerd",
+          "type": "ja_nee_onbekend"
+        },
+        {
+          "naam": "werkelijke_kosten",
+          "label": "Werkelijke kosten volgens factuur",
+          "type": "bedrag",
+          "hulp": "Laat leeg als het bedrag op de afrekening al uw aandeel is."
+        },
+        {
+          "naam": "bedrag_is_complextotaal",
+          "label": "Bovenstaand bedrag is het totaal voor het hele complex",
+          "type": "ja_nee",
+          "standaard": true
+        },
+        {
+          "naam": "aantal_woonruimten",
+          "label": "Aantal woonruimten dat gebruik (kan) maken",
+          "type": "geheel",
+          "hulp": "In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."
+        }
+      ]
+    },
+    "SK-09-INBOEDEL": {
+      "label": "Inboedelverzekering roerende zaken",
+      "groep": "Verzekeringen",
+      "bron": "par. 4.3.9, p. 43",
+      "velden": [
+        {
+          "naam": "werkelijke_kosten",
+          "label": "Werkelijke kosten volgens factuur",
+          "type": "bedrag",
+          "hulp": "Laat leeg als het bedrag op de afrekening al uw aandeel is."
+        },
+        {
+          "naam": "bedrag_is_complextotaal",
+          "label": "Bovenstaand bedrag is het totaal voor het hele complex",
+          "type": "ja_nee",
+          "standaard": true
+        },
+        {
+          "naam": "aantal_woonruimten",
+          "label": "Aantal woonruimten dat gebruik (kan) maken",
+          "type": "geheel",
+          "hulp": "In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."
+        }
+      ]
+    },
+    "SK-10": {
+      "label": "Gemeenschappelijke ruimten (verzamelpost)",
+      "groep": "Overige zaken en diensten",
+      "bron": "par. 4.3.10, p. 43",
+      "velden": [
+        {
+          "naam": "werkelijke_kosten",
+          "label": "Werkelijke kosten volgens factuur",
+          "type": "bedrag",
+          "hulp": "Laat leeg als het bedrag op de afrekening al uw aandeel is."
+        },
+        {
+          "naam": "bedrag_is_complextotaal",
+          "label": "Bovenstaand bedrag is het totaal voor het hele complex",
+          "type": "ja_nee",
+          "standaard": true
+        },
+        {
+          "naam": "aantal_woonruimten",
+          "label": "Aantal woonruimten dat gebruik (kan) maken",
+          "type": "geheel",
+          "hulp": "In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."
+        },
+        {
+          "naam": "betreft_gemeenschappelijke_voorziening",
+          "label": "Betreft een gemeenschappelijke ruimte of voorziening",
+          "type": "ja_nee"
+        }
+      ]
+    },
+    "SK-11": {
+      "label": "Administratiekosten",
+      "groep": "Overige zaken en diensten",
+      "bron": "par. 4.3.11, p. 43",
+      "velden": [
+        {
+          "naam": "afrekening_verstrekt",
+          "label": "Er is een afrekening aan mij verstrekt",
+          "type": "ja_nee",
+          "standaard": true,
+          "hulp": "Zonder verstrekte afrekening mogen geen administratiekosten (p. 43)."
+        },
+        {
+          "naam": "grondslag_warmtelevering",
+          "label": "Grondslag warmtelevering (gas, olie, brandstof)",
+          "type": "bedrag",
+          "hulp": "Hierover geldt maximaal 2%, of 1% als meting en verdeling zijn uitbesteed."
+        },
+        {
+          "naam": "meting_uitbesteed",
+          "label": "Meting en verdeling zijn uitbesteed",
+          "type": "ja_nee"
+        },
+        {
+          "naam": "grondslag_overige_posten",
+          "label": "Grondslag overige kostenposten",
+          "type": "bedrag",
+          "hulp": "Hierover geldt maximaal 5%. Minimum EUR 7,50, maximum EUR 75,00 per afrekening."
+        }
+      ]
+    },
+    "SK-12": {
+      "label": "Onderhoudscontract met 24-uursservice",
+      "groep": "Aanvullingen Huurcommissie",
+      "bron": "par. 4.3.12, p. 44",
+      "velden": [
+        {
+          "naam": "kosten_gespecificeerd",
+          "label": "De verhuurder heeft de kosten gespecificeerd",
+          "type": "ja_nee_onbekend"
+        },
+        {
+          "naam": "werkelijke_kosten",
+          "label": "Werkelijke kosten volgens factuur",
+          "type": "bedrag",
+          "hulp": "Laat leeg als het bedrag op de afrekening al uw aandeel is."
+        },
+        {
+          "naam": "bedrag_is_complextotaal",
+          "label": "Bovenstaand bedrag is het totaal voor het hele complex",
+          "type": "ja_nee",
+          "standaard": true
+        },
+        {
+          "naam": "aantal_woonruimten",
+          "label": "Aantal woonruimten dat gebruik (kan) maken",
+          "type": "geheel",
+          "hulp": "In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."
+        }
+      ]
+    },
+    "SK-13": {
+      "label": "Fonds (ontstopping, glas, lampen)",
+      "groep": "Aanvullingen Huurcommissie",
+      "bron": "par. 4.3.13, p. 44",
+      "velden": [
+        {
+          "naam": "voldaan_aan_voorwaarden",
+          "label": "Aangetoonde fondsvoorwaarden",
+          "type": "meerkeuze",
+          "opties": [
+            "de verhuurder moet inzage geven over de hoogte van het fonds en de betalingen daaruit",
+            "de bijdrage aan het fonds moet een redelijke vergoeding zijn voor de levering of dienst",
+            "de omvang van het fonds mag maximaal drie keer de jaaropbrengst zijn",
+            "de inleg van het fonds mag alleen gebruikt worden voor de betreffende levering of dienst"
+          ]
+        },
+        {
+          "naam": "werkelijke_kosten",
+          "label": "Werkelijke kosten volgens factuur",
+          "type": "bedrag",
+          "hulp": "Laat leeg als het bedrag op de afrekening al uw aandeel is."
+        },
+        {
+          "naam": "bedrag_is_complextotaal",
+          "label": "Bovenstaand bedrag is het totaal voor het hele complex",
+          "type": "ja_nee",
+          "standaard": true
+        },
+        {
+          "naam": "aantal_woonruimten",
+          "label": "Aantal woonruimten dat gebruik (kan) maken",
+          "type": "geheel",
+          "hulp": "In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."
+        }
+      ]
+    },
+    "SK-14-WKO": {
+      "label": "Warmtelevering via WKO-installatie",
+      "groep": "Aanvullingen Huurcommissie",
+      "bron": "par. 5.4, p. 49-50",
+      "velden": [
+        {
+          "naam": "vaste_kosten_gesplitst",
+          "label": "De vaste kosten zijn gesplitst in kapitaals-/onderhoudslasten en overige vaste kosten",
+          "type": "ja_nee_onbekend",
+          "hulp": "Kapitaals- en onderhoudslasten van de WKO mogen niet worden doorberekend (p. 49)."
+        },
+        {
+          "naam": "werkelijke_kosten",
+          "label": "Werkelijke kosten volgens factuur",
+          "type": "bedrag",
+          "hulp": "Laat leeg als het bedrag op de afrekening al uw aandeel is."
+        },
+        {
+          "naam": "bedrag_is_complextotaal",
+          "label": "Bovenstaand bedrag is het totaal voor het hele complex",
+          "type": "ja_nee",
+          "standaard": true
+        },
+        {
+          "naam": "aantal_woonruimten",
+          "label": "Aantal woonruimten dat gebruik (kan) maken",
+          "type": "geheel",
+          "hulp": "In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."
+        }
+      ]
+    },
+    "NSK-01": {
+      "label": "Leegstandsderving",
+      "groep": "Geen servicekosten",
+      "bron": "par. 4.3.14, p. 44",
+      "velden": []
+    },
+    "NSK-02": {
+      "label": "Belastingen en heffingen",
+      "groep": "Buiten de bevoegdheid",
+      "bron": "par. 4.3.15, p. 44",
+      "velden": []
+    },
+    "NSK-03": {
+      "label": "Zorgservicekosten",
+      "groep": "Buiten de bevoegdheid",
+      "bron": "par. 4.3.16, p. 45",
+      "velden": []
+    }
+  }
+}

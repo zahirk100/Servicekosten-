@@ -54,6 +54,21 @@ class WebPort(unittest.TestCase):
         for plaatshouder in ("/*__STIJL__*/", "/*__DATA__*/", "/*__KERN__*/"):
             self.assertNotIn(plaatshouder, pagina)
 
+    def test_pagina_is_een_volwaardig_document(self):
+        """Zonder doctype en viewport legt mobiel Safari de pagina op 980 px uit.
+
+        De Artifact-omgeving voegt zelf een viewport toe; een gewone webserver
+        niet. Deze pagina wordt op allebei uitgeleverd, dus staat het hier.
+        """
+        pagina = (WORTEL / "web" / "index.html").read_text("utf-8")
+        kop = pagina[:1200].lower()
+        self.assertTrue(kop.startswith("<!doctype html>"),
+                        "zonder doctype rendert de browser in quirks mode")
+        self.assertIn('<html lang="nl">', kop)
+        self.assertIn('<meta charset="utf-8">', kop)
+        self.assertIn('name="viewport"', kop)
+        self.assertIn("width=device-width", kop)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

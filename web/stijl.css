@@ -189,7 +189,9 @@ textarea { font-family: var(--mono); font-size: .84rem; line-height: 1.6; min-he
 /* Het grootboek: statusregels als een afrekening, met haarlijnen. */
 .grootboek { list-style: none; margin: 0; padding: 0; }
 .grootboek li + li { border-top: 1px solid var(--lijn); }
-.grootboek button { width: 100%; display: flex; align-items: center; gap: 13px; padding: 15px 22px;
+/* Uitlijnen op de eerste regel, niet op het midden: een statusnaam die over
+   twee regels breekt zette het merkje anders tussen de regels in. */
+.grootboek button { width: 100%; display: flex; align-items: flex-start; gap: 13px; padding: 15px 22px;
   border: none; background: none; text-align: left; font: inherit; min-height: 0; border-radius: 0; }
 .grootboek button:hover { background: var(--vel-2); }
 .grootboek .merkje { flex: none; width: 26px; height: 26px; border-radius: 5px; display: grid;
@@ -198,8 +200,8 @@ textarea { font-family: var(--mono); font-size: .84rem; line-height: 1.6; min-he
 .grootboek .omschrijving b { display: block; font-weight: 650; font-size: .97rem; overflow-wrap: anywhere; }
 .grootboek .omschrijving span { font-size: .84rem; color: var(--inkt-2); }
 .grootboek .geld { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap;
-  font-family: var(--display); font-size: 1.08rem; letter-spacing: -.02em; }
-.grootboek .pijl { color: var(--inkt-3); flex: none; font-size: 1.1rem; }
+  font-family: var(--display); font-size: 1.08rem; letter-spacing: -.02em; margin-top: 1px; }
+.grootboek .pijl { color: var(--inkt-3); flex: none; font-size: 1.1rem; line-height: 1.5; }
 
 .merk-ROOD { background: var(--rood-vel); color: var(--rood-inkt); }
 .merk-ORANJE { background: var(--oranje-vel); color: var(--oranje-inkt); }
@@ -386,7 +388,27 @@ footer p { max-width: 64ch; margin-bottom: .5em; }
   .balk-rechts { width: 100%; margin-left: 0; }
   .rollen { flex: 1; }
   .rollen button { flex: 1; }
+  /* Tijdens de controle is de rolwissel verborgen: dan hoeft de balk geen
+     tweede rij en houdt de huurder ruim vijftig pixels scherm over. */
+  .balk.zonder-rollen .balk-rechts { width: auto; margin-left: auto; }
+  .balk.zonder-rollen .wrap { flex-wrap: nowrap; }
 }
+:root:has(.balk.zonder-rollen) { --kop-h: 58px; }
+
+/* Een telefoonscherm is hoog noch breed: minder lucht rond de stappen. */
+@media (max-width: 560px) {
+  section.scherm { padding-block: 16px 36px; }
+  .voortgang { margin-bottom: 16px; }
+  .opener { padding-block: 2px 0; }
+  .kaart { padding: 17px; }
+  .uitslag-kop { padding: 20px 18px 18px; }
+  .grootboek button { padding: 14px 18px; }
+  .post-body { padding: 15px 16px; }
+}
+
+/* Een lege meldingenbalk hoort geen ruimte in te nemen. */
+.meldingbak { padding-top: 14px; }
+.meldingbak:empty { padding-top: 0; }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 @media (forced-colors: active) {

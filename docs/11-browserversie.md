@@ -121,6 +121,14 @@ rolwissel een eigen rij.
 
 ### Op een telefoon
 
+- **De pagina is een volwaardig document.** `<!doctype html>`, `<html lang="nl">`, `<meta charset>` en
+  vooral `<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">`.
+  Zonder die laatste regel legt mobiel Safari de pagina op 980 px uit en schaalt hem weg: geen enkele
+  mediaquery voor een telefoon komt dan aan bod, de vaste actiebalk blijft `static`, en de lezer moet
+  links-rechts schuiven om een regel uit te lezen. De Artifact-omgeving voegt zelf een viewport toe en
+  verborg het probleem daar; op een gewone webserver (Vercel) niet. `viewport-fit=cover` is bovendien
+  de voorwaarde waaronder `env(safe-area-inset-*)` iets teruggeeft.
+  `tests/test_web_port.py::test_pagina_is_een_volwaardig_document` bewaakt het.
 - **Vaste actiebalk.** Tot 720 px staat de hoofdactie van elke stap onderaan vast, binnen duimbereik,
   met `env(safe-area-inset-bottom)` voor de thuisbalk van de telefoon. Het scherm houdt daar ruimte
   voor vrij, zodat de balk nooit iets afdekt. Daarboven staat hij gewoon in de tekststroom.
@@ -132,7 +140,14 @@ rolwissel een eigen rij.
   op smalle schermen waar die balk twee rijen heeft).
 - **Lijsten stapelen.** Onder 560 px staan status en bedrag van een dossier op één regel en krijgen de
   naam en de kenmerken de volle breedte; in de controlestap staan soort en bedrag naast elkaar.
+- **De rolwissel verdwijnt tijdens de controle.** Huurder/beheer kiezen heeft alleen zin op het
+  dashboard en in de beheeromgeving; tijdens de vier stappen kostte die knop een tweede kopregel en
+  daarmee ruim vijftig pixels van een scherm dat er maar 664 heeft.
 - Invoervelden dragen `inputmode` en `enterkeyhint`, zodat het toetsenbord meteen goed staat.
+
+Gecontroleerd met echte apparaatemulatie (iPhone 13, iPhone 14 Pro Max, Pixel 7), die de viewport-tag
+respecteert waar een vast ingestelde vensterbreedte dat niet doet: op alle zeventien schermen van beide
+rollen is `scrollWidth` gelijk aan de vensterbreedte en steekt geen enkel element buiten de rand.
 
 ## Grenzen
 

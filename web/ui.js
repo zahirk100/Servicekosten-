@@ -94,8 +94,15 @@
   }
 
   const SCHERMEN = ["dash", "gegevens", "invoer", "vragen", "uitkomst", "bedankt", "mijn", "beheer", "dossier"];
+  // Tijdens de controle zelf helpt de rolwissel niemand; hij kost alleen een
+  // tweede kopregel op een telefoon. Hij komt terug zodra je ergens kunt kiezen.
+  const MET_ROLWISSEL = new Set(["dash", "mijn", "beheer", "dossier"]);
+
   function toon(naam) {
     for (const s of SCHERMEN) $("#s-" + s).hidden = s !== naam;
+    const rollen = MET_ROLWISSEL.has(naam);
+    $("#rollen").hidden = !rollen;
+    $("#balk").classList.toggle("zonder-rollen", !rollen);
     if (stil) { /* we komen hier via de terugknop: de geschiedenis klopt al */ }
     else if (history.state && history.state.scherm === naam) { /* zelfde scherm, geen dubbele stap */ }
     else {
@@ -1293,6 +1300,10 @@
   /* ─────────────────────────────────────────────────────────── start */
 
   function init() {
+    // In de Artifact-omgeving levert de runtime het <html>-element; die krijgt
+    // de taal hier, zodat afbreken en voorlezen ook daar klopt.
+    document.documentElement.lang = "nl";
+
     $("#rol-huurder").addEventListener("click", () => zetRol("huurder"));
     $("#rol-beheer").addEventListener("click", () => zetRol("beheer"));
     $("#thema").addEventListener("click", () => {

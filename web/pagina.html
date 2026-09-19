@@ -1,10 +1,24 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<!-- Zonder deze regel legt mobiel Safari de pagina op 980 px uit en schaalt hem
+     weg: geen enkele mediaquery voor een telefoon komt dan aan bod en de lezer
+     moet links-rechts schuiven. De Artifact-omgeving voegt zelf een viewport
+     toe, een gewone webserver niet. -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Controleer je servicekostenafrekening volgens het Beleidsboek Servicekosten van de Huurcommissie.">
+<meta name="theme-color" content="#f5f4f0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#14150f" media="(prefers-color-scheme: dark)">
 <title>Servicekosten</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Public+Sans:wght@400;500;600;650;700&family=IBM+Plex+Mono&display=swap">
 <style>/*__STIJL__*/</style>
+</head>
+<body>
 
-<header class="balk">
+<header class="balk" id="balk">
   <div class="wrap breed">
     <span class="merk"><span class="punt"></span>Servicekosten</span>
     <span class="balk-rechts">
@@ -18,7 +32,7 @@
 </header>
 
 <main>
-  <div class="wrap breed" id="meldingen" aria-live="polite" style="padding-top:14px"></div>
+  <div class="wrap breed meldingbak" id="meldingen" aria-live="polite"></div>
 
   <!-- ═════════════ HUURDER · dashboard ═════════════ -->
   <section id="s-dash" class="wrap breed scherm" hidden>
@@ -208,3 +222,5 @@
 <script>/*__FOTOS__*/</script>
 <script>/*__OPSLAG__*/</script>
 <script>/*__UI__*/</script>
+</body>
+</html>

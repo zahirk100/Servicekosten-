@@ -1,0 +1,2391 @@
+<title>Servicekosten-audit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>/* Servicekosten-audit — browserversie.
+   Palet: koel papier met een diepe teal-inkt als accent; statuskleuren staan
+   los van dat accent en dragen nooit alleen betekenis (glyph + woord + patroon).
+   Type: Source Serif 4 voor koppen (documentkarakter), Source Sans 3 voor UI,
+   IBM Plex Mono voor berekeningsregels. */
+
+:root {
+  color-scheme: light;
+  --papier:        #f5f7f8;
+  --vlak:          #ffffff;
+  --vlak-2:        #eef1f3;
+  --vlak-3:        #e3e8eb;
+  --ink:           #13191d;
+  --ink-2:         #4b575f;
+  --ink-3:         #78848c;
+  --lijn:          #dde3e6;
+  --lijn-2:        #c6d0d5;
+  --accent:        #14607c;
+  --accent-ink:    #0f4d64;
+  --accent-vlak:   #e4eff3;
+
+  --st-groen:      #0ca30c;
+  --st-oranje:     #fab219;
+  --st-rood:       #d03b3b;
+  --st-buiten:     #78848c;
+  --st-groen-vlak: #e7f6e7;  --st-groen-ink:  #0a5c0a;
+  --st-oranje-vlak:#fdf2da;  --st-oranje-ink: #6f4d00;
+  --st-rood-vlak:  #fbe9e9;  --st-rood-ink:   #9e2b2b;
+  --st-buiten-vlak:#eef1f3;  --st-buiten-ink: #4b575f;
+
+  --r: 12px; --r-s: 7px;
+  --schaduw: 0 1px 2px rgba(19,25,29,.05), 0 6px 20px -8px rgba(19,25,29,.12);
+  --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --sans: "Source Sans 3", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --papier: #10151a; --vlak: #192027; --vlak-2: #222b33; --vlak-3: #2c363f;
+    --ink: #eef3f6; --ink-2: #aebac2; --ink-3: #7f8d96;
+    --lijn: #2a343c; --lijn-2: #3a464f;
+    --accent: #5fb3d1; --accent-ink: #8fcde4; --accent-vlak: #13303c;
+    --st-groen-vlak: #0e2410; --st-groen-ink: #6fdc6f;
+    --st-oranje-vlak: #2d2409; --st-oranje-ink: #fab219;
+    --st-rood-vlak: #2e1515; --st-rood-ink: #f29191;
+    --st-buiten-vlak: #222b33; --st-buiten-ink: #aebac2;
+    --schaduw: 0 1px 2px rgba(0,0,0,.5), 0 6px 20px -8px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --papier: #10151a; --vlak: #192027; --vlak-2: #222b33; --vlak-3: #2c363f;
+  --ink: #eef3f6; --ink-2: #aebac2; --ink-3: #7f8d96;
+  --lijn: #2a343c; --lijn-2: #3a464f;
+  --accent: #5fb3d1; --accent-ink: #8fcde4; --accent-vlak: #13303c;
+  --st-groen-vlak: #0e2410; --st-groen-ink: #6fdc6f;
+  --st-oranje-vlak: #2d2409; --st-oranje-ink: #fab219;
+  --st-rood-vlak: #2e1515; --st-rood-ink: #f29191;
+  --st-buiten-vlak: #222b33; --st-buiten-ink: #aebac2;
+  --schaduw: 0 1px 2px rgba(0,0,0,.5), 0 6px 20px -8px rgba(0,0,0,.6);
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--papier); color: var(--ink);
+  font-family: var(--sans); font-size: 15.5px; line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3 { font-family: var(--serif); font-weight: 600; line-height: 1.22; margin: 0 0 .35em; text-wrap: balance; }
+h1 { font-size: 1.6rem; letter-spacing: -.012em; }
+h2 { font-size: 1.22rem; }
+h3 { font-size: 1.02rem; }
+p { margin: 0 0 .75em; max-width: 68ch; }
+.klein { font-size: .845rem; color: var(--ink-2); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+[hidden] { display: none !important; }
+
+.wrap { max-width: 1040px; margin: 0 auto; padding-inline: 16px; }
+
+/* ---------------------------------------------------------------- header */
+.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 30;
+  background: color-mix(in srgb, var(--vlak) 92%, transparent);
+  backdrop-filter: blur(8px); border-bottom: 1px solid var(--lijn);
+}
+.top .wrap { display: flex; align-items: center; gap: 12px; padding-block: 11px; }
+.merk { font-family: var(--serif); font-weight: 600; font-size: 1.04rem; line-height: 1.2; }
+.merk em { display: block; font: 400 .74rem/1.3 var(--sans); color: var(--ink-3); font-style: normal; letter-spacing: .01em; }
+.top-rechts { margin-left: auto; display: flex; gap: 4px; }
+
+/* ---------------------------------------------------------------- stappen */
+.stappen { display: flex; gap: 5px; list-style: none; margin: 16px 0 18px; padding: 0; flex-wrap: wrap; }
+.stappen li {
+  display: flex; align-items: center; gap: 7px; font-size: .795rem; color: var(--ink-3);
+  border: 1px solid var(--lijn); border-radius: 999px; padding: 4px 13px 4px 5px; background: var(--vlak);
+}
+.stappen .bol { width: 19px; height: 19px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--vlak-2); color: var(--ink-3); font-size: .7rem; font-weight: 700; }
+.stappen li[aria-current="step"] { color: var(--ink); border-color: var(--accent); background: var(--accent-vlak); }
+.stappen li[aria-current="step"] .bol { background: var(--accent); color: var(--vlak); }
+.stappen li.klaar .bol { background: var(--st-groen); color: #fff; }
+
+/* ---------------------------------------------------------------- blokken */
+.kaart { background: var(--vlak); border: 1px solid var(--lijn); border-radius: var(--r); padding: 18px; }
+.kaart + .kaart { margin-top: 13px; }
+.kaart > h2 { margin-bottom: .2em; }
+
+button {
+  font: 550 .93rem/1.35 var(--sans); cursor: pointer; border-radius: var(--r-s);
+  border: 1px solid var(--lijn-2); background: var(--vlak); color: var(--ink);
+  padding: 8px 14px; display: inline-flex; align-items: center; gap: 7px;
+}
+button:hover { border-color: var(--ink-3); }
+button.primair { background: var(--accent); border-color: var(--accent); color: #fff; }
+:root[data-theme="dark"] button.primair, :root:not([data-theme="light"]) button.primair { color: #08141a; }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) button.primair { color: #fff; } }
+button.primair:hover { filter: brightness(1.08); }
+button.stil { border-color: transparent; background: transparent; color: var(--ink-2); padding: 6px 9px; font-size: .85rem; }
+button.stil:hover { background: var(--vlak-2); color: var(--ink); }
+button:disabled { opacity: .45; cursor: not-allowed; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+.actiebalk { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+
+/* ---------------------------------------------------------------- invoer */
+label { display: block; font-size: .8rem; font-weight: 600; color: var(--ink-2); margin-bottom: 4px; letter-spacing: .005em; }
+input[type="text"], input[type="number"], input[type="date"], select, textarea {
+  font: inherit; font-size: .93rem; width: 100%; padding: 8px 10px; border-radius: var(--r-s);
+  border: 1px solid var(--lijn-2); background: var(--vlak); color: var(--ink);
+}
+textarea { font-family: var(--mono); font-size: .8rem; line-height: 1.55; min-height: 230px; resize: vertical; }
+.rooster { display: grid; gap: 12px 14px; grid-template-columns: repeat(auto-fit, minmax(195px, 1fr)); margin-top: 14px; }
+.hulp { font-size: .765rem; color: var(--ink-3); margin-top: 3px; max-width: 60ch; }
+.checkrij { display: flex; flex-wrap: wrap; gap: 6px 15px; }
+.checkrij label { display: inline-flex; align-items: center; gap: 6px; font-weight: 400; color: var(--ink); margin: 0; font-size: .89rem; }
+input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--accent); flex: none; }
+
+.dropzone {
+  border: 1.5px dashed var(--lijn-2); border-radius: var(--r); padding: 30px 18px; text-align: center;
+  background: var(--vlak-2); transition: border-color .15s, background .15s; margin-top: 14px;
+}
+.dropzone.hover { border-color: var(--accent); background: var(--accent-vlak); }
+
+/* ---------------------------------------------------------------- posten */
+.post { border: 1px solid var(--lijn); border-radius: var(--r); margin-bottom: 9px; background: var(--vlak); overflow: hidden; }
+.post-kop { display: grid; grid-template-columns: 1fr 215px 128px 32px; gap: 10px; align-items: end; padding: 11px 12px; }
+.post-kop input[type="number"] { text-align: right; font-variant-numeric: tabular-nums; }
+.post details > summary { cursor: pointer; padding: 7px 12px 9px; font-size: .8rem; color: var(--ink-2); border-top: 1px dashed var(--lijn); }
+.post details[open] > summary { color: var(--accent-ink); }
+.post-body { padding: 2px 12px 14px; }
+.vraag { font-size: .82rem; background: var(--st-oranje-vlak); color: var(--st-oranje-ink); border-radius: var(--r-s); padding: 8px 11px; margin: 8px 0; max-width: 72ch; }
+.alt { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0 2px; align-items: center; }
+.alt button { padding: 2px 9px; font-size: .78rem; font-variant-numeric: tabular-nums; }
+.alt button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-vlak); color: var(--accent-ink); }
+
+/* ---------------------------------------------------------------- status */
+.status { display: inline-flex; align-items: center; gap: 6px; font-size: .77rem; font-weight: 650;
+  padding: 3px 9px 3px 7px; border-radius: 999px; border: 1px solid; white-space: nowrap; }
+.status-GROEN { background: var(--st-groen-vlak); color: var(--st-groen-ink); border-color: var(--st-groen); }
+.status-ORANJE { background: var(--st-oranje-vlak); color: var(--st-oranje-ink); border-color: var(--st-oranje); }
+.status-ROOD { background: var(--st-rood-vlak); color: var(--st-rood-ink); border-color: var(--st-rood); }
+.status-BUITEN_BEVOEGDHEID { background: var(--st-buiten-vlak); color: var(--st-buiten-ink); border-color: var(--st-buiten); }
+
+/* ------------------------------------------------------------- uitkomst */
+.verdict { background: var(--vlak); border: 1px solid var(--lijn); border-radius: var(--r); padding: 20px; box-shadow: var(--schaduw); }
+.verdict .label { font-size: .79rem; font-weight: 650; color: var(--ink-2); letter-spacing: .04em; text-transform: uppercase; }
+.verdict .hero { font-family: var(--serif); font-size: clamp(2.3rem, 7vw, 3.1rem); font-weight: 600;
+  letter-spacing: -.025em; line-height: 1.04; color: var(--accent-ink); font-variant-numeric: tabular-nums; margin: 2px 0 4px; }
+.verdict .onder { font-size: .88rem; color: var(--ink-2); max-width: 62ch; }
+
+.balk { display: flex; gap: 2px; height: 40px; margin: 16px 0 9px; }
+.balk .seg { position: relative; overflow: hidden; display: grid; place-items: center; min-width: 4px;
+  font-size: .76rem; font-weight: 700; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.5); font-variant-numeric: tabular-nums; }
+.balk .seg:first-child { border-radius: 4px 0 0 4px; }
+.balk .seg:last-child { border-radius: 0 4px 4px 0; }
+.balk .seg:only-child { border-radius: 4px; }
+.balk .seg span { position: relative; z-index: 1; padding: 0 5px; }
+.legenda { display: flex; flex-wrap: wrap; gap: 5px 17px; font-size: .8rem; color: var(--ink-2); }
+.legenda .item { display: inline-flex; align-items: center; gap: 6px; }
+.legenda .chip { width: 12px; height: 12px; border-radius: 3px; flex: none; }
+.legenda b { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+.cijfers { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); margin-top: 16px; }
+.cijfer { border-top: 2px solid var(--lijn-2); padding-top: 9px; }
+.cijfer .k { font-size: .76rem; color: var(--ink-2); font-weight: 600; }
+.cijfer .v { font-size: 1.22rem; font-weight: 650; font-variant-numeric: tabular-nums; letter-spacing: -.012em; }
+.cijfer .v.tekst { font-size: 1.02rem; letter-spacing: 0; }
+.cijfer .t { font-size: .74rem; color: var(--ink-3); margin-top: 1px; }
+
+.bev { border: 1px solid var(--lijn); border-left-width: 3px; border-radius: var(--r); background: var(--vlak); padding: 13px 15px; margin-bottom: 9px; }
+.bev.GROEN { border-left-color: var(--st-groen); }
+.bev.ORANJE { border-left-color: var(--st-oranje); }
+.bev.ROOD { border-left-color: var(--st-rood); }
+.bev.BUITEN_BEVOEGDHEID { border-left-color: var(--st-buiten); }
+.bev-kop { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.bev-kop h3 { margin: 0; flex: 1 1 200px; }
+.bedragen { display: flex; gap: 15px; font-size: .82rem; font-variant-numeric: tabular-nums; color: var(--ink-2); }
+.bedragen b { display: block; font-size: .98rem; color: var(--ink); font-weight: 650; }
+.bev dl { margin: 9px 0 0; font-size: .855rem; max-width: 76ch; }
+.bev dt { font-weight: 700; color: var(--ink-3); font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; margin-top: 9px; }
+.bev dd { margin: 3px 0 0; color: var(--ink-2); }
+.bev dd.reken { font-family: var(--mono); font-size: .775rem; color: var(--ink); }
+.regels { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 9px; }
+.regels code { font-family: var(--mono); font-size: .71rem; background: var(--vlak-2); border: 1px solid var(--lijn);
+  border-radius: 4px; padding: 1px 6px; color: var(--ink-2); }
+
+.melding { border-radius: var(--r-s); padding: 10px 13px; font-size: .855rem; margin-bottom: 8px; max-width: 80ch; }
+.melding.fout { background: var(--st-rood-vlak); color: var(--st-rood-ink); }
+.melding.letop { background: var(--st-oranje-vlak); color: var(--st-oranje-ink); }
+.melding.ok { background: var(--st-groen-vlak); color: var(--st-groen-ink); }
+.melding.info { background: var(--accent-vlak); color: var(--ink); }
+
+.voorbeeldbalk { display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  background: var(--accent-vlak); border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  border-radius: var(--r); padding: 11px 15px; margin-bottom: 13px; font-size: .875rem; }
+.voorbeeldbalk b { font-weight: 650; }
+.voorbeeldbalk button { margin-left: auto; }
+
+.tabel-scroll { overflow-x: auto; margin-top: 12px; }
+table { width: 100%; border-collapse: collapse; font-size: .855rem; min-width: 460px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--lijn); vertical-align: top; }
+th { font-size: .71rem; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); font-weight: 700; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+details.uitklap { border: 1px solid var(--lijn); border-radius: var(--r); background: var(--vlak); margin-top: 13px; }
+details.uitklap > summary { cursor: pointer; padding: 12px 16px; font-weight: 600; font-size: .93rem; }
+details.uitklap > div { padding: 0 16px 16px; }
+
+footer { margin: 30px 0 44px; font-size: .79rem; color: var(--ink-3); }
+footer p { max-width: 82ch; margin-bottom: .45em; }
+
+@media (max-width: 720px) {
+  .post-kop { grid-template-columns: 1fr; }
+  .bev-kop h3 { flex-basis: 100%; }
+  .bedragen { gap: 12px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+@media (forced-colors: active) {
+  .balk .seg { forced-color-adjust: none; border: 1px solid CanvasText; }
+  .status { border-width: 2px; }
+}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="merk">Servicekosten-audit<em>Beleidsboek Servicekosten · versie 1 juli 2026</em></div>
+    <div class="top-rechts">
+      <button class="stil" id="thema" type="button">Thema</button>
+      <button class="stil" id="opnieuw" type="button">Opnieuw</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <ol class="stappen" id="stappen">
+    <li data-stap="start"><span class="bol">1</span>Afrekening inlezen</li>
+    <li data-stap="controle"><span class="bol">2</span>Controleren</li>
+    <li data-stap="resultaat" aria-current="step"><span class="bol">3</span>Beoordeling</li>
+  </ol>
+
+  <div id="meldingen" aria-live="polite"></div>
+
+  <!-- ============ STAP 1 ============ -->
+  <section id="stap-start" hidden>
+    <div class="kaart">
+      <h2>Lees uw servicekostenafrekening in</h2>
+      <p class="klein">Het model haalt de posten uit uw afrekening, koppelt ze aan de categorieën uit het
+        Besluit servicekosten en rekent ze na volgens het beleidsboek van de Huurcommissie. U controleert de
+        herkenning daarna zelf — het model raadt niets en wijst een onbekende post nooit vanzelf af.</p>
+
+      <div class="dropzone" id="dropzone">
+        <h3>Sleep uw afrekening hierheen</h3>
+        <p class="klein" style="margin:0 auto">PDF, CSV of tekstbestand. Een scan zonder tekstlaag kan niet
+          worden gelezen; plak dan de tekst of voer de posten handmatig in.</p>
+        <input type="file" id="bestand" accept=".pdf,.csv,.tsv,.txt,.md" class="sr">
+        <div class="actiebalk" style="justify-content:center">
+          <button class="primair" type="button" id="kies">Bestand kiezen</button>
+          <button type="button" id="handmatig">Handmatig invoeren</button>
+          <button type="button" id="voorbeeld-laden">Voorbeeld bekijken</button>
+        </div>
+      </div>
+
+      <details class="uitklap">
+        <summary>Of plak de tekst van uw afrekening</summary>
+        <div>
+          <p class="klein">Werkt altijd, ook als de PDF niet leesbaar is: open uw afrekening, selecteer alles
+            (Ctrl/Cmd+A), kopieer en plak hieronder.</p>
+          <textarea id="plakvak" placeholder="Plak hier de tekst van uw afrekening…"></textarea>
+          <div class="actiebalk"><button class="primair" type="button" id="plak-lezen">Tekst inlezen</button></div>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ============ STAP 2 ============ -->
+  <section id="stap-controle" hidden>
+    <div class="kaart">
+      <h2>Uw woning en de afrekenperiode</h2>
+      <p class="klein">Deze gegevens bepalen welke normbedragen gelden. De Nibud-tabellen in het beleidsboek
+        lopen tot en met 2025.</p>
+      <div class="rooster" id="woningvelden"></div>
+    </div>
+
+    <div class="kaart">
+      <h2>Procedure en termijnen</h2>
+      <p class="klein">De Huurcommissie toetst eerst de ontvankelijkheid. Zonder schriftelijk bezwaar — of,
+        als u geen afrekening kreeg, een schriftelijke opvraag — verklaart zij het verzoek niet-ontvankelijk,
+        hoe sterk uw zaak inhoudelijk ook is.</p>
+      <div class="rooster" id="procedurevelden"></div>
+    </div>
+
+    <div class="kaart">
+      <h2>De kostenposten <span class="klein" id="postenaantal" style="font-family:var(--sans);font-weight:400"></span></h2>
+      <p class="klein">Controleer per post de categorie en het bedrag. Klap een post open voor de
+        vervolgvragen die bij die categorie horen — die bepalen of het model kan rekenen of een
+        informatievraag moet stellen.</p>
+      <div class="actiebalk" style="margin-bottom:13px">
+        <button type="button" id="snel-overeengekomen">Alle posten: overeengekomen</button>
+        <button type="button" id="snel-facturen">Alle posten: facturen aanwezig</button>
+        <button type="button" id="snel-specificatie">Alle posten: specificatieformulier aanwezig</button>
+      </div>
+      <div id="posten"></div>
+      <div class="actiebalk"><button type="button" id="post-toevoegen">+ Post toevoegen</button></div>
+    </div>
+
+    <div class="actiebalk">
+      <button class="primair" type="button" id="beoordeel">Beoordeel deze afrekening</button>
+      <button type="button" id="terug-start">Terug</button>
+    </div>
+  </section>
+
+  <!-- ============ STAP 3 ============ -->
+  <section id="stap-resultaat">
+    <div class="voorbeeldbalk" id="voorbeeldbalk">
+      <span><b>Dit is een voorbeeldafrekening.</b> Fictief dossier met twaalf posten, zodat u meteen ziet wat
+        de applicatie doet.</span>
+      <button class="primair" type="button" id="voorbeeld-eigen">Mijn eigen afrekening inlezen</button>
+    </div>
+
+    <div class="verdict" id="verdict"></div>
+
+    <div id="ontvankelijkheid" style="margin-top:14px"></div>
+
+    <div class="kaart">
+      <h2>Bevindingen per post</h2>
+      <p class="klein">Gesorteerd op ernst. Elke bevinding noemt de toegepaste regel en de paragraaf en
+        pagina in het beleidsboek waarop die berust.</p>
+      <div id="bevindingen" style="margin-top:12px"></div>
+    </div>
+
+    <div class="kaart" id="vragen-kaart">
+      <h2>Wat u nog moet opvragen</h2>
+      <p class="klein">Gesorteerd op financieel belang. Artikel 7:259 lid 4 BW geeft u recht op inzage in de
+        boeken en bescheiden die aan de afrekening ten grondslag liggen.</p>
+      <div class="tabel-scroll"><table id="vragen"></table></div>
+    </div>
+
+    <div class="kaart">
+      <h2>Hoe sterk staat deze zaak?</h2>
+      <div class="cijfers" id="sterkte"></div>
+      <p class="klein" id="sterkte-uitleg" style="margin-top:14px"></p>
+    </div>
+
+    <div class="kaart">
+      <h2>Conceptbrief</h2>
+      <p class="klein">De bezwaarplicht uit paragraaf 6.3.1 vraagt dat u per kostenpost aangeeft waartegen u
+        bezwaar maakt en waarom. Deze brief doet dat op basis van de bevindingen hierboven.</p>
+      <div class="actiebalk">
+        <button type="button" id="bezwaarbrief">Bezwaarbrief opstellen</button>
+        <button type="button" id="opvraagbrief">Opvraagbrief (geen afrekening ontvangen)</button>
+      </div>
+      <textarea id="brief" spellcheck="false" aria-label="Conceptbrief" style="margin-top:12px" hidden></textarea>
+      <div class="actiebalk" id="briefacties" hidden>
+        <button class="primair" type="button" id="kopieer">Kopieer naar klembord</button>
+      </div>
+    </div>
+
+    <div class="actiebalk">
+      <button type="button" id="terug-controle">Terug naar de invoer</button>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap">
+  <p><b>Dit is geen juridisch advies.</b> Het beleidsboek is uitvoeringsbeleid: de Huurcommissie handelt
+    ernaar, maar kan gemotiveerd afwijken als het geschil dat rechtvaardigt (p. 3). Elke uitkomst hier is een
+    verwachting van de beleidslijn, geen voorspelling van de uitspraak.</p>
+  <p>Alles rekent in uw eigen browser. Er wordt niets verstuurd of opgeslagen — uw afrekening verlaat dit
+    tabblad niet.</p>
+  <p>Bron: Beleidsboek Servicekosten van de Huurcommissie, versie 1 juli 2026 (86 pagina's, inclusief het
+    Besluit servicekosten en het Besluit kleine herstellingen). 76 beslisregels; de rekenwijze is gevalideerd
+    tegen de zeventien rekenvoorbeelden uit dat document.</p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+  if (window.pdfjsLib) {
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  }
+</script>
+<script>window.SERVICEKOSTEN_DATA = {"normen":{"$comment":"Alle waarden zijn letterlijk overgenomen uit het Beleidsboek Servicekosten van de Huurcommissie, versie 1 juli 2026. Per blok staat de paginaverwijzing (pagina = PDF-pagina = afgedrukt paginanummer).","bron":{"document":"Beleidsboek Servicekosten","uitgever":"Huurcommissie","versie":"1 juli 2026","toepassingsbereik":"Verzoekschriften ingediend op of na 1 juli 2026 (p. 3)","laatste_databeschikbaarheid":"2025; voor 2026 zijn geen Nibud-verbruiken, -tarieven en graaddagen in het beleidsboek opgenomen"},"gas":{"verbruiksnorm_zelfstandig_m3":{"_bron":"Tabel 1, p. 13","flatwoning_appartement":{"2023":840,"2024":810,"2025":750},"tussenwoning":{"2023":1170,"2024":1090,"2025":990},"hoekwoning":{"2023":1370,"2024":1280,"2025":1160},"twee_onder_een_kap":{"2023":1550,"2024":1470,"2025":1320},"vrijstaande_woning":{"2023":2040,"2024":1960,"2025":1740}},"verbruiksnorm_onzelfstandig_m3_per_m2":{"_bron":"p. 14","waarde":25},"tarief":{"_bron":"Tabel 2, p. 14","2023":{"tarief_per_m3":1.45,"tarief_per_m3_boven_plafond":1.77,"plafond_m3":1200,"vastrecht_per_jaar":223.56},"2024":{"tarief_per_m3":1.31,"tarief_per_m3_boven_plafond":null,"plafond_m3":null,"vastrecht_per_jaar":236.76},"2025":{"tarief_per_m3":1.36,"tarief_per_m3_boven_plafond":null,"plafond_m3":null,"vastrecht_per_jaar":323.16}},"verdeelsleutel_zonder_eigen_meter":{"_bron":"par. 4.2.1, p. 26","aandeel_vaste_kosten":0.35,"verdeling_vaste_kosten":"gelijk_over_aantal_woonruimten","aandeel_variabele_kosten":0.65,"verdeling_variabele_kosten":"naar_vloeroppervlakte"},"periodemethode_korter_dan_12_maanden":"graaddagenmethode (par. 3.1.3, p. 16)","rendement_ondergrens_stookinstallatie":{"_bron":"par. 3.1.2, p. 15","waarde":0.8}},"elektriciteit":{"verbruiksnorm_zelfstandig_kwh":{"_bron":"Tabel 4, p. 18 (afhankelijk van aantal bewoners)","1":{"2023":1830,"2024":1750,"2025":1640},"2":{"2023":2850,"2024":2700,"2025":2550},"3":{"2023":3430,"2024":3250,"2025":3080},"4":{"2023":4010,"2024":3790,"2025":3600},"5":{"2023":4350,"2024":4150,"2025":3980}},"verbruiksnorm_onzelfstandig_kwh":{"_bron":"p. 18","waarde":1000},"tarief":{"_bron":"Tabel 5, p. 18","2023":{"tarief_per_kwh":0.4,"tarief_per_kwh_boven_plafond":0.45,"plafond_kwh":2900,"vastrecht_per_jaar":350.52,"belastingteruggave_per_jaar":596.86},"2024":{"tarief_per_kwh":0.29,"tarief_per_kwh_boven_plafond":null,"plafond_kwh":null,"vastrecht_per_jaar":412.44,"belastingteruggave_per_jaar":631.39},"2025":{"tarief_per_kwh":0.27,"tarief_per_kwh_boven_plafond":null,"plafond_kwh":null,"vastrecht_per_jaar":561.36,"belastingteruggave_per_jaar":635.19}},"seizoenspatroon_percentage_per_maand":{"_bron":"Tabel 6, p. 20. Deze percentages wijzigen niet en zijn elk jaar hetzelfde.","1":0.1,"2":0.08,"3":0.09,"4":0.08,"5":0.08,"6":0.07,"7":0.06,"8":0.07,"9":0.08,"10":0.09,"11":0.1,"12":0.1},"verdeelsleutel_zonder_eigen_meter":{"_bron":"par. 4.2.1, p. 27","verdeling":"gelijk_over_aantal_woonruimten"},"periodemethode_korter_dan_12_maanden":"seizoenspatronen (par. 3.2.3, p. 20)"},"water":{"verbruiksnorm_m3":{"_bron":"Tabel 7, p. 21 (afhankelijk van aantal bewoners; gelijk voor 2023-2025)","1":{"2023":68,"2024":68,"2025":68},"2":{"2023":95,"2024":95,"2025":95},"3":{"2023":123,"2024":123,"2025":123},"4":{"2023":163,"2024":163,"2025":163},"5":{"2023":187,"2024":187,"2025":187}},"tarief":{"_bron":"Tabel 8, p. 22","2023":{"tarief_per_m3":1.31,"vastrecht_per_jaar":74.0},"2024":{"tarief_per_m3":1.6,"vastrecht_per_jaar":79.0},"2025":{"tarief_per_m3":1.77,"vastrecht_per_jaar":85.0}},"verdeelsleutel_zonder_eigen_meter":{"_bron":"par. 4.2.1, p. 27","verdeling":"gelijk_over_aantal_woonruimten"},"periodemethode_korter_dan_12_maanden":"evenredig deel van het jaar (par. 3.3.3, p. 23)"},"graaddagen":{"_bron":"Tabel 3, p. 16. Weerstation De Bilt, stookgrens 18 graden C, etmaalgemiddelde binnentemperatuur 18 graden C.","2023":{"1":417.12,"2":379.72,"3":340.9,"4":223.04,"5":112.64,"6":17.52,"7":19.84,"8":28.08,"9":34.8,"10":148.3,"11":336.6,"12":378.95,"totaal":2437.51},"2024":{"1":481.14,"2":313.17,"3":280.5,"4":173.68,"5":66.08,"6":66.88,"7":22.8,"8":6.32,"9":70.64,"10":183.9,"11":365.31,"12":406.89,"totaal":2437.31},"2025":{"1":496.32,"2":433.62,"3":336.7,"4":156.08,"5":99.2,"6":26.32,"7":7.52,"8":21.12,"9":76.96,"10":185.3,"11":338.25,"12":406.45,"totaal":2583.84}},"roerende_zaken":{"_bron":"par. 4.3.3, p. 30-35","afschrijving_per_levensduur":{"5":0.2,"10":0.1,"15":0.0667},"standaard_levensduur_jaren":5,"levensduur_10_jaar_voorbeelden":["gevelkachels","kleine boilers","geisers","brandbeveiligingsmiddelen","huishoudelijke apparaten (bestemd voor een woonruimte)","technische apparaten (bestemd voor een woonruimte)","laminaat (bestemd voor een woonruimte)"],"herwaardering_na_afschrijvingsperiode":0.6,"wettelijk_standaardbedrag_per_jaar_zonder_gegevens":12.0,"zonnepanelen":{"levensduur_jaren":15,"afschrijvingspercentage":0.0667,"opslag_op_aanschafwaarde_eur":2000.0,"herwaardering":0.6,"tweede_periode_jaren":15},"brandbeveiligingsmiddelen":{"aandeel_waarde_huurder":0.5,"afschrijvingspercentage":0.1,"aandeel_onderhoudskosten_huurder":0.5},"beveiligingscameras":{"aandeel_waarde_huurder":0.7,"afschrijvingspercentage":0.2,"aandeel_onderhoudskosten_huurder":0.7},"industriele_wasmachines_en_wasdrogers":{"levensduur_jaren":10,"afschrijvingspercentage_eerste_periode":0.1,"afschrijvingspercentage_tweede_periode_over_oorspronkelijke_waarde":0.06,"maximum_per_woonruimte_per_maand_eur":5.0,"maximum_per_woonruimte_per_jaar_eur":60.0},"rookmelders":{"gebruiksvergoeding_toegestaan":false,"toelichting":"Sinds 1 juli 2022 verplicht op grond van het Bouwbesluit; kosten voor rekening verhuurder (p. 33). Vervangen van batterijen kan wel als kleine herstelling worden afgesproken."}},"huismeester":{"_bron":"par. 4.3.6, Tabel 9, p. 40-41","maximaal_uurtarief_incl_btw":{"2023":40.0,"2024":40.0,"2025":41.0,"2026":41.0},"aandeel_huurders":0.7,"aandeel_verhuurder":0.3,"op_te_vragen_gegevens":["functieomschrijving","facturen dienstverleningsbedrijf","urenverantwoording/kosten eigen beheer"]},"externe_beveiliging":{"_bron":"par. 4.3.6, p. 41","aandeel_huurders":0.7,"aandeel_verhuurder":0.3,"maximaal_uurtarief":null,"toelichting":"Geen maximaal uurtarief; facturen zijn uitgangspunt en worden aan de redelijkheid getoetst. Gecertificeerde dienst: factuur volstaat."},"administratiekosten":{"_bron":"par. 4.3.11, p. 43","max_percentage_warmtelevering":0.02,"max_percentage_warmtelevering_uitbesteed":0.01,"max_percentage_overige_posten":0.05,"percentages_inclusief_btw":true,"minimum_per_afrekening_per_woonruimte_eur":7.5,"maximum_per_afrekening_per_woonruimte_eur":75.0},"forfaitaire_verdelingen":{"glazenwassen_zonder_specificatie":{"_bron":"par. 4.3.4, p. 36","aandeel_bereikbaar_maken_verhuurder":"2/3","aandeel_arbeidskosten_huurder":"1/3"},"ontstoppingscontract":{"_bron":"par. 4.3.4, p. 37","aandeel_huurder":0.5,"aandeel_verhuurder":0.5},"glasverzekering_binnen_opstalverzekering":{"_bron":"par. 4.3.9, p. 43","aandeel_glasverzekering":0.15},"onderhoudscontract_24uursservice":{"_bron":"par. 4.3.12, p. 44","aandeel_24uursservice":0.2}},"fondsen":{"_bron":"par. 4.3.13, p. 44","voorwaarden":["verhuurder geeft inzage in de hoogte van het fonds en de betalingen daaruit","de bijdrage is een redelijke vergoeding voor de levering of dienst","de omvang van het fonds is maximaal drie keer de jaaropbrengst","de inleg wordt alleen gebruikt voor de betreffende levering of dienst"],"max_omvang_maal_jaaropbrengst":3},"forfaits_bij_ontbrekende_onderbouwing":{"_bron":"par. 6.4.2, Tabel 11, p. 60","wettelijk_vastgesteld_verbruik":{"gas_m3":{"zelfstandig":400,"onzelfstandig":250},"elektriciteit_kwh":{"zelfstandig":800,"onzelfstandig":500},"water_m3":{"zelfstandig":25,"onzelfstandig":25}},"tariefbron":"Gemiddelde prijzen voor gas, elektra en water volgens het Nibud (voetnoot 16/18, p. 60-61); de concrete bedragen uit bijlage VIII Uitvoeringsregeling huurprijzen woonruimte staan NIET in het beleidsboek.","vast_bedrag_overige_kostenposten_per_jaar_eur":12.0},"termijnen":{"_bron":"par. 6.3 (Tabel 10, p. 56), par. 6.4.1, par. 3.4/6.5","afrekentermijn_maanden_na_kalenderjaar":6,"verzoektermijn_maanden_na_afrekentermijn":24,"wettelijke_indieningstermijn_jaren_na_kalenderjaar":2.5,"reactietermijn_verhuurder_weken":3,"aanlevertermijn_verhuurder_weken":3,"uitstel_verhuurder_max_weken":3,"maximale_aanlevertermijn_weken":6,"uiterste_datums_per_boekjaar":{"2023":{"uiterste_afrekendatum":"2024-06-30","uiterste_verzoekdatum":"2026-06-30"},"2024":{"uiterste_afrekendatum":"2025-06-30","uiterste_verzoekdatum":"2027-06-30"},"2025":{"uiterste_afrekendatum":"2026-06-30","uiterste_verzoekdatum":"2028-06-30"},"2026":{"uiterste_afrekendatum":"2027-06-30","uiterste_verzoekdatum":"2029-06-30"}},"voorschot_afrekening_max_ouderdom_jaren":3},"drempelbedragen":{"minimum_betwiste_kosten_jaarafrekening_eur":{"waarde":36.0,"_bron":"par. 6.3.4, p. 59"},"minimum_betwiste_kosten_voorschot_per_maand_eur":{"waarde":3.0,"_bron":"par. 3.4, p. 24 en par. 6.5, p. 62"}},"niet_doorberekenbaar":{"_bron":"par. 4.3.14 t/m 4.3.16, p. 44-45 en verspreide passages","posten":[{"post":"leegstandsderving","grond":"par. 4.3.14, p. 44","gevolg":"niet toegestaan door te berekenen"},{"post":"belastingen en heffingen","grond":"par. 4.3.15, p. 44","gevolg":"geen servicekosten; Huurcommissie niet bevoegd"},{"post":"zorgservicekosten","grond":"par. 4.3.16, p. 45","gevolg":"geen woonservicekosten; Huurcommissie niet bevoegd"},{"post":"mutatiekosten (begin- en eindschoonmaak bij verhuizing)","grond":"par. 4.3.4, p. 36","gevolg":"niet doorberekenbaar"},{"post":"onroerende zaken (gebruiksvergoeding)","grond":"par. 4.3.3, p. 31","gevolg":"zit in de kale huurprijs"},{"post":"rookmelders (gebruiksvergoeding)","grond":"par. 4.3.3, p. 33","gevolg":"voor rekening verhuurder"},{"post":"kapitaals- en onderhoudslasten WKO-installatie","grond":"par. 5.4, p. 49","gevolg":"moeten uit de kale huurprijs worden gedekt"},{"post":"opstal-, brand-, storm-, schade-, bedrijfsschade- en aansprakelijkheidsverzekering","grond":"par. 4.3.9, p. 42-43","gevolg":"voor rekening verhuurder"},{"post":"periodiek onderhoud/klein onderhoud/keuringen aan aard- en nagelvaste installaties","grond":"par. 4.3.4, p. 39","gevolg":"onderhoudsplicht verhuurder"},{"post":"kosten bereikbaar maken van ruiten (hoogwerker)","grond":"par. 4.3.4, p. 36","gevolg":"voor rekening verhuurder"},{"post":"onderhoud kijktuin / groenvoorziening met openbaar karakter","grond":"par. 4.3.4, p. 37","gevolg":"voor rekening verhuurder"},{"post":"ontstopping leidingen voor meerdere zelfstandige woonruimten of door technisch gebrek","grond":"par. 4.3.4, p. 37","gevolg":"voor rekening verhuurder"},{"post":"armaturen vervangen, vernieuwen/repareren installatie, vandalismeschade","grond":"par. 4.3.4, p. 38","gevolg":"voor rekening verhuurder"},{"post":"schilderwerk dat niet uitdrukkelijk is overeengekomen","grond":"par. 4.3.4, p. 39","gevolg":"geacht verricht om de woonruimte verhuurbaar te maken"}]},"btw":{"_bron":"par. 2.3.3, p. 10","regel":"De btw over nutsvoorzieningen met een eigen meter en (overige) servicekosten mag volledig worden doorberekend aan de huurder, ongeacht of de verhuurder btw-plichtig is."}},"categorieen":{"$comment":"Gegenereerd met tools/genereer_categorieen.py. Stuurt het formulier in de webapplicatie aan.","algemene_velden":[{"naam":"overeengekomen","label":"Is deze post overeengekomen in het huurcontract?","type":"ja_nee_onbekend","hulp":"Zonder overeenstemming is er geen betalingsverplichting (p. 9). Administratiekosten hoeven niet uitdrukkelijk overeengekomen te zijn."},{"naam":"levering_gemotiveerd_betwist","label":"Ik betwist gemotiveerd dat deze zaak of dienst is geleverd","type":"ja_nee","hulp":"Zonder facturen van de verhuurder leidt dit tot EUR 0,00 in plaats van een forfait (p. 60-61)."}],"bewijsopties":[{"waarde":"facturen","label":"Facturen of betaalbewijzen"},{"waarde":"specificatieformulier","label":"Ingevuld specificatieformulier"},{"waarde":"meterstanden","label":"Meterstanden en verbruiksberekening"},{"waarde":"urenverantwoording","label":"Urenverantwoording"},{"waarde":"aankoopfacturen","label":"Aankoopfacturen roerende zaken"},{"waarde":"inspectierapport","label":"Inspectierapport installatie"},{"waarde":"polis","label":"Verzekeringspolis"},{"waarde":"vve_stukken","label":"VvE-jaarrekening en ALV-verslag"}],"categorieen":{"NUT-GAS-METER":{"label":"Gas met eigen meter","groep":"Nutsvoorzieningen met individuele meter","bron":"par. 3.1, p. 13-16","velden":[{"naam":"beginstand","label":"Beginstand meter","type":"getal"},{"naam":"eindstand","label":"Eindstand meter","type":"getal"},{"naam":"verbruik_verhuurder","label":"Door de verhuurder opgevoerd verbruik (m3)","type":"getal"},{"naam":"meterstanden_betwist","label":"Ik betwist het geadministreerde verbruik gemotiveerd","type":"ja_nee","hulp":"Leidt tot toetsing aan de Nibud-normen (p. 15)."},{"naam":"collectieve_factuur","label":"De factuur betreft meerdere woonruimten","type":"ja_nee","hulp":"Dan moet de verdeelsleutel worden getoetst (voetnoot 3, p. 11)."},{"naam":"huurder_stelt_installatie_gebrekkig","label":"Ik stel dat de collectieve stookinstallatie onvoldoende functioneert","type":"ja_nee"},{"naam":"inspectierapport_aanwezig","label":"Inspectierapport van de installatie aanwezig","type":"ja_nee_onbekend"},{"naam":"rendement_ketel","label":"Ketelrendement volgens inspectierapport (bijv. 0.78)","type":"getal","hulp":"De Huurcommissie hanteert een ondergrens van 80% (p. 15)."}]},"NUT-ELK-METER":{"label":"Elektriciteit met eigen meter","groep":"Nutsvoorzieningen met individuele meter","bron":"par. 3.2, p. 17-20","velden":[{"naam":"beginstand","label":"Beginstand meter","type":"getal"},{"naam":"eindstand","label":"Eindstand meter","type":"getal"},{"naam":"verbruik_verhuurder","label":"Door de verhuurder opgevoerd verbruik (kWh)","type":"getal"},{"naam":"meterstanden_betwist","label":"Ik betwist het geadministreerde verbruik gemotiveerd","type":"ja_nee","hulp":"Leidt tot toetsing aan de Nibud-normen (p. 15)."},{"naam":"collectieve_factuur","label":"De factuur betreft meerdere woonruimten","type":"ja_nee","hulp":"Dan moet de verdeelsleutel worden getoetst (voetnoot 3, p. 11)."}]},"NUT-WATER-METER":{"label":"Water met eigen meter","groep":"Nutsvoorzieningen met individuele meter","bron":"par. 3.3, p. 21-23","velden":[{"naam":"beginstand","label":"Beginstand meter","type":"getal"},{"naam":"eindstand","label":"Eindstand meter","type":"getal"},{"naam":"verbruik_verhuurder","label":"Door de verhuurder opgevoerd verbruik (m3)","type":"getal"},{"naam":"meterstanden_betwist","label":"Ik betwist het geadministreerde verbruik gemotiveerd","type":"ja_nee","hulp":"Leidt tot toetsing aan de Nibud-normen (p. 15)."},{"naam":"collectieve_factuur","label":"De factuur betreft meerdere woonruimten","type":"ja_nee","hulp":"Dan moet de verdeelsleutel worden getoetst (voetnoot 3, p. 11)."}]},"NUT-GAS-ZM":{"label":"Gas zonder eigen meter","groep":"Nutsvoorzieningen zonder eigen meter","bron":"par. 4.2.1, p. 26","velden":[{"naam":"totale_kosten_complex","label":"Totale gaskosten van het complex","type":"bedrag","hulp":"Verdeeld als 35% vast (gelijk) en 65% variabel (naar oppervlakte)."}]},"NUT-ELK-ZM":{"label":"Elektriciteit zonder eigen meter","groep":"Nutsvoorzieningen zonder eigen meter","bron":"par. 4.2.1, p. 27","velden":[{"naam":"totale_kosten_complex","label":"Totale elektriciteitskosten van het complex","type":"bedrag"}]},"NUT-WATER-ZM":{"label":"Water zonder eigen meter","groep":"Nutsvoorzieningen zonder eigen meter","bron":"par. 4.2.1, p. 27","velden":[{"naam":"totale_kosten_complex","label":"Totale waterkosten van het complex","type":"bedrag"}]},"SK-01":{"label":"Warmte gemeenschappelijke gedeelten","groep":"Overige zaken en diensten","bron":"par. 4.3.1, p. 30","velden":[{"naam":"werkelijke_kosten","label":"Werkelijke kosten volgens factuur","type":"bedrag","hulp":"Laat leeg als het bedrag op de afrekening al uw aandeel is."},{"naam":"bedrag_is_complextotaal","label":"Bovenstaand bedrag is het totaal voor het hele complex","type":"ja_nee","standaard":true},{"naam":"aantal_woonruimten","label":"Aantal woonruimten dat gebruik (kan) maken","type":"geheel","hulp":"In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."},{"naam":"betreft_gemeenschappelijke_voorziening","label":"Betreft een gemeenschappelijke ruimte of voorziening","type":"ja_nee"}]},"SK-02":{"label":"Nutsvoorzieningen gemeenschappelijke gedeelten","groep":"Overige zaken en diensten","bron":"par. 4.3.2, p. 30","velden":[{"naam":"werkelijke_kosten","label":"Werkelijke kosten volgens factuur","type":"bedrag","hulp":"Laat leeg als het bedrag op de afrekening al uw aandeel is."},{"naam":"bedrag_is_complextotaal","label":"Bovenstaand bedrag is het totaal voor het hele complex","type":"ja_nee","standaard":true},{"naam":"aantal_woonruimten","label":"Aantal woonruimten dat gebruik (kan) maken","type":"geheel","hulp":"In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."},{"naam":"betreft_gemeenschappelijke_voorziening","label":"Betreft een gemeenschappelijke ruimte of voorziening","type":"ja_nee"}]},"SK-03":{"label":"Roerende zaken (gebruiksvergoeding)","groep":"Overige zaken en diensten","bron":"par. 4.3.3, p. 30-35","velden":[{"naam":"roerend","label":"De zaak is roerend","type":"ja_nee_onbekend","hulp":"Weg te nemen zonder beschadiging van betekenis. Voor onroerende zaken mag geen vergoeding (p. 31)."},{"naam":"soort","label":"Soort zaak","type":"keuze","opties":["standaard","zonnepanelen","brandbeveiliging","camera","wasapparatuur","rookmelder"]},{"naam":"aanschafwaarde","label":"Aanschafwaarde volgens aankoopfactuur","type":"bedrag"},{"naam":"geschatte_waarde","label":"Geschatte waarde (als er geen factuur is)","type":"bedrag","hulp":"Verkoopwaarde aan het begin van het boekjaar (p. 31)."},{"naam":"levensduur_jaren","label":"Geschatte levensduur","type":"keuze","opties":["5","10","15"],"hulp":"5 jaar = 20% per jaar, 10 jaar = 10%, 15 jaar = 6,67% (p. 31)."},{"naam":"jaar_in_gebruik","label":"Hoeveelste gebruiksjaar is dit?","type":"geheel","hulp":"Bepaalt of de eerste periode, de herwaardering op 60% of EUR 0,00 geldt (p. 32)."},{"naam":"aantal_woonruimten","label":"Aantal woonruimten dat gebruik (kan) maken","type":"geheel","hulp":"In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."}]},"SK-04-GLAS":{"label":"Glazen wassen","groep":"Kleine herstellingen","bron":"par. 4.3.4, p. 36","velden":[{"naam":"ruiten_bereikbaar","label":"De ruiten zijn voor mij bereikbaar","type":"ja_nee_onbekend","hulp":"Zijn ze dat niet, dan zijn de kosten niet doorberekenbaar (p. 36)."},{"naam":"kosten_gespecificeerd","label":"De verhuurder heeft de kosten gespecificeerd","type":"ja_nee_onbekend"},{"naam":"werkelijke_kosten","label":"Werkelijke kosten volgens factuur","type":"bedrag","hulp":"Laat leeg als het bedrag op de afrekening al uw aandeel is."},{"naam":"bedrag_is_complextotaal","label":"Bovenstaand bedrag is het totaal voor het hele complex","type":"ja_nee","standaard":true},{"naam":"aantal_woonruimten","label":"Aantal woonruimten dat gebruik (kan) maken","type":"geheel","hulp":"In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."}]},"SK-04-SCHOONMAAK":{"label":"Schoonmaak gemeenschappelijke ruimten","groep":"Kleine herstellingen","bron":"par. 4.3.4, p. 36","velden":[{"naam":"betreft_mutatiekosten","label":"Dit betreft mutatiekosten (schoonmaak bij verhuizing)","type":"ja_nee","hulp":"Mutatiekosten mogen niet worden doorberekend (p. 36)."},{"naam":"werkelijke_kosten","label":"Werkelijke kosten volgens factuur","type":"bedrag","hulp":"Laat leeg als het bedrag op de afrekening al uw aandeel is."},{"naam":"bedrag_is_complextotaal","label":"Bovenstaand bedrag is het totaal voor het hele complex","type":"ja_nee","standaard":true},{"naam":"aantal_woonruimten","label":"Aantal woonruimten dat gebruik (kan) maken","type":"geheel","hulp":"In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."}]},"SK-04-TUIN":{"label":"Tuinonderhoud","groep":"Kleine herstellingen","bron":"par. 4.3.4, p. 37","velden":[{"naam":"exclusief_gebruiksrecht","label":"Ik heb het exclusieve gebruiksrecht van de groenvoorziening","type":"ja_nee_onbekend","hulp":"Bij een openbaar karakter of een kijktuin blijven de kosten voor de verhuurder (p. 37)."},{"naam":"werkelijke_kosten","label":"Werkelijke kosten volgens factuur","type":"bedrag","hulp":"Laat leeg als het bedrag op de afrekening al uw aandeel is."},{"naam":"bedrag_is_complextotaal","label":"Bovenstaand bedrag is het totaal voor het hele complex","type":"ja_nee","standaard":true},{"naam":"aantal_woonruimten","label":"Aantal woonruimten dat gebruik (kan) maken","type":"geheel","hulp":"In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."}]},"SK-04-GLADHEID":{"label":"Gladheidsbestrijding","groep":"Kleine herstellingen","bron":"par. 4.3.4, p. 37","velden":[{"naam":"exclusief_gebruiksrecht","label":"Ik heb het exclusieve (gezamenlijke) gebruiksrecht van de buitenruimte","type":"ja_nee_onbekend"},{"naam":"werkelijke_kosten","label":"Werkelijke kosten volgens factuur","type":"bedrag","hulp":"Laat leeg als het bedrag op de afrekening al uw aandeel is."},{"naam":"bedrag_is_complextotaal","label":"Bovenstaand bedrag is het totaal voor het hele complex","type":"ja_nee","standaard":true},{"naam":"aantal_woonruimten","label":"Aantal woonruimten dat gebruik (kan) maken","type":"geheel","hulp":"In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."}]},"SK-04-ONTSTOPPING":{"label":"Ontstoppen leidingen en riolering","groep":"Kleine herstellingen","bron":"par. 4.3.4, p. 37","velden":[{"naam":"leidingen_bereikbaar_en_individueel","label":"De leidingen zitten in of aan mijn woning en zijn bereikbaar","type":"ja_nee_onbekend","hulp":"Gedeelde leidingen of een technisch gebrek: kosten voor de verhuurder (p. 37)."},{"naam":"onderhoudscontract","label":"Het gaat om een ontstoppingscontract","type":"ja_nee","hulp":"Dan geldt een verdeling van 50% huurder / 50% verhuurder (p. 37)."},{"naam":"kosten_gespecificeerd","label":"De verhuurder heeft de kosten gespecificeerd","type":"ja_nee_onbekend"},{"naam":"werkelijke_kosten","label":"Werkelijke kosten volgens factuur","type":"bedrag","hulp":"Laat leeg als het bedrag op de afrekening al uw aandeel is."},{"naam":"bedrag_is_complextotaal","label":"Bovenstaand bedrag is het totaal voor het hele complex","type":"ja_nee","standaard":true},{"naam":"aantal_woonruimten","label":"Aantal woonruimten dat gebruik (kan) maken","type":"geheel","hulp":"In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."}]},"SK-04-SCHOORSTEEN":{"label":"Schoorsteen en ventilatiekanalen","groep":"Kleine herstellingen","bron":"par. 4.3.4, p. 38","velden":[{"naam":"kanaal_bereikbaar","label":"De schoorsteen of het kanaal is voor mij bereikbaar","type":"ja_nee_onbekend"},{"naam":"werkelijke_kosten","label":"Werkelijke kosten volgens factuur","type":"bedrag","hulp":"Laat leeg als het bedrag op de afrekening al uw aandeel is."},{"naam":"bedrag_is_complextotaal","label":"Bovenstaand bedrag is het totaal voor het hele complex","type":"ja_nee","standaard":true},{"naam":"aantal_woonruimten","label":"Aantal woonruimten dat gebruik (kan) maken","type":"geheel","hulp":"In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."}]},"SK-04-LAMPEN":{"label":"Lampen vervangen","groep":"Kleine herstellingen","bron":"par. 4.3.4, p. 38","velden":[{"naam":"betreft_armaturen_of_installatie","label":"Het gaat (mede) om armaturen, de installatie zelf of vandalismeschade","type":"ja_nee","hulp":"Die kosten blijven voor de verhuurder (p. 38)."},{"naam":"werkelijke_kosten","label":"Werkelijke kosten volgens factuur","type":"bedrag","hulp":"Laat leeg als het bedrag op de afrekening al uw aandeel is."},{"naam":"bedrag_is_complextotaal","label":"Bovenstaand bedrag is het totaal voor het hele complex","type":"ja_nee","standaard":true},{"naam":"aantal_woonruimten","label":"Aantal woonruimten dat gebruik (kan) maken","type":"geheel","hulp":"In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."}]},"SK-04-ONGEDIERTE":{"label":"Ongediertebestrijding","groep":"Kleine herstellingen","bron":"par. 4.3.4, p. 38","velden":[{"naam":"gevolg_bouwkundige_situatie","label":"Het ongedierte is gevolg van een bouwkundige situatie","type":"ja_nee","hulp":"U moet dit aannemelijk maken (p. 38)."},{"naam":"werkelijke_kosten","label":"Werkelijke kosten volgens factuur","type":"bedrag","hulp":"Laat leeg als het bedrag op de afrekening al uw aandeel is."},{"naam":"bedrag_is_complextotaal","label":"Bovenstaand bedrag is het totaal voor het hele complex","type":"ja_nee","standaard":true},{"naam":"aantal_woonruimten","label":"Aantal woonruimten dat gebruik (kan) maken","type":"geheel","hulp":"In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."}]},"SK-04-INSTALLATIE":{"label":"Onderhoud installaties in de woning","groep":"Kleine herstellingen","bron":"par. 4.3.4, p. 38-39","velden":[{"naam":"eenvoudig_onderhoud_binnen_woonruimte","label":"Het gaat om eenvoudig onderhoud zonder specialistische kennis binnen mijn woning","type":"ja_nee_onbekend","hulp":"Periodiek onderhoud en keuringen van aard- en nagelvaste installaties zijn niet doorberekenbaar (p. 39)."},{"naam":"werkelijke_kosten","label":"Werkelijke kosten volgens factuur","type":"bedrag","hulp":"Laat leeg als het bedrag op de afrekening al uw aandeel is."},{"naam":"bedrag_is_complextotaal","label":"Bovenstaand bedrag is het totaal voor het hele complex","type":"ja_nee","standaard":true},{"naam":"aantal_woonruimten","label":"Aantal woonruimten dat gebruik (kan) maken","type":"geheel","hulp":"In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."}]},"SK-04-SCHILDERWERK":{"label":"Schilderwerkzaamheden","groep":"Kleine herstellingen","bron":"par. 4.3.4, p. 39","velden":[{"naam":"uitdrukkelijk_overeengekomen_of_op_verzoek_huurder","label":"Het schilderwerk is uitdrukkelijk overeengekomen of op mijn verzoek uitgevoerd","type":"ja_nee_onbekend"},{"naam":"werkelijke_kosten","label":"Werkelijke kosten volgens factuur","type":"bedrag","hulp":"Laat leeg als het bedrag op de afrekening al uw aandeel is."},{"naam":"bedrag_is_complextotaal","label":"Bovenstaand bedrag is het totaal voor het hele complex","type":"ja_nee","standaard":true},{"naam":"aantal_woonruimten","label":"Aantal woonruimten dat gebruik (kan) maken","type":"geheel","hulp":"In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."}]},"SK-05":{"label":"Huisvuil","groep":"Overige zaken en diensten","bron":"par. 4.3.5, p. 39-40","velden":[{"naam":"werkelijke_kosten","label":"Werkelijke kosten volgens factuur","type":"bedrag","hulp":"Laat leeg als het bedrag op de afrekening al uw aandeel is."},{"naam":"bedrag_is_complextotaal","label":"Bovenstaand bedrag is het totaal voor het hele complex","type":"ja_nee","standaard":true},{"naam":"aantal_woonruimten","label":"Aantal woonruimten dat gebruik (kan) maken","type":"geheel","hulp":"In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."}]},"SK-06":{"label":"Huismeester","groep":"Overige zaken en diensten","bron":"par. 4.3.6, p. 40-41","velden":[{"naam":"uren","label":"Aantal gewerkte uren in het jaar","type":"getal","vereist":true},{"naam":"totale_kosten","label":"Totale huismeesterkosten volgens factuur","type":"bedrag","vereist":true},{"naam":"aantal_woonruimten","label":"Aantal woonruimten dat gebruik (kan) maken","type":"geheel","hulp":"In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."},{"naam":"aandeel_huurders","label":"Afwijkend aandeel huurders (standaard 0.70)","type":"getal","hulp":"Afwijken van 70/30 moet worden gemotiveerd (p. 41)."}]},"SK-06B":{"label":"Externe beveiliging","groep":"Overige zaken en diensten","bron":"par. 4.3.6, p. 41","velden":[{"naam":"totale_kosten","label":"Totale kosten beveiligingsdienst","type":"bedrag","vereist":true},{"naam":"gecertificeerd","label":"De beveiligingsdienst is gecertificeerd","type":"ja_nee_onbekend"},{"naam":"aantal_woonruimten","label":"Aantal woonruimten dat gebruik (kan) maken","type":"geheel","hulp":"In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."}]},"SK-07":{"label":"Signaallevering (radio, tv, internet)","groep":"Overige zaken en diensten","bron":"par. 4.3.7, p. 42","velden":[{"naam":"werkelijke_kosten","label":"Werkelijke kosten volgens factuur","type":"bedrag","hulp":"Laat leeg als het bedrag op de afrekening al uw aandeel is."},{"naam":"bedrag_is_complextotaal","label":"Bovenstaand bedrag is het totaal voor het hele complex","type":"ja_nee","standaard":true},{"naam":"aantal_woonruimten","label":"Aantal woonruimten dat gebruik (kan) maken","type":"geheel","hulp":"In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."}]},"SK-08":{"label":"Elektronische apparatuur","groep":"Overige zaken en diensten","bron":"par. 4.3.8, p. 42","velden":[{"naam":"werkelijke_kosten","label":"Werkelijke kosten volgens factuur","type":"bedrag","hulp":"Laat leeg als het bedrag op de afrekening al uw aandeel is."},{"naam":"bedrag_is_complextotaal","label":"Bovenstaand bedrag is het totaal voor het hele complex","type":"ja_nee","standaard":true},{"naam":"aantal_woonruimten","label":"Aantal woonruimten dat gebruik (kan) maken","type":"geheel","hulp":"In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."}]},"SK-09-OPSTAL":{"label":"Opstal- of aanverwante verzekering","groep":"Verzekeringen","bron":"par. 4.3.9, p. 42-43","velden":[]},"SK-09-GLAS":{"label":"Glasverzekering","groep":"Verzekeringen","bron":"par. 4.3.9, p. 43","velden":[{"naam":"onderdeel_van_opstalverzekering","label":"De glasverzekering zit in de opstalverzekering","type":"ja_nee","hulp":"Zonder specificatie rekent de Huurcommissie 15% van de opstalpremie (p. 43)."},{"naam":"kosten_gespecificeerd","label":"De verhuurder heeft de kosten gespecificeerd","type":"ja_nee_onbekend"},{"naam":"werkelijke_kosten","label":"Werkelijke kosten volgens factuur","type":"bedrag","hulp":"Laat leeg als het bedrag op de afrekening al uw aandeel is."},{"naam":"bedrag_is_complextotaal","label":"Bovenstaand bedrag is het totaal voor het hele complex","type":"ja_nee","standaard":true},{"naam":"aantal_woonruimten","label":"Aantal woonruimten dat gebruik (kan) maken","type":"geheel","hulp":"In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."}]},"SK-09-INBOEDEL":{"label":"Inboedelverzekering roerende zaken","groep":"Verzekeringen","bron":"par. 4.3.9, p. 43","velden":[{"naam":"werkelijke_kosten","label":"Werkelijke kosten volgens factuur","type":"bedrag","hulp":"Laat leeg als het bedrag op de afrekening al uw aandeel is."},{"naam":"bedrag_is_complextotaal","label":"Bovenstaand bedrag is het totaal voor het hele complex","type":"ja_nee","standaard":true},{"naam":"aantal_woonruimten","label":"Aantal woonruimten dat gebruik (kan) maken","type":"geheel","hulp":"In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."}]},"SK-10":{"label":"Gemeenschappelijke ruimten (verzamelpost)","groep":"Overige zaken en diensten","bron":"par. 4.3.10, p. 43","velden":[{"naam":"werkelijke_kosten","label":"Werkelijke kosten volgens factuur","type":"bedrag","hulp":"Laat leeg als het bedrag op de afrekening al uw aandeel is."},{"naam":"bedrag_is_complextotaal","label":"Bovenstaand bedrag is het totaal voor het hele complex","type":"ja_nee","standaard":true},{"naam":"aantal_woonruimten","label":"Aantal woonruimten dat gebruik (kan) maken","type":"geheel","hulp":"In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."},{"naam":"betreft_gemeenschappelijke_voorziening","label":"Betreft een gemeenschappelijke ruimte of voorziening","type":"ja_nee"}]},"SK-11":{"label":"Administratiekosten","groep":"Overige zaken en diensten","bron":"par. 4.3.11, p. 43","velden":[{"naam":"afrekening_verstrekt","label":"Er is een afrekening aan mij verstrekt","type":"ja_nee","standaard":true,"hulp":"Zonder verstrekte afrekening mogen geen administratiekosten (p. 43)."},{"naam":"grondslag_warmtelevering","label":"Grondslag warmtelevering (gas, olie, brandstof)","type":"bedrag","hulp":"Hierover geldt maximaal 2%, of 1% als meting en verdeling zijn uitbesteed."},{"naam":"meting_uitbesteed","label":"Meting en verdeling zijn uitbesteed","type":"ja_nee"},{"naam":"grondslag_overige_posten","label":"Grondslag overige kostenposten","type":"bedrag","hulp":"Hierover geldt maximaal 5%. Minimum EUR 7,50, maximum EUR 75,00 per afrekening."}]},"SK-12":{"label":"Onderhoudscontract met 24-uursservice","groep":"Aanvullingen Huurcommissie","bron":"par. 4.3.12, p. 44","velden":[{"naam":"kosten_gespecificeerd","label":"De verhuurder heeft de kosten gespecificeerd","type":"ja_nee_onbekend"},{"naam":"werkelijke_kosten","label":"Werkelijke kosten volgens factuur","type":"bedrag","hulp":"Laat leeg als het bedrag op de afrekening al uw aandeel is."},{"naam":"bedrag_is_complextotaal","label":"Bovenstaand bedrag is het totaal voor het hele complex","type":"ja_nee","standaard":true},{"naam":"aantal_woonruimten","label":"Aantal woonruimten dat gebruik (kan) maken","type":"geheel","hulp":"In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."}]},"SK-13":{"label":"Fonds (ontstopping, glas, lampen)","groep":"Aanvullingen Huurcommissie","bron":"par. 4.3.13, p. 44","velden":[{"naam":"voldaan_aan_voorwaarden","label":"Aangetoonde fondsvoorwaarden","type":"meerkeuze","opties":["de verhuurder moet inzage geven over de hoogte van het fonds en de betalingen daaruit","de bijdrage aan het fonds moet een redelijke vergoeding zijn voor de levering of dienst","de omvang van het fonds mag maximaal drie keer de jaaropbrengst zijn","de inleg van het fonds mag alleen gebruikt worden voor de betreffende levering of dienst"]},{"naam":"werkelijke_kosten","label":"Werkelijke kosten volgens factuur","type":"bedrag","hulp":"Laat leeg als het bedrag op de afrekening al uw aandeel is."},{"naam":"bedrag_is_complextotaal","label":"Bovenstaand bedrag is het totaal voor het hele complex","type":"ja_nee","standaard":true},{"naam":"aantal_woonruimten","label":"Aantal woonruimten dat gebruik (kan) maken","type":"geheel","hulp":"In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."}]},"SK-14-WKO":{"label":"Warmtelevering via WKO-installatie","groep":"Aanvullingen Huurcommissie","bron":"par. 5.4, p. 49-50","velden":[{"naam":"vaste_kosten_gesplitst","label":"De vaste kosten zijn gesplitst in kapitaals-/onderhoudslasten en overige vaste kosten","type":"ja_nee_onbekend","hulp":"Kapitaals- en onderhoudslasten van de WKO mogen niet worden doorberekend (p. 49)."},{"naam":"werkelijke_kosten","label":"Werkelijke kosten volgens factuur","type":"bedrag","hulp":"Laat leeg als het bedrag op de afrekening al uw aandeel is."},{"naam":"bedrag_is_complextotaal","label":"Bovenstaand bedrag is het totaal voor het hele complex","type":"ja_nee","standaard":true},{"naam":"aantal_woonruimten","label":"Aantal woonruimten dat gebruik (kan) maken","type":"geheel","hulp":"In beginsel worden de kosten gelijk verdeeld over dit aantal (p. 29)."}]},"NSK-01":{"label":"Leegstandsderving","groep":"Geen servicekosten","bron":"par. 4.3.14, p. 44","velden":[]},"NSK-02":{"label":"Belastingen en heffingen","groep":"Buiten de bevoegdheid","bron":"par. 4.3.15, p. 44","velden":[]},"NSK-03":{"label":"Zorgservicekosten","groep":"Buiten de bevoegdheid","bron":"par. 4.3.16, p. 45","velden":[]}}},"classificatie":{"$comment":"Trefwoorden om een omschrijving op een afrekening te koppelen aan een categorie uit docs/02-taxonomie.md. Specifieker trefwoord wint (langste match). 'vraag' wordt aan de gebruiker gesteld wanneer de classificatie niet eenduidig is.","categorieen":{"NUT-GAS-METER":{"trefwoorden":["gasverbruik","aardgas","gas eigen meter","gas individuele meter","stookkosten","verwarmingskosten","gas"],"vraag":"Heeft u voor gas een eigen meter in de woning? Zo niet, dan valt deze post onder 'gas zonder eigen meter'."},"NUT-ELK-METER":{"trefwoorden":["elektriciteitsverbruik","elektriciteit","elektra","stroomverbruik","stroom"],"vraag":"Heeft u voor elektriciteit een eigen meter in de woning?"},"NUT-WATER-METER":{"trefwoorden":["waterverbruik","drinkwater","koud water","warm water","water"],"vraag":"Heeft u voor water een eigen meter in de woning?"},"NUT-GAS-ZM":{"trefwoorden":["gas zonder eigen meter","collectief gas","gas collectief"]},"NUT-ELK-ZM":{"trefwoorden":["elektra zonder eigen meter","collectieve elektra"]},"NUT-WATER-ZM":{"trefwoorden":["water zonder eigen meter","collectief water"]},"SK-01":{"trefwoorden":["verwarming gemeenschappelijke","warmte gemeenschappelijke","verwarming algemene ruimten","warmtemeter"]},"SK-02":{"trefwoorden":["elektriciteit algemene ruimten","elektra algemene ruimten","elektra algemeen","algemeen elektra","stroom algemene ruimten","elektra gemeenschappelijk","water algemene ruimten","water algemeen","gas algemene ruimten"]},"SK-03":{"trefwoorden":["roerende zaken","gebruiksvergoeding","meubilering","meubilair","stoffering","gordijnen","inboedel","koelkast","vaatwasser","magnetron","wasmachine","wasdroger","wasapparatuur","wasserette","zonnepanelen","zonnecollector","rookmelder","brandblusser","blusdeken","brandbeveiliging","beveiligingscamera","camera","laminaat","vloerbedekking","tapijt","geiser","boiler","gevelkachel"],"vraag":"Is deze zaak roerend (weg te nemen zonder beschadiging van betekenis)? Voor onroerende zaken mag geen gebruiksvergoeding worden gevraagd."},"SK-04-GLAS":{"trefwoorden":["glasbewassing","glazenwassen","glazenwasser","ramen wassen","ruiten wassen"]},"SK-04-SCHOONMAAK":{"trefwoorden":["schoonmaakkosten","schoonmaak","schoonmaken","reiniging algemene ruimten","trappenhuis","portiekreiniging","mutatieschoonmaak"]},"SK-04-TUIN":{"trefwoorden":["tuinonderhoud","groenvoorziening","groenonderhoud","hovenier","tuin"]},"SK-04-GLADHEID":{"trefwoorden":["gladheidsbestrijding","gladheid","strooien","sneeuwruimen"]},"SK-04-ONTSTOPPING":{"trefwoorden":["ontstoppingskosten","ontstopping","ontstoppen","rioolreiniging","riolering"]},"SK-04-SCHOORSTEEN":{"trefwoorden":["schoorsteenvegen","schoorsteen","ventilatiekanaal","kanaalreiniging","afvoerkanaal"]},"SK-04-LAMPEN":{"trefwoorden":["lampen vervangen","lampen","tl-buizen","verlichting algemene ruimten"]},"SK-04-ONGEDIERTE":{"trefwoorden":["ongediertebestrijding","ongedierte","plaagdierbeheersing"]},"SK-04-INSTALLATIE":{"trefwoorden":["cv-onderhoud","ketelonderhoud","onderhoud cv","onderhoud installatie","mechanische ventilatie","onderhoudsabonnement"]},"SK-04-SCHILDERWERK":{"trefwoorden":["schilderwerk","schilderen","binnenschilderwerk"]},"SK-05":{"trefwoorden":["huisvuil","vuilnis","vuilniszakken","afvalcontainer","afvoer huisvuil","containerhuur"]},"SK-06":{"trefwoorden":["huismeester","conciërge","concierge","huismeesterkosten"]},"SK-06B":{"trefwoorden":["externe beveiliging","beveiligingsdienst","surveillance","bewakingsdienst"]},"SK-07":{"trefwoorden":["signaallevering","kabeltelevisie","cai","centrale antenne","televisie","internet","liftalarm","alarmtelefoon lift"]},"SK-08":{"trefwoorden":["elektronische apparatuur","datanetwerk","intercom","videofoon","deurtelefoon"]},"SK-09-OPSTAL":{"trefwoorden":["opstalverzekering","brandverzekering","stormverzekering","aansprakelijkheidsverzekering","bedrijfsschadeverzekering"]},"SK-09-GLAS":{"trefwoorden":["glasverzekering"]},"SK-09-INBOEDEL":{"trefwoorden":["inboedelverzekering"]},"SK-10":{"trefwoorden":["gemeenschappelijke ruimten","algemene ruimten"]},"SK-11":{"trefwoorden":["administratiekosten","administratievergoeding","administratiekosten servicekosten"]},"SK-12":{"trefwoorden":["24-uursservice","24 uursservice","24-uurs service","storingsdienst"]},"SK-13":{"trefwoorden":["ontstoppingsfonds","glasfonds","lampenfonds","fonds"]},"SK-14-WKO":{"trefwoorden":["wko","warmte- en koudeopslag","warmtelevering","warmtepomp collectief"]},"NSK-01":{"trefwoorden":["leegstandsderving","leegstand","derving"]},"NSK-02":{"trefwoorden":["rioolheffing","zuiveringsheffing","waterschapsbelasting","onroerendezaakbelasting","ozb","gemeentelijke heffingen","heffing","belasting"]},"NSK-03":{"trefwoorden":["maaltijdverstrekking","alarmering","zorgservicekosten","verpleging","zorgkosten"]}},"negeerregels":["totaal","subtotaal","totaalbedrag","eindtotaal","voorschot","voorschotbedrag","betaald voorschot","reeds betaald","te betalen","te ontvangen","saldo","terug te ontvangen","na te betalen","btw","omzetbelasting","kale huur","huurprijs","netto huur","periode","adres","factuurnummer","debiteurnummer","klantnummer","datum","postbus","complex","huurder","verhuurder","woonstichting","woningstichting","afrekening","omschrijving","meterstand","meterstanden","bezwaar","contractnummer","relatienummer","iban","vervaldatum","blad","pagina"]},"beslisregels":{"regels":[{"id":"R-ALG-00","onderwerp":"Onderscheid meter / geen meter","bron":"par. 2.1, p. 8"},{"id":"R-ALG-01","onderwerp":"Juridische grondslag","bron":"p. 9; p. 75"},{"id":"R-ALG-02","onderwerp":"Werkelijk gemaakte kosten","bron":"p. 9, 11, 25"},{"id":"R-ALG-03","onderwerp":"Overeengekomen vast bedrag of percentage","bron":"voetnoot 4, p. 11"},{"id":"R-ALG-04","onderwerp":"Hogere vaststelling mogelijk","bron":"par. 2.3.3, p. 10"},{"id":"R-ALG-05","onderwerp":"BTW","bron":"par. 2.3.3, p. 10"},{"id":"R-NUT-01","onderwerp":"Meterstanden zijn uitgangspunt","bron":"p. 11-12"},{"id":"R-NUT-02","onderwerp":"Meterstanden ontbreken","bron":"p. 12; par. 3.1.1 p. 13; 3.2.1 p. 17; 3.3.1 p. 21"},{"id":"R-NUT-03","onderwerp":"Meterstanden gemotiveerd betwist","bron":"par. 3.1.2 p. 15; 3.2.2 p. 19; 3.3.2 p. 23"},{"id":"R-NUT-04","onderwerp":"Rendement stookinstallatie","bron":"par. 3.1.2, p. 15"},{"id":"R-NUT-05","onderwerp":"Collectieve factuur","bron":"voetnoot 3, p. 11; p. 12"},{"id":"R-NUT-06","onderwerp":"Kosten verbruiksmeters en kostenverdeling","bron":"par. 3.1 p. 13; par. 3.2 p. 17"},{"id":"R-PER-01","onderwerp":"Graaddagenmethode","bron":"par. 3.1.3, Tabel 3, p. 16"},{"id":"R-PER-02","onderwerp":"Seizoenspatronen","bron":"par. 3.2.3, Tabel 6, p. 20"},{"id":"R-PER-03","onderwerp":"Evenredig deel","bron":"par. 3.3.3, p. 23"},{"id":"R-PER-04","onderwerp":"Gebroken boekjaar","bron":"par. 5.2, p. 47-48; art. 7:259 lid 2 BW"},{"id":"R-VDS-01","onderwerp":"Verdeelsleutel gas zonder meter","bron":"par. 4.2.1, p. 26"},{"id":"R-VDS-02","onderwerp":"Verdeelsleutel elektriciteit en water zonder meter","bron":"par. 4.2.1, p. 27"},{"id":"R-VDS-03","onderwerp":"Verdeelsleutel overige zaken en diensten","bron":"p. 29"},{"id":"R-VDS-04","onderwerp":"Geen gebruik van gemeenschappelijke ruimten","bron":"p. 29"},{"id":"R-SK-01","onderwerp":"Warmtevoorzieningen gemeenschappelijke gedeelten","bron":"par. 4.3.1, p. 30"},{"id":"R-SK-02","onderwerp":"Nutsvoorzieningen gemeenschappelijke gedeelten","bron":"par. 4.3.2, p. 30"},{"id":"R-ROE-01","onderwerp":"Roerend of onroerend","bron":"par. 4.3.3, p. 30-31, 33"},{"id":"R-ROE-02","onderwerp":"Waardebepaling","bron":"par. 4.3.3, p. 31; par. 6.4.2, p. 61"},{"id":"R-ROE-03","onderwerp":"Afschrijving en herwaardering","bron":"par. 4.3.3, p. 31-32"},{"id":"R-ROE-04","onderwerp":"Industriële wasmachines en wasdrogers","bron":"par. 4.3.3, p. 34-35"},{"id":"R-ROE-05","onderwerp":"Zonnepanelen","bron":"par. 4.3.3, p. 32"},{"id":"R-ROE-06","onderwerp":"Brandbeveiliging en beveiligingscamera's","bron":"par. 4.3.3, p. 33-34"},{"id":"R-ROE-07","onderwerp":"Rookmelders","bron":"par. 4.3.3, p. 33"},{"id":"R-KH-00","onderwerp":"Kleine herstellingen: hoofdregel","bron":"par. 4.3.4, p. 36; bijlage 4, p. 78-83"},{"id":"R-KH-01","onderwerp":"Glazen wassen","bron":"par. 4.3.4, p. 36"},{"id":"R-KH-02","onderwerp":"Schoonmaak gemeenschappelijke ruimten","bron":"par. 4.3.4, p. 36"},{"id":"R-KH-03","onderwerp":"Tuinonderhoud","bron":"par. 4.3.4, p. 37"},{"id":"R-KH-04","onderwerp":"Gladheidsbestrijding","bron":"par. 4.3.4, p. 37"},{"id":"R-KH-05","onderwerp":"Ontstoppen leidingen en riolering","bron":"par. 4.3.4, p. 37"},{"id":"R-KH-06","onderwerp":"Schoorsteen en ventilatiekanalen","bron":"par. 4.3.4, p. 38"},{"id":"R-KH-07","onderwerp":"Lampen vervangen","bron":"par. 4.3.4, p. 38"},{"id":"R-KH-08","onderwerp":"Ongediertebestrijding","bron":"par. 4.3.4, p. 38"},{"id":"R-KH-09","onderwerp":"Onderhoud installaties binnen de woonruimte","bron":"par. 4.3.4, p. 38-39"},{"id":"R-KH-10","onderwerp":"Schilderwerkzaamheden","bron":"par. 4.3.4, p. 39"},{"id":"R-SK-05","onderwerp":"Huisvuil","bron":"par. 4.3.5, p. 39-40"},{"id":"R-HUI-01","onderwerp":"Huismeester","bron":"par. 4.3.6, Tabel 9, p. 40-41"},{"id":"R-HUI-02","onderwerp":"Externe beveiliging","bron":"par. 4.3.6, p. 41"},{"id":"R-SK-07","onderwerp":"Signaallevering","bron":"par. 4.3.7, p. 42"},{"id":"R-SK-08","onderwerp":"Elektronische apparatuur","bron":"par. 4.3.8, p. 42"},{"id":"R-VZ-01","onderwerp":"Verzekeringen verhuurder","bron":"par. 4.3.9, p. 42-43"},{"id":"R-VZ-02","onderwerp":"Glasverzekering","bron":"par. 4.3.9, p. 43"},{"id":"R-VZ-03","onderwerp":"Inboedelverzekering roerende zaken","bron":"par. 4.3.9, p. 43; bijlage 3 post 9, p. 74"},{"id":"R-SK-10","onderwerp":"Gemeenschappelijke ruimten","bron":"par. 4.3.10, p. 43"},{"id":"R-ADM-01","onderwerp":"Administratiekosten: percentages en grenzen","bron":"par. 4.3.11, p. 43"},{"id":"R-ADM-02","onderwerp":"Administratiekosten alleen bij verstrekte afrekening","bron":"par. 4.3.11, p. 43"},{"id":"R-SK-12","onderwerp":"Onderhoudscontract met 24-uursservice","bron":"par. 4.3.12, p. 44"},{"id":"R-SK-13","onderwerp":"Fondsen","bron":"par. 4.3.13, p. 44"},{"id":"R-NSK-01","onderwerp":"Leegstandsderving","bron":"par. 4.3.14, p. 44"},{"id":"R-NSK-02","onderwerp":"Belastingen en heffingen","bron":"par. 4.3.15, p. 44; par. 6.1, p. 51"},{"id":"R-NSK-03","onderwerp":"Zorgservicekosten","bron":"par. 4.3.16, p. 45"},{"id":"R-EIG-01","onderwerp":"Eigendomsoverdracht","bron":"par. 5.1, p. 46-47"},{"id":"R-ZON-01","onderwerp":"Teruglevering","bron":"par. 5.3, p. 48"},{"id":"R-WKO-01","onderwerp":"Warmtelevering via WKO","bron":"par. 5.4, p. 49-50"},{"id":"R-PRC-01","onderwerp":"Omvang van het geschil","bron":"par. 6.1, p. 51"},{"id":"R-PRC-02","onderwerp":"Bevoegdheid Wet betaalbare huur","bron":"par. 6.2, p. 51-55"},{"id":"R-PRC-03","onderwerp":"Termijnen en uiterste verzoekdatum","bron":"par. 6.3, Tabel 10, p. 55-57"},{"id":"R-PRC-04","onderwerp":"Bezwaarplicht","bron":"par. 6.3.1, p. 56"},{"id":"R-PRC-05","onderwerp":"Opvraagplicht","bron":"par. 6.3.2, p. 57"},{"id":"R-PRC-06","onderwerp":"Uitzondering naderende indieningstermijn","bron":"par. 6.3.3, p. 57-58"},{"id":"R-PRC-07","onderwerp":"Minimumbedrag betwiste kosten","bron":"par. 6.3.4, p. 59; p. 24, p. 62"},{"id":"R-PRC-08","onderwerp":"Aanlevertermijn verhuurder","bron":"par. 6.4.1, p. 59"},{"id":"R-BEW-00","onderwerp":"Onderbouwingsplicht verhuurder","bron":"par. 6.4.2, p. 59-60; par. 6.7, p. 63"},{"id":"R-BEW-01","onderwerp":"Nutsvoorzieningen met meter zonder onderbouwing","bron":"par. 6.4.2 categorie 1, Tabel 11, p. 60"},{"id":"R-BEW-02","onderwerp":"Overige servicekosten zonder onderbouwing","bron":"par. 6.4.2 categorie 2, p. 60-61; art. 18 lid 4 Uhw"},{"id":"R-BEW-03","onderwerp":"Gemotiveerd betwiste levering zonder facturen","bron":"par. 6.4.2, p. 60-61; art. 18 lid 4 Uhw"},{"id":"R-VS-01","onderwerp":"Reikwijdte voorschotprocedure","bron":"par. 2.3.2, p. 10; par. 3.4, p. 23"},{"id":"R-VS-02","onderwerp":"Toetsing voorschotbedrag","bron":"par. 3.4, p. 23-24; par. 6.5, p. 62; art. 19 Uhw"},{"id":"R-PRC-09","onderwerp":"Anonimiseren processtukken","bron":"par. 6.6, p. 62"},{"id":"R-PRC-10","onderwerp":"Onderzoek ter plaatse","bron":"par. 6.8, p. 63-64"},{"id":"R-SK-OPEN","onderwerp":"Niet-limitatieve opsomming","bron":"p. 29; p. 75; p. 82"}]},"woningtypen":[{"waarde":"flatwoning_appartement","label":"Flatwoning appartement"},{"waarde":"tussenwoning","label":"Tussenwoning"},{"waarde":"hoekwoning","label":"Hoekwoning"},{"waarde":"twee_onder_een_kap","label":"Twee onder een kap"},{"waarde":"vrijstaande_woning","label":"Vrijstaande woning"}],"jaren":["2023","2024","2025"],"termijnen":{"2023":{"uiterste_afrekendatum":"2024-06-30","uiterste_verzoekdatum":"2026-06-30"},"2024":{"uiterste_afrekendatum":"2025-06-30","uiterste_verzoekdatum":"2027-06-30"},"2025":{"uiterste_afrekendatum":"2026-06-30","uiterste_verzoekdatum":"2028-06-30"},"2026":{"uiterste_afrekendatum":"2027-06-30","uiterste_verzoekdatum":"2029-06-30"}},"voorbeeld":"Woonstichting De Meidoorn\nPostbus 118, 1000 AB Amsterdam\n\nAFREKENING SERVICEKOSTEN 2024\n\nHuurder:        J. van Dijk\nAdres:          Kastanjelaan 42-3, 1000 AB Amsterdam\nComplex:        Kastanjehof, 48 woonruimten\nPeriode:        1 januari 2024 tot en met 31 december 2024\nFactuurnummer:  SK-2024-0442\nDatum:          14 mei 2025\n\nOmschrijving                                      Totaal complex    Uw aandeel\n------------------------------------------------------------------------------\nSchoonmaak gemeenschappelijke ruimten...........   EUR 10.080,00    EUR 210,00\nGlasbewassing buitenzijde.......................    EUR 4.320,00     EUR 90,00\nHuismeester.....................................   EUR 34.000,00    EUR 226,67\nTuinonderhoud binnentuin........................    EUR 5.760,00    EUR 120,00\nOpstalverzekering...............................    EUR 4.224,00     EUR 88,00\nGlasverzekering (onderdeel opstalpolis).........    EUR 2.304,00     EUR 48,00\nGemeenschappelijke wasmachines en wasdrogers....    EUR 4.032,00     EUR 84,00\nOnderhoudscontract cv met 24-uursservice........    EUR 5.280,00    EUR 110,00\nLeegstandsderving servicekosten.................    EUR 5.760,00    EUR 120,00\nRioolheffing....................................    EUR 6.240,00    EUR 130,00\nElektriciteit algemene ruimten..................    EUR 3.120,00     EUR 65,00\nAdministratiekosten.............................    EUR 4.560,00     EUR 95,00\n------------------------------------------------------------------------------\nTotaal servicekosten                                              EUR 1.386,67\nBetaald voorschot 2024 (12 x EUR 150,00)                          EUR 1.800,00\nTerug te ontvangen                                                  EUR 413,33\n\nMeterstanden warmte: beginstand 14.320  eindstand 17.110\n\nBezwaar tegen deze afrekening kunt u binnen zes weken schriftelijk indienen.\n"};</script>
+<script>/* Rekenkern servicekosten - JavaScript-port van engine/regels.py + engine/motor.py.
+   Bron: Beleidsboek Servicekosten van de Huurcommissie, versie 1 juli 2026.
+
+   Deze port wordt gevalideerd tegen dezelfde zeventien rekenvoorbeelden uit het
+   beleidsboek als de Python-kern, plus een vergelijking van de vijf casussen met
+   de uitvoer van die kern (tests/test_web_kern.mjs). Wijkt een uitkomst af, dan
+   is de port fout - niet het beleidsboek. */
+
+(function (global) {
+  "use strict";
+
+  let NORMEN = null;
+  let CATEGORIEEN = null;
+
+  /* ------------------------------------------------------------- rekenen */
+
+  // Afronden op hele centen, ROUND_HALF_UP en weg van nul, zoals Decimal in de
+  // Python-kern. De toFixed(4) haalt eerst de binaire ruis uit het getal.
+  function eur(waarde) {
+    const n = Number(waarde);
+    if (!isFinite(n)) return 0;
+    const teken = n < 0 ? -1 : 1;
+    return teken * Math.round(Number((Math.abs(n) * 100).toFixed(4))) / 100;
+  }
+  const getal = (x) => (x === null || x === undefined || x === "" ? null : Number(x));
+
+  function normOntbreekt(bericht) {
+    const fout = new Error(bericht);
+    fout.normOntbreekt = true;
+    return fout;
+  }
+
+  function jaarBlok(tabel, jaar, wat) {
+    const sleutel = String(jaar);
+    if (!(sleutel in tabel)) {
+      const beschikbaar = Object.keys(tabel).filter((k) => /^\d+$/.test(k)).sort();
+      throw normOntbreekt(
+        `Het beleidsboek (versie 1 juli 2026) bevat geen ${wat} voor ${jaar}. ` +
+        `Beschikbaar: ${beschikbaar.join(", ")}.`);
+    }
+    return tabel[sleutel];
+  }
+
+  const gasTarief = (jaar) => jaarBlok(NORMEN.gas.tarief, jaar, "gastarief");
+  const elekTarief = (jaar) => jaarBlok(NORMEN.elektriciteit.tarief, jaar, "elektriciteitstarief");
+  const waterTarief = (jaar) => jaarBlok(NORMEN.water.tarief, jaar, "watertarief");
+  const graaddagen = (jaar) => jaarBlok(NORMEN.graaddagen, jaar, "graaddagen");
+
+  function gasNorm(woningtype, jaar) {
+    const tabel = NORMEN.gas.verbruiksnorm_zelfstandig_m3;
+    if (!(woningtype in tabel)) {
+      throw normOntbreekt(`Onbekend woningtype ${woningtype}.`);
+    }
+    return jaarBlok(tabel[woningtype], jaar, `gasverbruiksnorm voor ${woningtype}`);
+  }
+  function elekNorm(bewoners, jaar) {
+    if (bewoners > 5) {
+      throw normOntbreekt(
+        `Tabel 4 (p. 18) bevat alleen normen tot en met vijf bewoners; voor ${bewoners} ` +
+        "bewoners geeft het beleidsboek geen norm.");
+    }
+    const tabel = NORMEN.elektriciteit.verbruiksnorm_zelfstandig_kwh;
+    return jaarBlok(tabel[String(bewoners)], jaar, `elektriciteitsnorm voor ${bewoners} bewoners`);
+  }
+  function waterNorm(bewoners, jaar) {
+    const tabel = NORMEN.water.verbruiksnorm_m3;
+    if (!(String(bewoners) in tabel)) {
+      throw normOntbreekt(
+        `Tabel 7 (p. 21) bevat alleen normen tot en met vijf bewoners; voor ${bewoners} ` +
+        "bewoners geeft het beleidsboek geen norm.");
+    }
+    return jaarBlok(tabel[String(bewoners)], jaar, `waternorm voor ${bewoners} bewoners`);
+  }
+  function huismeesterTarief(jaar) {
+    return jaarBlok(NORMEN.huismeester.maximaal_uurtarief_incl_btw, jaar,
+                    "maximaal uurtarief huismeester");
+  }
+
+  const maanden = (periode) => {
+    const lijst = [];
+    for (let m = periode.maand_van; m <= periode.maand_tot_en_met; m++) lijst.push(m);
+    return lijst;
+  };
+  const volledigJaar = (p) => p.maand_van === 1 && p.maand_tot_en_met === 12;
+  const maandfactor = (d) => maanden(d.periode).length / 12;
+
+  function graaddagenfactor(dossier) {
+    const tabel = graaddagen(dossier.periode.jaar);
+    const deel = maanden(dossier.periode).reduce((som, m) => som + tabel[String(m)], 0);
+    return deel / tabel.totaal;
+  }
+  function seizoensfactor(dossier) {
+    const tabel = NORMEN.elektriciteit.seizoenspatroon_percentage_per_maand;
+    return maanden(dossier.periode).reduce((som, m) => som + tabel[String(m)], 0);
+  }
+
+  // Prijsplafond 2023: eerste schijf laag tarief, de rest hoog (p. 14, p. 18).
+  function gestaffeldTarief(hoeveelheid, tarief, sleutel, plafondsleutel) {
+    const laag = tarief[sleutel];
+    const hoog = tarief[sleutel + "_boven_plafond"];
+    const plafond = tarief[plafondsleutel];
+    if (hoog == null || plafond == null || hoeveelheid <= plafond) return hoeveelheid * laag;
+    return plafond * laag + (hoeveelheid - plafond) * hoog;
+  }
+
+  const breuk = (waarde) => {
+    const tekst = String(waarde);
+    if (tekst.includes("/")) {
+      const [teller, noemer] = tekst.split("/");
+      return Number(teller) / Number(noemer);
+    }
+    return Number(tekst);
+  };
+
+  /* ----------------------------------------------------- beoordelingsobject */
+
+  function nieuweBeoordeling(post) {
+    return {
+      kostenpost_id: post.id, categorie: post.categorie, omschrijving: post.omschrijving,
+      status: "ORANJE", voorlopig: false,
+      bedrag_verhuurder: eur(post.bedrag_verhuurder), bedrag_model: null,
+      regels: [], berekening: [], toelichting: [], ontbrekende_informatie: [],
+      automatisering: "semi-automatisch", menselijke_controle_nodig: true,
+    };
+  }
+
+  function rondStatus(b) {
+    if (b.status === "BUITEN_BEVOEGDHEID") return b;
+    if (b.ontbrekende_informatie.length || b.bedrag_model === null) {
+      b.status = "ORANJE";
+      b.voorlopig = b.bedrag_model !== null;
+      return b;
+    }
+    b.status = eur(b.bedrag_verhuurder - b.bedrag_model) > 0 ? "ROOD" : "GROEN";
+    return b;
+  }
+
+  const verschilVan = (b) => (b.bedrag_model === null ? null : eur(b.bedrag_verhuurder - b.bedrag_model));
+
+  function controleerGrondslag(post, b) {
+    if (post.overeengekomen === false) {
+      b.regels.push("R-ALG-01");
+      b.bedrag_model = 0;
+      b.status = "ROOD";
+      b.toelichting.push(
+        "Niet overeengekomen dat deze kosten voor rekening van de huurder komen; zonder " +
+        "overeenstemming is er geen juridische basis voor een betalingsverplichting " +
+        "(Beleidsboek p. 9; Nota van toelichting Besluit servicekosten, p. 75).");
+      return false;
+    }
+    if (post.overeengekomen === null || post.overeengekomen === undefined) {
+      b.regels.push("R-ALG-01");
+      b.ontbrekende_informatie.push(
+        "Huurovereenkomst/algemene voorwaarden: is deze post (al dan niet stilzwijgend) " +
+        "overeengekomen? (Beleidsboek p. 9)");
+    }
+    return true;
+  }
+
+  /* ------------------------------------------ nutsvoorzieningen met meter */
+
+  function nibudGas(dossier, b) {
+    const w = dossier.woonruimte, p = dossier.periode;
+    const tarief = gasTarief(p.jaar);
+    let jaarverbruik, bron;
+    if (w.zelfstandig) {
+      if (!w.woningtype) throw normOntbreekt("Woningtype ontbreekt; zonder woningtype geeft Tabel 1 (p. 13) geen norm.");
+      jaarverbruik = gasNorm(w.woningtype, p.jaar);
+      bron = `Tabel 1 (p. 13), ${w.woningtype}`;
+    } else {
+      if (w.oppervlakte_m2 == null) throw normOntbreekt("Oppervlakte ontbreekt; de norm voor onzelfstandige woonruimte is 25 m3 per m2 (p. 14).");
+      jaarverbruik = Number(w.oppervlakte_m2) * NORMEN.gas.verbruiksnorm_onzelfstandig_m3_per_m2.waarde;
+      bron = `${w.oppervlakte_m2} m2 x 25 m3 (p. 14)`;
+    }
+    let verbruik;
+    if (volledigJaar(p)) {
+      verbruik = jaarverbruik;
+      b.berekening.push(`Normverbruik gas: ${verbruik} m3 (${bron}).`);
+    } else {
+      const factor = graaddagenfactor(dossier);
+      b.regels.push("R-PER-01");
+      verbruik = Math.round(jaarverbruik * factor);
+      b.berekening.push(
+        `Normverbruik gas ${jaarverbruik} m3 (${bron}); graaddagenmethode ` +
+        `${p.maand_van}-${p.maand_tot_en_met}/${p.jaar}: factor ${factor.toFixed(6)} -> ${verbruik} m3 (par. 3.1.3, p. 16).`);
+    }
+    const verbruikskosten = gestaffeldTarief(verbruik, tarief, "tarief_per_m3", "plafond_m3");
+    const vastrecht = tarief.vastrecht_per_jaar / (w.aantal_woonruimten_op_aansluiting || 1);
+    const vastrechtDeel = vastrecht * maandfactor(dossier);
+    b.berekening.push(`Verbruikskosten ${verbruik} m3 x EUR ${tarief.tarief_per_m3} = EUR ${eur(verbruikskosten).toFixed(2)} (Tabel 2, p. 14).`);
+    b.berekening.push(`Vastrecht EUR ${tarief.vastrecht_per_jaar} / ${w.aantal_woonruimten_op_aansluiting || 1} woonruimte(n) x ${maanden(p).length}/12 = EUR ${eur(vastrechtDeel).toFixed(2)}.`);
+    return eur(verbruikskosten + vastrechtDeel);
+  }
+
+  function nibudElektriciteit(dossier, b) {
+    const w = dossier.woonruimte, p = dossier.periode;
+    const tarief = elekTarief(p.jaar);
+    let jaarverbruik, bron;
+    if (w.zelfstandig) {
+      if (!w.aantal_bewoners) throw normOntbreekt("Aantal bewoners ontbreekt; Tabel 4 (p. 18) is daarvan afhankelijk.");
+      jaarverbruik = elekNorm(w.aantal_bewoners, p.jaar);
+      bron = `Tabel 4 (p. 18), ${w.aantal_bewoners} bewoner(s)`;
+    } else {
+      jaarverbruik = NORMEN.elektriciteit.verbruiksnorm_onzelfstandig_kwh.waarde;
+      bron = "onzelfstandige woonruimte, 1.000 kWh (p. 18)";
+    }
+    let verbruik;
+    if (volledigJaar(p)) {
+      verbruik = jaarverbruik;
+      b.berekening.push(`Normverbruik elektriciteit: ${verbruik} kWh (${bron}).`);
+    } else {
+      const factor = seizoensfactor(dossier);
+      b.regels.push("R-PER-02");
+      verbruik = jaarverbruik * factor;
+      b.berekening.push(`Normverbruik ${jaarverbruik} kWh (${bron}); seizoenspatroon ${p.maand_van}-${p.maand_tot_en_met} = ${Math.round(factor * 100)}% -> ${verbruik} kWh (Tabel 6, p. 20).`);
+    }
+    const verbruikskosten = gestaffeldTarief(verbruik, tarief, "tarief_per_kwh", "plafond_kwh");
+    const n = w.aantal_woonruimten_op_aansluiting || 1;
+    // Het beleidsboek rondt het aandeel per woonruimte eerst af op centen en
+    // neemt daarvan het maanddeel (voorbeeld p. 19).
+    const vastrechtDeel = eur(tarief.vastrecht_per_jaar / n) * maandfactor(dossier);
+    const teruggaveDeel = eur(tarief.belastingteruggave_per_jaar / n) * maandfactor(dossier);
+    b.berekening.push(`Verbruikskosten ${verbruik} kWh x EUR ${tarief.tarief_per_kwh} = EUR ${eur(verbruikskosten).toFixed(2)} (Tabel 5, p. 18).`);
+    b.berekening.push(`Vastrecht EUR ${eur(tarief.vastrecht_per_jaar / n).toFixed(2)} x ${maanden(p).length}/12 = EUR ${eur(vastrechtDeel).toFixed(2)}; belastingteruggave EUR ${eur(tarief.belastingteruggave_per_jaar / n).toFixed(2)} x ${maanden(p).length}/12 = EUR ${eur(teruggaveDeel).toFixed(2)}.`);
+    return eur(verbruikskosten + eur(vastrechtDeel) - eur(teruggaveDeel));
+  }
+
+  function nibudWater(dossier, b) {
+    const w = dossier.woonruimte, p = dossier.periode;
+    const tarief = waterTarief(p.jaar);
+    const bewoners = w.aantal_bewoners || 1;
+    const jaarverbruik = waterNorm(bewoners, p.jaar);
+    const verbruik = jaarverbruik * maandfactor(dossier);
+    if (!volledigJaar(p)) b.regels.push("R-PER-03");
+    b.berekening.push(`Normverbruik water ${jaarverbruik} m3 (Tabel 7, p. 21, ${bewoners} bewoner(s))` +
+      (volledigJaar(p) ? "" : ` x ${maanden(p).length}/12 = ${verbruik} m3 (evenredig, par. 3.3.3, p. 23)`) + ".");
+    const verbruikskosten = verbruik * tarief.tarief_per_m3;
+    const vastrechtDeel = eur(tarief.vastrecht_per_jaar / (w.aantal_woonruimten_op_aansluiting || 1)) * maandfactor(dossier);
+    b.berekening.push(`Verbruikskosten ${verbruik} m3 x EUR ${tarief.tarief_per_m3} = EUR ${eur(verbruikskosten).toFixed(2)}; vastrecht EUR ${eur(vastrechtDeel).toFixed(2)} (Tabel 8, p. 22).`);
+    return eur(verbruikskosten + eur(vastrechtDeel));
+  }
+
+  const NIBUD = { "NUT-GAS-METER": nibudGas, "NUT-ELK-METER": nibudElektriciteit, "NUT-WATER-METER": nibudWater };
+  const FORFAIT_SOORT = { "NUT-GAS-METER": "gas_m3", "NUT-ELK-METER": "elektriciteit_kwh", "NUT-WATER-METER": "water_m3" };
+
+  function forfaitNuts(dossier, categorie, b) {
+    const cfg = NORMEN.forfaits_bij_ontbrekende_onderbouwing;
+    const sleutel = dossier.woonruimte.zelfstandig ? "zelfstandig" : "onzelfstandig";
+    const hoeveelheid = cfg.wettelijk_vastgesteld_verbruik[FORFAIT_SOORT[categorie]][sleutel];
+    const jaar = dossier.periode.jaar;
+    let bedrag, eenheid;
+    if (categorie === "NUT-GAS-METER") {
+      bedrag = gestaffeldTarief(hoeveelheid, gasTarief(jaar), "tarief_per_m3", "plafond_m3"); eenheid = "m3";
+    } else if (categorie === "NUT-ELK-METER") {
+      bedrag = gestaffeldTarief(hoeveelheid, elekTarief(jaar), "tarief_per_kwh", "plafond_kwh"); eenheid = "kWh";
+    } else {
+      bedrag = hoeveelheid * waterTarief(jaar).tarief_per_m3; eenheid = "m3";
+    }
+    bedrag = bedrag * maandfactor(dossier);
+    b.berekening.push(`Forfait par. 6.4.2 (Tabel 11, p. 60): ${hoeveelheid} ${eenheid} x Nibud-tarief x ${maanden(dossier.periode).length}/12 = EUR ${eur(bedrag).toFixed(2)}.`);
+    b.toelichting.push(
+      "Let op: het beleidsboek verwijst voor het forfait naar bijlage VIII van de " +
+      "Uitvoeringsregeling huurprijzen woonruimte. Die bedragen staan NIET in het beleidsboek; " +
+      "hier is gerekend met het wettelijk vastgestelde verbruik uit Tabel 11 en het Nibud-tarief " +
+      "(voetnoot 16/18, p. 60-61). Verificatie tegen bijlage VIII is vereist.");
+    return eur(bedrag);
+  }
+
+  function nutsvoorzieningMetMeter(post, dossier) {
+    const b = nieuweBeoordeling(post);
+    if (!controleerGrondslag(post, b)) return b;
+    const par = post.parameters || {};
+    let normbedrag = null;
+    try {
+      normbedrag = NIBUD[post.categorie](dossier, b);
+    } catch (fout) {
+      if (!fout.normOntbreekt) throw fout;
+      b.ontbrekende_informatie.push(fout.message);
+    }
+
+    if (!(post.bewijs || []).includes("facturen")) {
+      if (post.levering_gemotiveerd_betwist) {
+        b.regels.push("R-BEW-03");
+        b.bedrag_model = 0;
+        b.toelichting.push("Levering gemotiveerd betwist en geen facturen of andere betaalbewijzen: de kosten worden op EUR 0,00 gesteld (par. 6.4.2 onder 1, p. 60).");
+        return rondStatus(b);
+      }
+      b.regels.push("R-BEW-01");
+      b.bedrag_model = forfaitNuts(dossier, post.categorie, b);
+      b.toelichting.push("De verhuurder heeft de kosten niet met facturen onderbouwd; het bedrag wordt bepaald op het niveau van het wettelijk vastgestelde verbruik en tarief (par. 6.4.2 onder 1, p. 60).");
+      return rondStatus(b);
+    }
+
+    const standenBekend = par.beginstand != null && par.eindstand != null;
+    if (!standenBekend && !par.meterstanden_aanwezig) {
+      b.regels.push("R-NUT-02");
+      if (normbedrag === null) {
+        b.toelichting.push("Meterstanden ontbreken, maar de Nibud-norm kon niet worden bepaald.");
+        return rondStatus(b);
+      }
+      b.toelichting.push("Begin- of eindstand ontbreekt; het opgevoerde verbruik wordt getoetst aan de landelijke verbruiksnormen en tarieven van het Nibud (p. 12-13).");
+      b.bedrag_model = normbedrag;
+      if (par.verbruik_verhuurder != null) {
+        b.toelichting.push(
+          `Opgevoerd verbruik ${par.verbruik_verhuurder} tegenover normverbruik; bij een afwijking ` +
+          "in belangrijke mate zonder goede verklaring stelt de Huurcommissie het verbruik vast " +
+          "conform de Nibud-norm (p. 12). De maatstaf 'in belangrijke mate' is in het beleidsboek " +
+          "niet gekwantificeerd: menselijke toets vereist.");
+      }
+      return rondStatus(b);
+    }
+
+    if (par.meterstanden_betwist) {
+      b.regels.push("R-NUT-03");
+      if (normbedrag === null) return rondStatus(b);
+      if (post.categorie === "NUT-GAS-METER" && par.huurder_stelt_installatie_gebrekkig) {
+        b.regels.push("R-NUT-04");
+        const ondergrens = NORMEN.gas.rendement_ondergrens_stookinstallatie.waarde;
+        b.bedrag_model = normbedrag;
+        if (par.inspectierapport_aanwezig !== true) {
+          b.toelichting.push("De verhuurder heeft geen inspectierapport verstrekt; de Huurcommissie gaat dan in het algemeen uit van de Nibud-verbruiksnorm (par. 3.1.2, p. 15).");
+        } else if (par.rendement_ketel != null && Number(par.rendement_ketel) < ondergrens) {
+          b.toelichting.push(`Het ketelrendement (${par.rendement_ketel}) ligt onder de door de Huurcommissie gehanteerde ondergrens van ${ondergrens} (par. 3.1.2, p. 15); uitgangspunt is de Nibud-verbruiksnorm.`);
+        } else {
+          b.toelichting.push("Meterstanden gemotiveerd betwist: de Huurcommissie bepaalt de betalingsverplichting aan de hand van de Nibud-normen en -tarieven, tenzij een verklaring voor het hoge verbruik plausibel is (par. 3.1.2, p. 15).");
+        }
+      } else {
+        b.bedrag_model = normbedrag;
+        b.toelichting.push("Meterstanden gemotiveerd betwist: toetsing aan de landelijke verbruiksnormen en tarieven van het Nibud (par. 3.1.2/3.2.2/3.3.2, p. 15, 19, 23).");
+      }
+      b.ontbrekende_informatie.push("Menselijke weging: is de betwisting 'gemotiveerd en overtuigend' en is er een plausibele verklaring voor het verbruik? (p. 15)");
+      return rondStatus(b);
+    }
+
+    b.regels.push("R-NUT-01");
+    b.bedrag_model = eur(post.bedrag_verhuurder);
+    b.automatisering = "automatisch";
+    b.menselijke_controle_nodig = false;
+    b.toelichting.push("Meterstanden bekend en niet betwist; de werkelijk gemaakte kosten volgens factuur zijn uitgangspunt (p. 11).");
+    if (normbedrag !== null) b.berekening.push(`Referentie Nibud-norm voor dit jaar: EUR ${normbedrag.toFixed(2)} (ter vergelijking).`);
+    if (par.collectieve_factuur) {
+      b.regels.push("R-NUT-05");
+      b.ontbrekende_informatie.push("Collectieve factuur voor meerdere woonruimten: de toegepaste verdeelsleutel moet worden getoetst (voetnoot 3, p. 11; par. 4.2.1, p. 26).");
+      b.menselijke_controle_nodig = true;
+      b.automatisering = "semi-automatisch";
+    }
+    return rondStatus(b);
+  }
+
+  /* --------------------------------------- nutsvoorzieningen zonder meter */
+
+  function nutsvoorzieningZonderMeter(post, dossier) {
+    const b = nieuweBeoordeling(post);
+    if (!controleerGrondslag(post, b)) return b;
+    const par = post.parameters || {};
+    const w = dossier.woonruimte, p = dossier.periode;
+    const bewijs = post.bewijs || [];
+
+    if (!bewijs.includes("facturen") || !bewijs.includes("specificatieformulier")) {
+      if (post.levering_gemotiveerd_betwist && !bewijs.includes("facturen")) {
+        b.regels.push("R-BEW-03");
+        b.bedrag_model = 0;
+        b.toelichting.push("Geen facturen en levering gemotiveerd betwist: kosten op EUR 0,00 (par. 6.4.2 categorie 2, p. 61).");
+        return rondStatus(b);
+      }
+      b.regels.push("R-BEW-02");
+      const meterCategorie = { "NUT-GAS-ZM": "NUT-GAS-METER", "NUT-ELK-ZM": "NUT-ELK-METER", "NUT-WATER-ZM": "NUT-WATER-METER" }[post.categorie];
+      b.bedrag_model = forfaitNuts(dossier, meterCategorie, b);
+      b.toelichting.push("Specificatieformulier en/of facturen ontbreken, of het aandeel van de huurder is niet bepaalbaar: het bedrag wordt bepaald op het niveau van het wettelijk vastgestelde verbruik en tarief (par. 6.4.2 categorie 2, p. 61).");
+      return rondStatus(b);
+    }
+
+    const totaal = getal(par.totale_kosten_complex);
+    if (totaal === null) {
+      b.ontbrekende_informatie.push("Totale kosten van het complex ontbreken; verdeelsleutel niet toepasbaar.");
+      return rondStatus(b);
+    }
+    const aantal = w.aantal_woonruimten_complex;
+    if (!aantal) {
+      b.ontbrekende_informatie.push("Aantal woonruimten in het complex ontbreekt (par. 4.2.1, p. 26).");
+      return rondStatus(b);
+    }
+
+    let aandeel, periodefactor, methode;
+    if (post.categorie === "NUT-GAS-ZM") {
+      b.regels.push("R-VDS-01");
+      const cfg = NORMEN.gas.verdeelsleutel_zonder_eigen_meter;
+      if (w.oppervlakte_m2 == null || !w.totale_oppervlakte_complex_m2) {
+        b.ontbrekende_informatie.push("Vloeroppervlakte van de woonruimte en/of van het complex ontbreekt; de variabele gaskosten (65%) worden naar vloeroppervlakte verdeeld (p. 26).");
+        return rondStatus(b);
+      }
+      const vast = totaal * cfg.aandeel_vaste_kosten / aantal;
+      const variabel = totaal * cfg.aandeel_variabele_kosten * Number(w.oppervlakte_m2) / Number(w.totale_oppervlakte_complex_m2);
+      aandeel = eur(vast) + eur(variabel);
+      b.berekening.push(`Vaste kosten 35% van EUR ${eur(totaal).toFixed(2)} = EUR ${eur(totaal * 0.35).toFixed(2)}, gelijk over ${aantal} woonruimten = EUR ${eur(vast).toFixed(2)} (par. 4.2.1, p. 26).`);
+      b.berekening.push(`Variabele kosten 65% van EUR ${eur(totaal).toFixed(2)} = EUR ${eur(totaal * 0.65).toFixed(2)}, naar oppervlakte ${w.oppervlakte_m2}/${w.totale_oppervlakte_complex_m2} = EUR ${eur(variabel).toFixed(2)}.`);
+      periodefactor = volledigJaar(p) ? 1 : graaddagenfactor(dossier);
+      if (periodefactor !== 1) b.regels.push("R-PER-01");
+      methode = "graaddagenmethode (par. 4.2.2, p. 28)";
+    } else {
+      b.regels.push("R-VDS-02");
+      aandeel = eur(totaal / aantal);
+      b.berekening.push(`Gelijke verdeling over ${aantal} woonruimten: EUR ${eur(totaal).toFixed(2)} / ${aantal} = EUR ${aandeel.toFixed(2)} (par. 4.2.1, p. 27).`);
+      if (post.categorie === "NUT-ELK-ZM") {
+        periodefactor = volledigJaar(p) ? 1 : seizoensfactor(dossier);
+        if (periodefactor !== 1) b.regels.push("R-PER-02");
+        methode = "seizoenspatronen (par. 4.2.2, p. 28)";
+      } else {
+        periodefactor = maandfactor(dossier);
+        if (periodefactor !== 1) b.regels.push("R-PER-03");
+        methode = "evenredig deel van het jaar (par. 4.2.2, p. 28)";
+      }
+    }
+    if (periodefactor !== 1) b.berekening.push(`Periodefactor ${periodefactor.toFixed(6)} volgens ${methode}.`);
+    b.bedrag_model = eur(aandeel * periodefactor);
+    b.automatisering = "automatisch";
+    b.menselijke_controle_nodig = false;
+    return rondStatus(b);
+  }
+
+  /* -------------------------------------------------------- roerende zaken */
+
+  function roerendeZaken(post, dossier) {
+    const b = nieuweBeoordeling(post);
+    if (!controleerGrondslag(post, b)) return b;
+    const par = post.parameters || {};
+    const cfg = NORMEN.roerende_zaken;
+    const soort = par.soort || "standaard";
+
+    if (par.roerend === false) {
+      b.regels.push("R-ROE-01");
+      b.bedrag_model = 0;
+      b.toelichting.push("Onroerende zaak: hiervoor kan geen gebruiksvergoeding in de servicekosten worden opgenomen; de kosten worden geacht deel uit te maken van de kale huurprijs (par. 4.3.3, p. 31).");
+      return rondStatus(b);
+    }
+    if (par.roerend === null || par.roerend === undefined) {
+      b.regels.push("R-ROE-01");
+      b.ontbrekende_informatie.push("Roerend of onroerend? Kan de zaak worden weggenomen zonder beschadiging van betekenis? (par. 4.3.3, p. 31). Vereist menselijke/feitelijke beoordeling.");
+      b.menselijke_controle_nodig = true;
+    }
+
+    if (soort === "rookmelder") {
+      b.regels.push("R-ROE-07");
+      b.bedrag_model = 0;
+      b.ontbrekende_informatie.length = 0;
+      b.toelichting.push("Rookmelders zijn sinds 1 juli 2022 verplicht op grond van het Bouwbesluit; de kosten komen voor rekening van de verhuurder en er mag geen gebruiksvergoeding worden gevraagd (par. 4.3.3, p. 33).");
+      return rondStatus(b);
+    }
+
+    let waarde = getal(par.aanschafwaarde);
+    let waardebron = "aankoopfactuur";
+    if (waarde === null) { waarde = getal(par.geschatte_waarde); waardebron = "schatting"; }
+    if (waarde === null) {
+      b.regels.push("R-ROE-02");
+      const standaard = cfg.wettelijk_standaardbedrag_per_jaar_zonder_gegevens;
+      b.bedrag_model = eur(standaard * maandfactor(dossier));
+      b.toelichting.push(`Geen aankoopfacturen en geen inzicht in de samenstelling van de roerende zaken: het wettelijk vastgestelde standaardbedrag van EUR ${standaard} per jaar wordt aangehouden (par. 4.3.3, p. 31; par. 6.4.2, p. 61).`);
+      return rondStatus(b);
+    }
+
+    let levensduur, percentage;
+    if (soort === "zonnepanelen") {
+      const z = cfg.zonnepanelen;
+      levensduur = z.levensduur_jaren; percentage = z.afschrijvingspercentage;
+      waarde = waarde + z.opslag_op_aanschafwaarde_eur;
+      b.regels.push("R-ROE-05");
+      b.berekening.push(`Grondslag zonnepanelen: aanschafwaarde + opslag EUR ${z.opslag_op_aanschafwaarde_eur} = EUR ${eur(waarde).toFixed(2)} (par. 4.3.3, p. 32).`);
+    } else if (soort === "brandbeveiliging") {
+      const z = cfg.brandbeveiligingsmiddelen;
+      levensduur = 10; percentage = z.afschrijvingspercentage;
+      waarde = waarde * z.aandeel_waarde_huurder;
+      b.regels.push("R-ROE-06");
+      b.berekening.push(`Brandbeveiligingsmiddelen: 50% van de waarde telt mee = EUR ${eur(waarde).toFixed(2)} (par. 4.3.3, p. 33).`);
+    } else if (soort === "camera") {
+      const z = cfg.beveiligingscameras;
+      levensduur = 5; percentage = z.afschrijvingspercentage;
+      waarde = waarde * z.aandeel_waarde_huurder;
+      b.regels.push("R-ROE-06");
+      b.berekening.push(`Beveiligingscamera's: 70% van de waarde telt mee = EUR ${eur(waarde).toFixed(2)} (par. 4.3.3, p. 34).`);
+    } else if (soort === "wasapparatuur") {
+      const z = cfg.industriele_wasmachines_en_wasdrogers;
+      levensduur = z.levensduur_jaren; percentage = z.afschrijvingspercentage_eerste_periode;
+      b.regels.push("R-ROE-04");
+    } else {
+      levensduur = Number(par.levensduur_jaren || cfg.standaard_levensduur_jaren);
+      const sleutel = String(levensduur);
+      if (!(sleutel in cfg.afschrijving_per_levensduur)) {
+        b.ontbrekende_informatie.push(`Het beleidsboek noemt afschrijvingspercentages bij een levensduur van 5, 10 of 15 jaar (p. 31); voor ${levensduur} jaar is geen percentage gegeven.`);
+        return rondStatus(b);
+      }
+      percentage = cfg.afschrijving_per_levensduur[sleutel];
+      b.regels.push("R-ROE-03");
+    }
+
+    const jaarInGebruik = getal(par.jaar_in_gebruik);
+    if (jaarInGebruik === null) {
+      b.ontbrekende_informatie.push("Aanschafjaar/gebruiksjaar van de zaak ontbreekt; zonder dat is niet vast te stellen of de eerste of de tweede afschrijvingsperiode geldt (p. 32).");
+      return rondStatus(b);
+    }
+
+    let jaarbedrag;
+    if (jaarInGebruik > 2 * levensduur) {
+      if (par.vertegenwoordigt_nog_waarde === true) {
+        b.ontbrekende_informatie.push("De zaak is na twee afschrijvingsperioden nog van waarde; een nieuwe waardebepaling is nodig (p. 32). Handmatige beoordeling.");
+        b.menselijke_controle_nodig = true;
+        return rondStatus(b);
+      }
+      b.bedrag_model = 0;
+      b.toelichting.push("Na twee afschrijvingsperioden vertegenwoordigt de zaak geen waarde meer; de betalingsverplichting kan op EUR 0,00 worden gesteld (par. 4.3.3, p. 32).");
+      return rondStatus(b);
+    }
+    if (jaarInGebruik > levensduur) {
+      if (soort === "wasapparatuur") {
+        const z = cfg.industriele_wasmachines_en_wasdrogers;
+        jaarbedrag = waarde * z.afschrijvingspercentage_tweede_periode_over_oorspronkelijke_waarde;
+        b.berekening.push(`Tweede periode van tien jaar: 6% van de oorspronkelijke waarde EUR ${eur(waarde).toFixed(2)} = EUR ${eur(jaarbedrag).toFixed(2)} (par. 4.3.3, p. 34).`);
+      } else {
+        const nieuweWaarde = waarde * cfg.herwaardering_na_afschrijvingsperiode;
+        jaarbedrag = nieuweWaarde * percentage;
+        b.berekening.push(`Herwaardering 60% van EUR ${eur(waarde).toFixed(2)} = EUR ${eur(nieuweWaarde).toFixed(2)}; ${(percentage * 100).toFixed(2)}% per jaar = EUR ${eur(jaarbedrag).toFixed(2)} (par. 4.3.3, p. 32).`);
+      }
+    } else {
+      jaarbedrag = waarde * percentage;
+      b.berekening.push(`Gebruiksvergoeding ${(percentage * 100).toFixed(2)}% van EUR ${eur(waarde).toFixed(2)} = EUR ${eur(jaarbedrag).toFixed(2)} (levensduur ${levensduur} jaar, par. 4.3.3, p. 31).`);
+    }
+
+    const aantal = Number(par.aantal_woonruimten || 1);
+    if (aantal > 1) {
+      jaarbedrag = jaarbedrag / aantal;
+      b.berekening.push(`Verdeeld over ${aantal} woonruimten = EUR ${eur(jaarbedrag).toFixed(2)} per woonruimte.`);
+    }
+    let bedrag = jaarbedrag * maandfactor(dossier);
+    if (soort === "wasapparatuur") {
+      const z = cfg.industriele_wasmachines_en_wasdrogers;
+      const maximum = z.maximum_per_woonruimte_per_maand_eur * maanden(dossier.periode).length;
+      if (bedrag > maximum) {
+        b.berekening.push(`Maximum EUR ${z.maximum_per_woonruimte_per_maand_eur} per woonruimte per maand x ${maanden(dossier.periode).length} maanden = EUR ${eur(maximum).toFixed(2)}; dit maximum geldt (par. 4.3.3, p. 34).`);
+        bedrag = maximum;
+      }
+    }
+    b.bedrag_model = eur(bedrag);
+    if (waardebron !== "aankoopfactuur") {
+      b.toelichting.push("Waarde geschat op basis van inzicht in de samenstelling van de roerende zaken (verkoopwaarde aan het begin van het boekjaar, p. 31); geen aankoopfacturen aanwezig.");
+      b.menselijke_controle_nodig = true;
+    } else {
+      b.automatisering = "automatisch";
+      b.menselijke_controle_nodig = b.menselijke_controle_nodig || b.ontbrekende_informatie.length > 0;
+    }
+    return rondStatus(b);
+  }
+
+  /* ------------------------------------------------------------ huismeester */
+
+  function huismeester(post, dossier) {
+    const b = nieuweBeoordeling(post);
+    if (!controleerGrondslag(post, b)) return b;
+    const par = post.parameters || {};
+    const cfg = NORMEN.huismeester;
+    const bewijs = post.bewijs || [];
+    b.regels.push("R-HUI-01");
+
+    if (!bewijs.includes("facturen") && !bewijs.includes("urenverantwoording")) {
+      b.regels.push("R-BEW-02");
+      b.ontbrekende_informatie.push("Opvragen bij verhuurder: functieomschrijving, facturen dienstverleningsbedrijf en urenverantwoording/kosten eigen beheer (par. 4.3.6, p. 41).");
+      return rondStatus(b);
+    }
+    const uren = getal(par.uren);
+    const totaleKosten = getal(par.totale_kosten);
+    const aantal = par.aantal_woonruimten || dossier.woonruimte.aantal_woonruimten_complex;
+    if (uren === null || totaleKosten === null || !aantal) {
+      b.ontbrekende_informatie.push("Voor de toets aan het maximale uurtarief zijn het aantal gewerkte uren, de totale kosten en het aantal woonruimten nodig (par. 4.3.6, p. 40-41).");
+      return rondStatus(b);
+    }
+    let maxtarief;
+    try { maxtarief = huismeesterTarief(dossier.periode.jaar); }
+    catch (fout) { b.ontbrekende_informatie.push(fout.message); return rondStatus(b); }
+
+    const getoetst = Math.min(totaleKosten, uren * maxtarief);
+    b.berekening.push(`Toets aan maximaal uurtarief: ${uren} uur x EUR ${maxtarief} = EUR ${eur(uren * maxtarief).toFixed(2)}; gefactureerd EUR ${eur(totaleKosten).toFixed(2)} -> getoetst EUR ${eur(getoetst).toFixed(2)} (Tabel 9, p. 40).`);
+    const aandeel = Number(par.aandeel_huurders || cfg.aandeel_huurders);
+    const tenLaste = getoetst * aandeel;
+    b.berekening.push(`${(aandeel * 100).toFixed(0)}% ten laste van de huurders = EUR ${eur(tenLaste).toFixed(2)}; ${((1 - aandeel) * 100).toFixed(0)}% blijft voor rekening van de verhuurder (p. 41).`);
+    const perWoonruimte = tenLaste / aantal;
+    b.berekening.push(`Per woonruimte: EUR ${eur(tenLaste).toFixed(2)} / ${aantal} = EUR ${eur(perWoonruimte).toFixed(2)}.`);
+    b.bedrag_model = eur(perWoonruimte * maandfactor(dossier));
+    b.toelichting.push("De Huurcommissie kan van de 70/30-verdeling afwijken als de feitelijke werkzaamheden een andere verdeling rechtvaardigen (p. 41); dat is een inhoudelijke weging.");
+    b.menselijke_controle_nodig = true;
+    return rondStatus(b);
+  }
+
+  function externeBeveiliging(post, dossier) {
+    const b = nieuweBeoordeling(post);
+    if (!controleerGrondslag(post, b)) return b;
+    const cfg = NORMEN.externe_beveiliging;
+    const par = post.parameters || {};
+    b.regels.push("R-HUI-02");
+    if (!(post.bewijs || []).includes("facturen")) {
+      b.ontbrekende_informatie.push("Facturen van de beveiligingsdienst ontbreken (p. 41).");
+      return rondStatus(b);
+    }
+    if (par.gecertificeerd !== true) {
+      b.ontbrekende_informatie.push("De beveiligingsdienst is niet (aantoonbaar) gecertificeerd; de Huurcommissie vraagt dan de onderliggende stukken op (p. 41).");
+    }
+    const totaleKosten = getal(par.totale_kosten);
+    const aantal = par.aantal_woonruimten || dossier.woonruimte.aantal_woonruimten_complex;
+    if (totaleKosten === null || !aantal) {
+      b.ontbrekende_informatie.push("Totale kosten en/of aantal woonruimten ontbreken.");
+      return rondStatus(b);
+    }
+    const bedrag = totaleKosten * cfg.aandeel_huurders / aantal * maandfactor(dossier);
+    b.berekening.push(`70% van EUR ${eur(totaleKosten).toFixed(2)} = EUR ${eur(totaleKosten * cfg.aandeel_huurders).toFixed(2)}, verdeeld over ${aantal} woonruimten = EUR ${eur(bedrag).toFixed(2)} (p. 41).`);
+    b.bedrag_model = eur(bedrag);
+    b.menselijke_controle_nodig = true;
+    return rondStatus(b);
+  }
+
+  /* ------------------------------------------------------ administratiekosten */
+
+  function administratiekosten(post, dossier) {
+    const b = nieuweBeoordeling(post);
+    const par = post.parameters || {};
+    const cfg = NORMEN.administratiekosten;
+    b.regels.push("R-ADM-01");
+    b.toelichting.push("Administratiekosten hangen zo nauw samen met de servicekosten dat zij niet uitdrukkelijk overeengekomen hoeven te zijn (par. 4.3.11, p. 43).");
+
+    if (par.afrekening_verstrekt === false) {
+      b.regels.push("R-ADM-02");
+      b.bedrag_model = 0;
+      b.toelichting.push("Administratiekosten kunnen alleen in rekening worden gebracht als een afrekening aan de huurder is verstrekt (p. 43). Een te late afrekening mag wel.");
+      return rondStatus(b);
+    }
+    const warmte = getal(par.grondslag_warmtelevering);
+    const overig = getal(par.grondslag_overige_posten);
+    if (warmte === null && overig === null) {
+      b.ontbrekende_informatie.push("Grondslag ontbreekt: over welke kostenposten (warmtelevering vs. overige) worden de administratiekosten berekend? (p. 43)");
+      return rondStatus(b);
+    }
+    let maximum = 0;
+    if (warmte !== null) {
+      const pct = par.meting_uitbesteed ? cfg.max_percentage_warmtelevering_uitbesteed : cfg.max_percentage_warmtelevering;
+      maximum += warmte * pct;
+      b.berekening.push(`Warmtelevering: ${(pct * 100).toFixed(0)}% van EUR ${eur(warmte).toFixed(2)} = EUR ${eur(warmte * pct).toFixed(2)} (${par.meting_uitbesteed ? "meting/verdeling uitbesteed" : "in eigen beheer"}, p. 43).`);
+    }
+    if (overig !== null) {
+      const pct = cfg.max_percentage_overige_posten;
+      maximum += overig * pct;
+      b.berekening.push(`Overige kostenposten: ${(pct * 100).toFixed(0)}% van EUR ${eur(overig).toFixed(2)} = EUR ${eur(overig * pct).toFixed(2)} (p. 43).`);
+    }
+    const ondergrens = cfg.minimum_per_afrekening_per_woonruimte_eur;
+    const bovengrens = cfg.maximum_per_afrekening_per_woonruimte_eur;
+    let toegestaan = Math.min(eur(post.bedrag_verhuurder), maximum);
+    if (toegestaan > bovengrens) {
+      toegestaan = bovengrens;
+      b.berekening.push(`Begrensd op het maximum van EUR ${bovengrens} per afrekening per woonruimte (p. 43).`);
+    }
+    if (eur(post.bedrag_verhuurder) <= ondergrens && toegestaan < ondergrens) {
+      toegestaan = Math.min(eur(post.bedrag_verhuurder), ondergrens);
+      b.berekening.push(`Minimumbedrag EUR ${ondergrens} per afrekening per woonruimte toegepast (p. 43).`);
+    }
+    b.bedrag_model = eur(toegestaan);
+    b.automatisering = "automatisch";
+    b.menselijke_controle_nodig = false;
+    return rondStatus(b);
+  }
+
+  /* ----------------------------------------- generieke overige servicekosten */
+
+  const CONFIG = {
+    "SK-01": { regel: "R-SK-01", bron: "par. 4.3.1, p. 30" },
+    "SK-02": { regel: "R-SK-02", bron: "par. 4.3.2, p. 30" },
+    "SK-04-GLAS": {
+      regel: "R-KH-01", bron: "par. 4.3.4, p. 36",
+      voorwaarde: ["ruiten_bereikbaar", "Zijn de ruiten voor de huurder bereikbaar? Zo nee, dan zijn de kosten niet doorberekenbaar (p. 36)."],
+      forfait: ["glazenwassen_zonder_specificatie", "aandeel_arbeidskosten_huurder", "kosten_gespecificeerd"],
+      forfait_altijd: true,
+    },
+    "SK-04-SCHOONMAAK": {
+      regel: "R-KH-02", bron: "par. 4.3.4, p. 36",
+      uitsluiting: ["betreft_mutatiekosten", "Mutatiekosten (begin- en eindschoonmaak bij verhuizing) mogen niet bij de huurder in rekening worden gebracht (p. 36)."],
+    },
+    "SK-04-TUIN": {
+      regel: "R-KH-03", bron: "par. 4.3.4, p. 37", handmatig: true,
+      voorwaarde: ["exclusief_gebruiksrecht", "Heeft de huurder het exclusieve gebruiksrecht van de groenvoorziening? Bij een openbaar karakter of een kijktuin blijven de kosten voor rekening van de verhuurder (p. 37)."],
+    },
+    "SK-04-GLADHEID": {
+      regel: "R-KH-04", bron: "par. 4.3.4, p. 37",
+      voorwaarde: ["exclusief_gebruiksrecht", "Heeft de huurder het exclusieve (gezamenlijke) gebruiksrecht van de buitenruimte? (p. 37)"],
+    },
+    "SK-04-ONTSTOPPING": {
+      regel: "R-KH-05", bron: "par. 4.3.4, p. 37",
+      voorwaarde: ["leidingen_bereikbaar_en_individueel", "Bevinden de leidingen zich in of aan de woonruimte en zijn ze voor de huurder bereikbaar? Leidingen voor meerdere zelfstandige woonruimten en werkzaamheden door een technisch gebrek blijven voor rekening van de verhuurder (p. 37)."],
+      forfait: ["ontstoppingscontract", "aandeel_huurder", "kosten_gespecificeerd"],
+      forfait_altijd_bij: "onderhoudscontract",
+    },
+    "SK-04-SCHOORSTEEN": {
+      regel: "R-KH-06", bron: "par. 4.3.4, p. 38",
+      voorwaarde: ["kanaal_bereikbaar", "Is de schoorsteen of het kanaal voor de huurder bereikbaar? (p. 38)"],
+    },
+    "SK-04-LAMPEN": {
+      regel: "R-KH-07", bron: "par. 4.3.4, p. 38",
+      uitsluiting: ["betreft_armaturen_of_installatie", "Vervangen van armaturen, vernieuwen of repareren van de installatie en vandalismeschade blijven voor rekening van de verhuurder (p. 38)."],
+    },
+    "SK-04-ONGEDIERTE": {
+      regel: "R-KH-08", bron: "par. 4.3.4, p. 38",
+      uitsluiting: ["gevolg_bouwkundige_situatie", "Als het ongedierte het gevolg is van een bouwkundige situatie komen de kosten voor rekening van de verhuurder; de huurder moet dit aannemelijk maken (p. 38)."],
+    },
+    "SK-04-INSTALLATIE": {
+      regel: "R-KH-09", bron: "par. 4.3.4, p. 38-39",
+      voorwaarde: ["eenvoudig_onderhoud_binnen_woonruimte", "Gaat het om onderhoudstechnisch eenvoudige werkzaamheden zonder specialistische kennis en zonder noemenswaardige kosten aan een installatie binnen de woonruimte? Periodiek onderhoud aan aard- en nagelvaste (onroerende) installaties, klein onderhoud daaraan en keuringskosten zijn niet doorberekenbaar (p. 39)."],
+    },
+    "SK-04-SCHILDERWERK": {
+      regel: "R-KH-10", bron: "par. 4.3.4, p. 39", handmatig: true,
+      voorwaarde: ["uitdrukkelijk_overeengekomen_of_op_verzoek_huurder", "Is het schilderwerk uitdrukkelijk overeengekomen (of bij aanvang op verzoek van de huurder uitgevoerd)? Zo niet, dan wordt het geacht te zijn verricht om de woonruimte verhuurbaar te maken en zijn de kosten niet doorberekenbaar (p. 39)."],
+    },
+    "SK-05": { regel: "R-SK-05", bron: "par. 4.3.5, p. 39-40" },
+    "SK-07": { regel: "R-SK-07", bron: "par. 4.3.7, p. 42" },
+    "SK-08": { regel: "R-SK-08", bron: "par. 4.3.8, p. 42" },
+    "SK-09-GLAS": {
+      regel: "R-VZ-02", bron: "par. 4.3.9, p. 43",
+      forfait: ["glasverzekering_binnen_opstalverzekering", "aandeel_glasverzekering", "kosten_gespecificeerd"],
+      forfait_altijd_bij: "onderdeel_van_opstalverzekering",
+    },
+    "SK-09-OPSTAL": {
+      regel: "R-VZ-01", bron: "par. 4.3.9, p. 42-43", nooit_doorberekenbaar: true,
+      reden: "Verzekeringen die direct verband houden met de onroerende zaak blijven voor rekening van de verhuurder (p. 42-43).",
+    },
+    "SK-09-INBOEDEL": { regel: "R-VZ-03", bron: "par. 4.3.9, p. 43" },
+    "SK-10": { regel: "R-SK-10", bron: "par. 4.3.10, p. 43" },
+    "SK-12": {
+      regel: "R-SK-12", bron: "par. 4.3.12, p. 44",
+      forfait: ["onderhoudscontract_24uursservice", "aandeel_24uursservice", "kosten_gespecificeerd"],
+      forfait_altijd: true,
+    },
+    "SK-13": { regel: "R-SK-13", bron: "par. 4.3.13, p. 44", fonds: true },
+    "SK-14-WKO": {
+      regel: "R-WKO-01", bron: "par. 5.4, p. 49-50", handmatig: true,
+      voorwaarde: ["vaste_kosten_gesplitst", "Zijn de vaste kosten gesplitst in kapitaals- en onderhoudslasten van de WKO-installatie (niet doorberekenbaar, want te dekken uit de kale huurprijs) en de overige vaste kosten (wel doorberekenbaar)? Zonder die splitsing is het doorberekenbare deel niet vast te stellen (par. 5.4, p. 49)."],
+    },
+    "NSK-01": {
+      regel: "R-NSK-01", bron: "par. 4.3.14, p. 44", nooit_doorberekenbaar: true,
+      reden: "Het is niet toegestaan gederfde servicekosten als gevolg van leegstand aan de zittende huurders door te berekenen (p. 44).",
+    },
+    "NSK-02": {
+      regel: "R-NSK-02", bron: "par. 4.3.15, p. 44", buiten_bevoegdheid: true,
+      reden: "Belastingen en heffingen maken geen onderdeel uit van de servicekosten; de Huurcommissie is niet bevoegd hierover uitspraak te doen (p. 44, p. 51).",
+    },
+    "NSK-03": {
+      regel: "R-NSK-03", bron: "par. 4.3.16, p. 45", buiten_bevoegdheid: true,
+      reden: "De Huurcommissie doet alleen uitspraak over woonservicekosten, niet over zorgservicekosten (p. 45).",
+    },
+  };
+
+  function overigeServicekost(post, dossier) {
+    const b = nieuweBeoordeling(post);
+    const cfg = CONFIG[post.categorie];
+    const par = post.parameters || {};
+    b.regels.push(cfg.regel);
+
+    if (cfg.buiten_bevoegdheid) {
+      b.status = "BUITEN_BEVOEGDHEID";
+      b.toelichting.push(`${cfg.reden} (${cfg.bron})`);
+      b.automatisering = "automatisch";
+      b.menselijke_controle_nodig = false;
+      return b;
+    }
+    if (cfg.nooit_doorberekenbaar) {
+      b.bedrag_model = 0;
+      b.toelichting.push(`${cfg.reden} (${cfg.bron})`);
+      b.automatisering = "automatisch";
+      b.menselijke_controle_nodig = false;
+      return rondStatus(b);
+    }
+    if (!controleerGrondslag(post, b)) return b;
+
+    if (dossier.woonruimte.gebruikt_gemeenschappelijke_ruimten === false && par.betreft_gemeenschappelijke_voorziening) {
+      b.regels.push("R-VDS-04");
+      b.bedrag_model = 0;
+      b.toelichting.push("De huurder maakt geen gebruik van de gemeenschappelijke ruimten of voorzieningen en hoeft dat ook niet; dan hoeft hij daarvoor niet te betalen (p. 29).");
+      return rondStatus(b);
+    }
+    if (cfg.uitsluiting && par[cfg.uitsluiting[0]] === true) {
+      b.bedrag_model = 0;
+      b.toelichting.push(cfg.uitsluiting[1]);
+      return rondStatus(b);
+    }
+    if (cfg.voorwaarde) {
+      const waarde = par[cfg.voorwaarde[0]];
+      if (waarde === false) {
+        b.bedrag_model = 0;
+        b.toelichting.push("Niet doorberekenbaar: " + cfg.voorwaarde[1]);
+        return rondStatus(b);
+      }
+      if (waarde === null || waarde === undefined) {
+        b.ontbrekende_informatie.push(cfg.voorwaarde[1]);
+        b.menselijke_controle_nodig = true;
+      }
+    }
+    if (cfg.fonds) {
+      const voldaan = par.voldaan_aan_voorwaarden || [];
+      const ontbreekt = NORMEN.fondsen.voorwaarden.filter((v) => !voldaan.includes(v));
+      if (ontbreekt.length) {
+        b.ontbrekende_informatie.push("Fondsvoorwaarden nog niet aangetoond: " + ontbreekt.join("; ") + " (par. 4.3.13, p. 44).");
+        b.menselijke_controle_nodig = true;
+      }
+    }
+
+    const bewijs = post.bewijs || [];
+    const heeftFacturen = bewijs.includes("facturen");
+    const heeftFormulier = bewijs.includes("specificatieformulier");
+    if (!heeftFacturen && post.levering_gemotiveerd_betwist) {
+      b.regels.push("R-BEW-03");
+      b.bedrag_model = 0;
+      b.ontbrekende_informatie.length = 0;
+      b.toelichting.push("De levering van de zaak of dienst wordt gemotiveerd betwist en de verhuurder heeft geen facturen of andere betaalbewijzen overgelegd: de kosten worden op EUR 0,00 gesteld (par. 6.4.2 categorie 2, p. 61; art. 18 lid 4 Uhw).");
+      return rondStatus(b);
+    }
+    if (!heeftFacturen || !heeftFormulier) {
+      b.regels.push("R-BEW-02");
+      b.bedrag_model = eur(NORMEN.forfaits_bij_ontbrekende_onderbouwing.vast_bedrag_overige_kostenposten_per_jaar_eur * maandfactor(dossier));
+      const ontbrekend = [];
+      if (!heeftFormulier) ontbrekend.push("specificatieformulier (bijlage VII Uitvoeringsregeling huurprijzen woonruimte)");
+      if (!heeftFacturen) ontbrekend.push("facturen of andere betaalbewijzen");
+      b.toelichting.push("Ontbrekende onderbouwing (" + ontbrekend.join(" en ") + ") terwijl de levering niet gemotiveerd wordt betwist: de Huurcommissie houdt voor deze kostenpost doorgaans EUR 12,00 per jaar aan (par. 6.4.2, p. 60-61).");
+      b.automatisering = "automatisch";
+      b.menselijke_controle_nodig = true;
+      return rondStatus(b);
+    }
+
+    let basisbedrag = par.werkelijke_kosten != null ? Number(par.werkelijke_kosten) : eur(post.bedrag_verhuurder);
+    if (cfg.forfait) {
+      const [sleutel, veldnaam, voorwaardeVeld] = cfg.forfait;
+      const gespecificeerd = par[voorwaardeVeld];
+      const vanToepassing = cfg.forfait_altijd || (cfg.forfait_altijd_bij ? par[cfg.forfait_altijd_bij] === true : false);
+      if (vanToepassing && gespecificeerd !== true) {
+        const aandeel = breuk(NORMEN.forfaitaire_verdelingen[sleutel][veldnaam]);
+        b.berekening.push(`Kosten niet gespecificeerd: forfaitair aandeel ${(aandeel * 100).toFixed(2)}% van EUR ${eur(basisbedrag).toFixed(2)} = EUR ${eur(basisbedrag * aandeel).toFixed(2)} (${cfg.bron}).`);
+        basisbedrag = basisbedrag * aandeel;
+      }
+    }
+    const aantal = par.aantal_woonruimten;
+    const isComplextotaal = par.bedrag_is_complextotaal !== false;
+    if (aantal && Number(aantal) > 1 && isComplextotaal) {
+      b.regels.push("R-VDS-03");
+      b.berekening.push(`Verdeeld over ${aantal} woonruimten die gebruik (kunnen) maken van de zaak of dienst: EUR ${eur(basisbedrag).toFixed(2)} / ${aantal} = EUR ${eur(basisbedrag / Number(aantal)).toFixed(2)} (p. 29).`);
+      basisbedrag = basisbedrag / Number(aantal);
+    }
+    b.bedrag_model = eur(basisbedrag * maandfactor(dossier));
+    if (cfg.handmatig) {
+      b.automatisering = "handmatig";
+      b.menselijke_controle_nodig = true;
+    } else if (b.ontbrekende_informatie.length) {
+      b.automatisering = "semi-automatisch";
+    } else {
+      b.automatisering = "automatisch";
+      b.menselijke_controle_nodig = false;
+    }
+    return rondStatus(b);
+  }
+
+  const HANDLERS = {};
+  for (const c of ["NUT-GAS-METER", "NUT-ELK-METER", "NUT-WATER-METER"]) HANDLERS[c] = nutsvoorzieningMetMeter;
+  for (const c of ["NUT-GAS-ZM", "NUT-ELK-ZM", "NUT-WATER-ZM"]) HANDLERS[c] = nutsvoorzieningZonderMeter;
+  HANDLERS["SK-03"] = roerendeZaken;
+  HANDLERS["SK-06"] = huismeester;
+  HANDLERS["SK-06B"] = externeBeveiliging;
+  HANDLERS["SK-11"] = administratiekosten;
+  for (const c of Object.keys(CONFIG)) HANDLERS[c] = overigeServicekost;
+
+  global.KernHandlers = HANDLERS;
+  global.Kern = { eur, HANDLERS, CONFIG, init, beoordeelDossier, maandfactor, graaddagenfactor, seizoensfactor,
+                  nibudGas, nibudElektriciteit, nibudWater, normen: () => NORMEN };
+
+  function init(data) {
+    NORMEN = data.normen;
+    CATEGORIEEN = data.categorieen || null;
+  }
+
+  /* ---------------------------------------------- ontvankelijkheid + motor */
+
+  function controleerOntvankelijkheid(dossier) {
+    const bevindingen = [];
+    const proc = dossier.procedure || {};
+    const jaar = dossier.periode.jaar;
+    const t = NORMEN.termijnen;
+    const gesloten = proc.contract_gesloten_op ? new Date(proc.contract_gesloten_op) : null;
+
+    if (!gesloten) {
+      bevindingen.push("ORANJE - Datum huurovereenkomst onbekend; die bepaalt of de Huurcommissie uitspraak kan doen of alleen kan adviseren (par. 6.2.1, p. 51-52).");
+    } else if (gesloten < new Date("2024-07-01")) {
+      if (proc.sector === "vrij") {
+        bevindingen.push("LET OP - Huurovereenkomst gesloten voor 1 juli 2024 en woning in de vrije sector: de Huurcommissie kan alleen een advies uitbrengen, en alleen als beide partijen daar schriftelijk mee instemmen (par. 6.2.1, p. 52). Bij minder dan 143 punten op de peildatum 1 juli 2024 kan de huurprijs sinds 1 juli 2025 wel worden getoetst, waarna de servicekostenprocedure alsnog openstaat (par. 6.2.2, p. 53-55).");
+      } else if (!proc.sector) {
+        bevindingen.push("ORANJE - Sector (sociaal/vrij) onbekend voor een contract van voor 1 juli 2024; bepalend voor uitspraak versus advies (par. 6.2.1, p. 51-52).");
+      }
+    }
+
+    const tabel = t.uiterste_datums_per_boekjaar;
+    if (String(jaar) in tabel) {
+      const uiterste = new Date(tabel[String(jaar)].uiterste_verzoekdatum);
+      const verzoek = proc.verzoekdatum ? new Date(proc.verzoekdatum) : new Date();
+      const label = proc.verzoekdatum ? "verzoekdatum" : "beoogde verzoekdatum";
+      const nl = (d) => d.toLocaleDateString("nl-NL", { day: "2-digit", month: "2-digit", year: "numeric" });
+      if (verzoek > uiterste) {
+        bevindingen.push(`ROOD - Boekjaar ${jaar}: de wettelijke indieningstermijn liep tot en met ${nl(uiterste)}; de ${label} (${nl(verzoek)}) ligt daarna. Het verzoek is niet-ontvankelijk (par. 6.3.3, Tabel 10, p. 56).`);
+      } else {
+        bevindingen.push(`OK - Boekjaar ${jaar}: verzoek kan worden ingediend tot en met ${nl(uiterste)} (Tabel 10, p. 56).`);
+      }
+    } else {
+      bevindingen.push(`ORANJE - Het beleidsboek noemt geen uiterste verzoekdatum voor boekjaar ${jaar} (Tabel 10 loopt van 2023 tot en met 2026, p. 56). Zelf afleiden: uiterlijk tweeeneenhalf jaar na afloop van het kalenderjaar.`);
+    }
+
+    if (proc.afrekening_ontvangen === true && proc.bezwaar_gemaakt !== true) {
+      bevindingen.push("ROOD - De afrekening is verstrekt maar er is geen schriftelijk bezwaar bij de verhuurder gemaakt. Zonder die schriftelijke kennisgeving verklaart de Huurcommissie het verzoek niet-ontvankelijk (par. 6.3.1, p. 56). Uitzondering: het einde van de indieningstermijn is zo nabij dat bezwaar plus drie weken reactietijd niet meer haalbaar is (par. 6.3.3, p. 57).");
+    }
+    if (proc.afrekening_ontvangen === false && proc.afrekening_opgevraagd !== true) {
+      bevindingen.push("ROOD - Er is geen afrekening ontvangen en de huurder heeft deze niet schriftelijk opgevraagd. De opvraagplicht met een termijn van drie weken geldt eerst (par. 6.3.2, p. 57), met dezelfde uitzondering bij een naderende indieningstermijn.");
+    }
+
+    const drempel = NORMEN.drempelbedragen.minimum_betwiste_kosten_jaarafrekening_eur.waarde;
+    const betwist = eur((dossier.kostenposten || []).reduce((s, p) => s + eur(p.bedrag_verhuurder), 0));
+    if (betwist < drempel) {
+      bevindingen.push(`ROOD - Het totaalbedrag van de betwiste kosten (EUR ${betwist.toFixed(2)}) ligt onder het minimum van EUR ${drempel.toFixed(2)}; de Huurcommissie neemt het verzoek dan niet in behandeling (par. 6.3.4, p. 59).`);
+    }
+    if (maanden(dossier.periode).length > 12) {
+      bevindingen.push("ROOD - Het verzoek mag per kostensoort betrekking hebben op niet meer dan een tijdvak van ten hoogste twaalf maanden (art. 7:260 lid 2 BW, bijlage 1, p. 66).");
+    }
+    return bevindingen;
+  }
+
+  function beoordeelKostenpost(post, dossier) {
+    const handler = HANDLERS[post.categorie];
+    if (!handler) {
+      const b = nieuweBeoordeling(post);
+      b.ontbrekende_informatie.push(`Onbekende categorie ${post.categorie}. Classificeer de post eerst volgens de taxonomie.`);
+      b.automatisering = "handmatig";
+      return b;
+    }
+    return handler(post, dossier);
+  }
+
+  function beoordeelDossier(dossier) {
+    const beoordelingen = (dossier.kostenposten || []).map((p) => beoordeelKostenpost(p, dossier));
+    const ontvankelijkheid = controleerOntvankelijkheid(dossier);
+
+    // Voetnoot 4, p. 11: een overeengekomen vast bedrag bindt de verhuurder.
+    const maximum = dossier.overeengekomen_maximum != null ? eur(dossier.overeengekomen_maximum) : null;
+    const definitief = () => beoordelingen.filter(
+      (b) => b.status !== "BUITEN_BEVOEGDHEID" && b.bedrag_model !== null && !b.voorlopig);
+    if (maximum !== null) {
+      const totaal = eur(definitief().reduce((s, b) => s + b.bedrag_model, 0));
+      if (totaal > maximum) {
+        const verschil = eur(totaal - maximum);
+        beoordelingen.push({
+          kostenpost_id: "CORR-MAX", categorie: "CORRECTIE",
+          omschrijving: "Overeengekomen vast bedrag/percentage servicekosten",
+          status: "ROOD", voorlopig: false, bedrag_verhuurder: 0, bedrag_model: eur(-verschil),
+          regels: ["R-ALG-03"], berekening: [],
+          toelichting: [`Partijen zijn een vast bedrag/percentage van EUR ${maximum.toFixed(2)} overeengekomen. De verhuurder is daaraan gebonden, ook als de werkelijke kosten hoger uitvallen (voetnoot 4, p. 11). Het meerdere (EUR ${verschil.toFixed(2)}) vervalt.`],
+          ontbrekende_informatie: [], automatisering: "automatisch", menselijke_controle_nodig: false,
+        });
+      }
+    }
+
+    for (const b of beoordelingen) b.verschil = verschilVan(b);
+    return samenvatten(beoordelingen, ontvankelijkheid, dossier);
+  }
+
+  function samenvatten(beoordelingen, ontvankelijkheid, dossier) {
+    const beoordeelbaar = beoordelingen.filter((b) => b.status !== "BUITEN_BEVOEGDHEID");
+    const definitief = beoordeelbaar.filter((b) => b.bedrag_model !== null && !b.voorlopig);
+    const onbeoordeeld = beoordeelbaar.filter((b) => b.bedrag_model === null || b.voorlopig);
+
+    const totaalVerhuurder = eur(beoordeelbaar.reduce((s, b) => s + b.bedrag_verhuurder, 0));
+    const totaalModel = eur(definitief.reduce((s, b) => s + b.bedrag_model, 0));
+    const totaalBeoordeeld = eur(definitief.reduce((s, b) => s + b.bedrag_verhuurder, 0));
+    const correctie = eur(totaalBeoordeeld - totaalModel);
+    const onbeoordeeldBedrag = eur(onbeoordeeld.reduce((s, b) => s + b.bedrag_verhuurder, 0));
+
+    const tellingen = { GROEN: 0, ORANJE: 0, ROOD: 0, BUITEN_BEVOEGDHEID: 0 };
+    for (const b of beoordelingen) tellingen[b.status]++;
+
+    const vragen = [];
+    for (const b of beoordelingen) {
+      for (const tekst of b.ontbrekende_informatie) {
+        vragen.push({ post: b.omschrijving, categorie: b.categorie, vraag: tekst, belang: b.bedrag_verhuurder });
+      }
+    }
+    vragen.sort((a, z) => z.belang - a.belang);
+
+    const hardeRegels = new Set(["R-NSK-01", "R-VZ-01", "R-ROE-07", "R-ADM-01", "R-ADM-02",
+      "R-HUI-01", "R-ROE-04", "R-KH-02", "R-ROE-01", "R-SK-12", "R-VZ-02"]);
+    const hard = definitief.filter((b) => b.verschil > 0 && b.regels.some((r) => hardeRegels.has(r)))
+      .reduce((s, b) => s + b.verschil, 0);
+
+    const financieel = {
+      totaal_verhuurder: totaalVerhuurder,
+      totaal_beoordeeld_verhuurder: totaalBeoordeeld,
+      totaal_model: totaalModel,
+      potentiele_correctie: correctie,
+      onbeoordeeld_bedrag: onbeoordeeldBedrag,
+      bandbreedte_min: correctie,
+      bandbreedte_max: eur(correctie + onbeoordeeldBedrag),
+      buiten_bevoegdheid: eur(beoordelingen.filter((b) => b.status === "BUITEN_BEVOEGDHEID")
+        .reduce((s, b) => s + b.bedrag_verhuurder, 0)),
+    };
+    if (dossier.voorschot_in_rekening_gebracht != null && dossier.voorschot_in_rekening_gebracht !== "") {
+      const voorschot = eur(dossier.voorschot_in_rekening_gebracht);
+      financieel.voorschot_betaald = voorschot;
+      financieel.saldo_volgens_verhuurder = eur(voorschot - totaalVerhuurder);
+      financieel.saldo_volgens_model = eur(voorschot - totaalModel - onbeoordeeldBedrag);
+    }
+
+    return {
+      jaar: dossier.periode.jaar,
+      ontvankelijkheid,
+      blokkerend: ontvankelijkheid.filter((r) => r.startsWith("ROOD")),
+      beoordelingen, tellingen, financieel,
+      openstaande_vragen: vragen,
+      sterkte: {
+        dekkingsgraad_procent: totaalVerhuurder ? eur(totaalBeoordeeld / totaalVerhuurder * 100) : 0,
+        aandeel_harde_regels_procent: correctie > 0 ? eur(hard / correctie * 100) : 0,
+        posten_met_volledige_onderbouwing: beoordeelbaar.filter(
+          (b) => !b.regels.some((r) => r === "R-BEW-01" || r === "R-BEW-02" || r === "R-BEW-03")).length,
+        posten_totaal: beoordeelbaar.length,
+        toelichting: "Dit zijn objectieve indicatoren, geen kanspercentage. Het beleidsboek bevat normen en methoden, geen uitkomstkansen; een slaagkans is daar niet uit af te leiden.",
+      },
+    };
+  }
+
+  if (typeof module !== "undefined" && module.exports) module.exports = global.Kern;
+})(typeof globalThis !== "undefined" ? globalThis : this);
+</script>
+<script>/* Inleeslaag - JavaScript-port van app/parsers/.
+   Leest een afrekening (tekst, CSV of PDF) en stelt kostenposten voor. Stelt
+   voor, stelt niets vast: elke waarde draagt herkomst en alternatieven. */
+
+(function (global) {
+  "use strict";
+
+  let CLASSIFICATIE = null;
+
+  const MAANDEN = { januari: 1, februari: 2, maart: 3, april: 4, mei: 5, juni: 6,
+    juli: 7, augustus: 8, september: 9, oktober: 10, november: 11, december: 12 };
+  const MAANDNAMEN = Object.keys(MAANDEN).join("|");
+
+  // Zelfde patroon als app/parsers/bedragen.py: sluit getallen uit die aan een
+  // woord vastzitten (24-uursservice), in een huisnummer staan (42-3) of voor
+  // een postcode (1000 AB).
+  const BEDRAG = new RegExp(
+    "(?:^|[^\\w,.\\-])" +
+    "((?:-\\/-\\s*|-)?(?:€\\s*|EUR\\s+)?" +
+    "(?:\\d{1,3}(?:\\.\\d{3})+(?:,\\d{1,2}|,-)?|\\d+,\\d{1,2}|\\d+,-|\\d+))" +
+    "(?!\\w|-\\w|\\s*[A-Z]{2}\\b)", "g");
+
+  function naarGetal(tekst) {
+    let schoon = String(tekst).trim().replace(/€/g, "").replace(/EUR/g, "")
+      .replace(/\s/g, "").replace(/ /g, "");
+    const negatief = schoon.startsWith("-");
+    schoon = schoon.replace(/^-+\/?-*/, "");
+    if (schoon.endsWith(",-")) schoon = schoon.slice(0, -2);
+    if (schoon.includes(",")) {
+      schoon = schoon.replace(/\./g, "").replace(",", ".");
+    } else if (schoon.includes(".")) {
+      const staart = schoon.split(".").pop();
+      if (staart.length === 3) schoon = schoon.replace(/\./g, "");
+    }
+    if (!schoon) return null;
+    const waarde = Number(schoon);
+    if (!isFinite(waarde)) return null;
+    return negatief ? -waarde : waarde;
+  }
+
+  function bedragTreffers(regel) {
+    const treffers = [];
+    BEDRAG.lastIndex = 0;
+    let m;
+    while ((m = BEDRAG.exec(regel)) !== null) {
+      const rauw = m[1];
+      const kaal = rauw.replace(/[^\d]/g, "");
+      if (/^(19|20)\d{2}$/.test(rauw.trim())) continue;   // los jaartal
+      if (!kaal) continue;
+      const waarde = naarGetal(rauw);
+      if (waarde === null) continue;
+      treffers.push({ start: m.index + m[0].length - rauw.length, waarde, rauw });
+    }
+    return treffers;
+  }
+
+  const vindBedragen = (regel) => bedragTreffers(regel).map((t) => t.waarde);
+
+  function vindJaar(tekst) {
+    const patronen = [
+      /(?:afrekening|overzicht|boekjaar|servicekosten|kalenderjaar)[^\d]{0,30}((?:19|20)\d{2})/i,
+      /((?:19|20)\d{2})\s*(?:afrekening|servicekosten)/i,
+      /\b(?:over|periode)\b[^\d]{0,20}((?:19|20)\d{2})/i,
+    ];
+    for (const p of patronen) {
+      const m = tekst.match(p);
+      if (m) return Number(m[1]);
+    }
+    const jaren = [...tekst.matchAll(/\b(20[0-3]\d)\b/g)].map((m) => Number(m[1]));
+    if (!jaren.length) return null;
+    const telling = {};
+    for (const j of jaren) telling[j] = (telling[j] || 0) + 1;
+    return Number(Object.entries(telling).sort((a, b) => b[1] - a[1])[0][0]);
+  }
+
+  function vindPeriode(tekst) {
+    const p = new RegExp(
+      `(\\d{1,2})\\s+(${MAANDNAMEN})\\s+((?:19|20)\\d{2})` +
+      `\\s*(?:tot en met|t\\/m|tot|-|tm)\\s*` +
+      `(\\d{1,2})\\s+(${MAANDNAMEN})\\s+((?:19|20)\\d{2})`, "i");
+    const m = tekst.match(p);
+    if (m) return [MAANDEN[m[2].toLowerCase()], MAANDEN[m[5].toLowerCase()]];
+    const n = tekst.match(/(\d{1,2})[-/](\d{1,2})[-/]((?:19|20)\d{2})\s*(?:tot en met|t\/m|tot|-|tm)\s*(\d{1,2})[-/](\d{1,2})[-/]((?:19|20)\d{2})/);
+    if (n) return [Number(n[2]), Number(n[5])];
+    return null;
+  }
+
+  const normaliseer = (tekst) => String(tekst).toLowerCase()
+    .normalize("NFKD").replace(/[̀-ͯ]/g, "").replace(/\s+/g, " ").trim();
+
+  function isNegeerregel(omschrijving) {
+    const schoon = normaliseer(omschrijving);
+    if (!schoon) return true;
+    return CLASSIFICATIE.negeerregels.some((woord) => {
+      const g = normaliseer(woord);
+      return schoon.startsWith(g) || schoon === g;
+    });
+  }
+
+  function classificeer(omschrijving) {
+    const schoon = normaliseer(omschrijving);
+    let beste = null;
+    for (const [categorie, blok] of Object.entries(CLASSIFICATIE.categorieen)) {
+      for (const trefwoord of blok.trefwoorden) {
+        const g = normaliseer(trefwoord);
+        if (!g) continue;
+        const positie = schoon.indexOf(g);
+        if (positie < 0) continue;
+        // Het vroegste trefwoord is het onderwerp; bij gelijke positie wint het
+        // langste (specifiekste). Zo is "Schoonmaak gemeenschappelijke ruimten"
+        // schoonmaak en geen verzamelpost.
+        const kandidaat = [positie, -g.length, categorie, trefwoord];
+        if (!beste || kandidaat[0] < beste[0] || (kandidaat[0] === beste[0] && kandidaat[1] < beste[1])) {
+          beste = kandidaat;
+        }
+      }
+    }
+    if (!beste) {
+      return { categorie: null, trefwoord: null, zekerheid: "onbekend",
+        vraag: "Deze post is niet automatisch te classificeren. Kies zelf de categorie; de opsomming in het Besluit servicekosten is niet limitatief (p. 29, p. 75)." };
+    }
+    const [, , categorie, trefwoord] = beste;
+    return { categorie, trefwoord,
+      zekerheid: normaliseer(trefwoord).length >= 8 ? "hoog" : "laag",
+      vraag: CLASSIFICATIE.categorieen[categorie].vraag || null };
+  }
+
+  function omschrijvingVan(regel, positie) {
+    let kop = positie == null ? regel : regel.slice(0, positie);
+    kop = kop.replace(/^[\s\-*•|]+/, "").replace(/[.:\s_]{2,}/g, " ")
+             .replace(/\b(?:EUR|€)\s*$/, "");
+    return kop.replace(/^[\s.:|\-]+|[\s.:|\-]+$/g, "");
+  }
+
+  const isVoorschotregel = (regel) => {
+    const s = normaliseer(regel);
+    return ["voorschot", "reeds betaald", "betaalde voorschotten", "vooruitbetaald"].some((w) => s.includes(w));
+  };
+
+  function parseAfrekening(tekst, metadata) {
+    const dossier = { jaar: null, maand_van: 1, maand_tot_en_met: 12, voorschot: null,
+      posten: [], meterstanden: {}, aantal_woonruimten: null, waarschuwingen: [],
+      herkomst: Object.assign({}, metadata || {}) };
+
+    dossier.jaar = vindJaar(tekst);
+    if (dossier.jaar === null) {
+      dossier.waarschuwingen.push("Het boekjaar is niet uit het document af te leiden. Vul het zelf in: het bepaalt welke normbedragen en welke termijnen gelden.");
+    }
+    const periode = vindPeriode(tekst);
+    if (periode) { dossier.maand_van = periode[0]; dossier.maand_tot_en_met = periode[1]; }
+
+    const regels = tekst.split(/\r?\n/);
+    regels.forEach((regel, i) => {
+      if (!regel.trim()) return;
+      const treffers = bedragTreffers(regel);
+      if (!treffers.length) return;
+      const bedragen = treffers.map((t) => t.waarde);
+      const omschrijving = omschrijvingVan(regel, treffers[0].start);
+
+      if (isVoorschotregel(regel)) {
+        if (dossier.voorschot === null) {
+          dossier.voorschot = bedragen.reduce((a, b) => (Math.abs(b) > Math.abs(a) ? b : a), bedragen[0]);
+        }
+        return;
+      }
+      if (omschrijving.length < 3 || isNegeerregel(omschrijving)) return;
+
+      const kort = omschrijving.length > 90 ? omschrijving.slice(0, 90).trim() + "…" : omschrijving;
+      const c = classificeer(kort);
+      dossier.posten.push({
+        regelnummer: i + 1, brontekst: regel.trim(), omschrijving: kort,
+        bedrag: bedragen[bedragen.length - 1], alternatieve_bedragen: bedragen.slice(0, -1),
+        categorie: c.categorie, trefwoord: c.trefwoord, zekerheid: c.zekerheid, vraag: c.vraag,
+      });
+    });
+
+    for (const [naam, patroon] of [["beginstand", /beginstand[^\d]{0,20}([\d.,]+)/i],
+                                   ["eindstand", /eindstand[^\d]{0,20}([\d.,]+)/i]]) {
+      const m = tekst.match(patroon);
+      if (m) {
+        const waarde = naarGetal(m[1]);
+        if (waarde !== null) dossier.meterstanden[naam] = waarde;
+      }
+    }
+    const w = tekst.match(/(\d{1,4})\s*(?:woonruimten|woningen|appartementen|verhuureenheden|kamers)/i);
+    if (w) dossier.aantal_woonruimten = Number(w[1]);
+
+    if (!dossier.posten.length) {
+      dossier.waarschuwingen.push("Er zijn geen kostenposten herkend. Controleer of dit de servicekostenafrekening is; u kunt de posten ook handmatig invoeren.");
+    }
+    const onbekend = dossier.posten.filter((p) => !p.categorie);
+    if (onbekend.length) {
+      dossier.waarschuwingen.push(`${onbekend.length} van de ${dossier.posten.length} posten kon niet automatisch worden geclassificeerd. Kies daarvoor zelf een categorie.`);
+    }
+    const onzeker = dossier.posten.filter((p) => p.zekerheid === "laag");
+    if (onzeker.length) {
+      dossier.waarschuwingen.push(`${onzeker.length} post(en) zijn op een kort, algemeen trefwoord herkend. Controleer die classificatie extra goed.`);
+    }
+    const meerdere = dossier.posten.filter((p) => p.alternatieve_bedragen.length);
+    if (meerdere.length) {
+      dossier.waarschuwingen.push(`Op ${meerdere.length} regel(s) stonden meerdere bedragen. Het model koos steeds het laatste bedrag als uw aandeel; controleer dit per post.`);
+    }
+    return dossier;
+  }
+
+  function csvNaarTekst(rauw) {
+    const scheiding = (rauw.match(/;/g) || []).length > (rauw.match(/,/g) || []).length ? ";"
+                    : (rauw.match(/\t/g) || []).length > 0 ? "\t" : ",";
+    return rauw.split(/\r?\n/).map((rij) => {
+      const cellen = [];
+      let huidig = "", inAanhaling = false;
+      for (const teken of rij) {
+        if (teken === '"') inAanhaling = !inAanhaling;
+        else if (teken === scheiding && !inAanhaling) { cellen.push(huidig); huidig = ""; }
+        else huidig += teken;
+      }
+      cellen.push(huidig);
+      return cellen.map((c) => c.trim()).join("   ");
+    }).join("\n");
+  }
+
+  global.Parser = {
+    init: (data) => { CLASSIFICATIE = data.classificatie; },
+    parseAfrekening, classificeer, naarGetal, vindBedragen, vindJaar, vindPeriode,
+    isNegeerregel, csvNaarTekst,
+  };
+  if (typeof module !== "undefined" && module.exports) module.exports = global.Parser;
+})(typeof globalThis !== "undefined" ? globalThis : this);
+</script>
+<script>/* Interface van de browserversie. Roept Kern en Parser rechtstreeks aan; er is
+   geen server. Opent op het resultaat van een voorbeeldafrekening, zodat
+   meteen zichtbaar is wat de applicatie doet. */
+
+(function () {
+  "use strict";
+
+  const STATUS = {
+    GROEN:  { glyph: "✓", label: "Lijkt correct",          kleur: "var(--st-groen)" },
+    ORANJE: { glyph: "?", label: "Onvoldoende informatie", kleur: "var(--st-oranje)" },
+    ROOD:   { glyph: "!", label: "Mogelijk onterecht",     kleur: "var(--st-rood)" },
+    BUITEN_BEVOEGDHEID: { glyph: "–", label: "Buiten bevoegdheid", kleur: "var(--st-buiten)" },
+  };
+  const MAANDEN = ["januari","februari","maart","april","mei","juni","juli","augustus",
+                   "september","oktober","november","december"];
+
+  const DATA = window.SERVICEKOSTEN_DATA;
+  Kern.init({ normen: DATA.normen });
+  Parser.init({ classificatie: DATA.classificatie });
+
+  const REGELINDEX = {};
+  for (const r of DATA.beslisregels.regels) REGELINDEX[r.id] = r;
+
+  let dossier = leegDossier();
+  let uitkomst = null;
+  let isVoorbeeld = false;
+
+  /* ---------------------------------------------------------- hulpjes */
+  const $ = (s) => document.querySelector(s);
+  function el(tag, attrs, ...kids) {
+    const n = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs || {})) {
+      if (v === null || v === undefined || v === false) continue;
+      if (k === "class") n.className = v;
+      else if (k.startsWith("on")) n.addEventListener(k.slice(2), v);
+      else n.setAttribute(k, v === true ? "" : v);
+    }
+    for (const kid of kids.flat()) {
+      if (kid === null || kid === undefined || kid === false) continue;
+      n.append(kid.nodeType ? kid : document.createTextNode(String(kid)));
+    }
+    return n;
+  }
+  const euro = (w) => {
+    const n = Number(w);
+    if (!isFinite(n)) return "—";
+    return new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR" }).format(n);
+  };
+  function melding(tekst, soort) {
+    const n = el("div", { class: "melding " + (soort || "info") }, tekst);
+    $("#meldingen").append(n);
+    if (soort === "ok" || soort === "info") setTimeout(() => n.remove(), 8000);
+  }
+  const wisMeldingen = () => { $("#meldingen").textContent = ""; };
+
+  function leegDossier() {
+    return {
+      woonruimte: { zelfstandig: true, aantal_woonruimten_op_aansluiting: 1, gebruikt_gemeenschappelijke_ruimten: true },
+      periode: { jaar: null, maand_van: 1, maand_tot_en_met: 12 },
+      procedure: {}, voorschot_in_rekening_gebracht: null, overeengekomen_maximum: null,
+      kostenposten: [], _overeengekomen_standaard: null,
+    };
+  }
+
+  /* -------------------------------------------------------- veldbouwer */
+  let veldTeller = 0;
+  function veld(def, waarde, opslaan) {
+    const id = "v" + (++veldTeller);
+    if (def.type === "ja_nee") {
+      return el("div", {},
+        el("div", { class: "checkrij" },
+          el("label", { for: id },
+            el("input", { type: "checkbox", id, checked: waarde === true,
+              onchange: (e) => opslaan(e.target.checked) }), def.label)),
+        def.hulp ? el("div", { class: "hulp" }, def.hulp) : null);
+    }
+    let invoer;
+    if (def.type === "ja_nee_onbekend") {
+      invoer = el("select", { id, onchange: (e) => opslaan(e.target.value === "" ? null : e.target.value === "ja") },
+        el("option", { value: "", selected: waarde === null || waarde === undefined }, "Onbekend / weet ik niet"),
+        el("option", { value: "ja", selected: waarde === true }, "Ja"),
+        el("option", { value: "nee", selected: waarde === false }, "Nee"));
+    } else if (def.type === "keuze") {
+      invoer = el("select", { id, onchange: (e) => opslaan(e.target.value || null) },
+        el("option", { value: "" }, "— kies —"),
+        def.opties.map((o) => {
+          const w = typeof o === "string" ? o : o.waarde;
+          const t = typeof o === "string" ? o : o.label;
+          return el("option", { value: w, selected: String(waarde) === String(w) }, t);
+        }));
+    } else if (def.type === "meerkeuze") {
+      const gekozen = new Set(Array.isArray(waarde) ? waarde : []);
+      return el("div", {}, el("label", {}, def.label),
+        el("div", { class: "checkrij", style: "flex-direction:column;gap:5px" },
+          def.opties.map((o) => el("label", {},
+            el("input", { type: "checkbox", checked: gekozen.has(o), onchange: (e) => {
+              if (e.target.checked) gekozen.add(o); else gekozen.delete(o);
+              opslaan([...gekozen]);
+            } }), o))),
+        def.hulp ? el("div", { class: "hulp" }, def.hulp) : null);
+    } else {
+      const type = def.type === "datum" ? "date"
+        : ["getal", "geheel", "bedrag"].includes(def.type) ? "number" : "text";
+      invoer = el("input", { type, id,
+        step: def.type === "bedrag" ? "0.01" : def.type === "geheel" ? "1" : "any",
+        value: waarde === null || waarde === undefined ? "" : waarde,
+        onchange: (e) => {
+          const r = e.target.value;
+          if (r === "") return opslaan(null);
+          opslaan(def.type === "geheel" ? parseInt(r, 10) : Number(r));
+        } });
+    }
+    return el("div", {}, el("label", { for: id }, def.label), invoer,
+      def.hulp ? el("div", { class: "hulp" }, def.hulp) : null);
+  }
+
+  /* ------------------------------------------------------------ inlezen */
+
+  function vulUitConcept(concept, naam, voorbeeld) {
+    dossier = leegDossier();
+    isVoorbeeld = !!voorbeeld;
+    dossier.periode.jaar = concept.jaar;
+    dossier.periode.maand_van = concept.maand_van;
+    dossier.periode.maand_tot_en_met = concept.maand_tot_en_met;
+    dossier.voorschot_in_rekening_gebracht = concept.voorschot;
+    if (concept.aantal_woonruimten) dossier.woonruimte.aantal_woonruimten_complex = concept.aantal_woonruimten;
+    dossier.kostenposten = concept.posten.map((p, i) => ({
+      id: "P" + (i + 1), categorie: p.categorie, omschrijving: p.omschrijving,
+      bedrag_verhuurder: p.bedrag, overeengekomen: null, bewijs: [],
+      levering_gemotiveerd_betwist: false, parameters: {},
+      _alt: p.alternatieve_bedragen, _vraag: p.vraag, _zekerheid: p.zekerheid,
+    }));
+    for (const post of dossier.kostenposten) {
+      if (post.categorie && /^NUT-.*-METER$/.test(post.categorie)) {
+        if (concept.meterstanden.beginstand) post.parameters.beginstand = concept.meterstanden.beginstand;
+        if (concept.meterstanden.eindstand) post.parameters.eindstand = concept.meterstanden.eindstand;
+      }
+    }
+    if (!voorbeeld) {
+      for (const w of concept.waarschuwingen) melding(w, "letop");
+      melding(concept.posten.length + " kostenposten ingelezen uit " + naam + ". Controleer ze voordat u beoordeelt.", "ok");
+    }
+  }
+
+  function leesTekst(tekst, naam, voorbeeld) {
+    const concept = Parser.parseAfrekening(tekst, { bestandsnaam: naam });
+    vulUitConcept(concept, naam, voorbeeld);
+    rendControle();
+    toonStap(voorbeeld ? "resultaat" : "controle");
+  }
+
+  async function leesBestand(file) {
+    wisMeldingen();
+    const naam = file.name || "bestand";
+    const ext = (naam.split(".").pop() || "").toLowerCase();
+    try {
+      if (ext === "pdf") {
+        const tekst = await pdfNaarTekst(await file.arrayBuffer());
+        if (tekst.trim().length < 40) {
+          throw new Error("Uit deze PDF komt geen tekst. Waarschijnlijk is het een scan of foto. " +
+            "Plak de tekst hieronder, of voer de posten handmatig in.");
+        }
+        leesTekst(tekst, naam, false);
+      } else if (["csv", "tsv"].includes(ext)) {
+        leesTekst(Parser.csvNaarTekst(await file.text()), naam, false);
+      } else if (["txt", "md", ""].includes(ext)) {
+        leesTekst(await file.text(), naam, false);
+      } else {
+        throw new Error("Bestandstype ." + ext + " wordt niet ondersteund. Gebruik PDF, CSV of een tekstbestand, " +
+          "of plak de tekst van uw afrekening.");
+      }
+    } catch (fout) {
+      melding(fout.message, "fout");
+      toonStap("start");
+    }
+  }
+
+  async function pdfNaarTekst(buffer) {
+    if (!window.pdfjsLib) {
+      throw new Error("De PDF-lezer kon niet worden geladen. Plak de tekst van uw afrekening hieronder, " +
+        "of voer de posten handmatig in.");
+    }
+    const doc = await window.pdfjsLib.getDocument({ data: buffer }).promise;
+    const paginas = [];
+    for (let i = 1; i <= doc.numPages; i++) {
+      const pagina = await doc.getPage(i);
+      const inhoud = await pagina.getTextContent();
+      // Tekstfragmenten met dezelfde y-positie horen bij dezelfde regel.
+      const regels = new Map();
+      for (const item of inhoud.items) {
+        if (!item.str) continue;
+        const y = Math.round(item.transform[5]);
+        if (!regels.has(y)) regels.set(y, []);
+        regels.get(y).push({ x: item.transform[4], tekst: item.str });
+      }
+      const geordend = [...regels.entries()].sort((a, b) => b[0] - a[0])
+        .map(([, delen]) => delen.sort((a, b) => a.x - b.x).map((d) => d.tekst).join(" "));
+      paginas.push(geordend.join("\n"));
+    }
+    return paginas.join("\n");
+  }
+
+  /* ----------------------------------------------------------- stap 2 */
+
+  function rendControle() { rendWoning(); rendProcedure(); rendPosten(); }
+
+  function rendWoning() {
+    const w = dossier.woonruimte, p = dossier.periode;
+    const zet = (naam) => (v) => { w[naam] = v; };
+    const bak = $("#woningvelden");
+    bak.textContent = "";
+    bak.append(
+      veld({ label: "Boekjaar", type: "geheel", hulp: "Normbedragen beschikbaar voor " + DATA.jaren.join(", ") + "." },
+        p.jaar, (v) => { p.jaar = v; rendProcedure(); }),
+      veld({ label: "Eerste maand van uw huurperiode", type: "keuze",
+        opties: MAANDEN.map((m, i) => ({ waarde: i + 1, label: m })) },
+        p.maand_van, (v) => { p.maand_van = parseInt(v, 10) || 1; }),
+      veld({ label: "Laatste maand van uw huurperiode", type: "keuze",
+        opties: MAANDEN.map((m, i) => ({ waarde: i + 1, label: m })),
+        hulp: "Korter dan twaalf maanden? Dan rekent het model met graaddagen (gas), seizoenspatronen (elektriciteit) of evenredig (water)." },
+        p.maand_tot_en_met, (v) => { p.maand_tot_en_met = parseInt(v, 10) || 12; }),
+      veld({ label: "Soort woonruimte", type: "keuze",
+        opties: [{ waarde: "ja", label: "Zelfstandig (eigen voordeur, keuken en toilet)" },
+                 { waarde: "nee", label: "Onzelfstandig (kamer)" }] },
+        w.zelfstandig ? "ja" : "nee", (v) => { w.zelfstandig = v === "ja"; rendWoning(); }),
+      w.zelfstandig
+        ? veld({ label: "Type woning", type: "keuze", opties: DATA.woningtypen,
+            hulp: "Bepaalt de Nibud-gasnorm (Tabel 1, p. 13)." }, w.woningtype, zet("woningtype"))
+        : veld({ label: "Oppervlakte van uw kamer (m²)", type: "getal",
+            hulp: "Norm onzelfstandig: 25 m³ gas per m² (p. 14)." }, w.oppervlakte_m2, zet("oppervlakte_m2")),
+      veld({ label: "Aantal bewoners", type: "geheel",
+        hulp: "Bepaalt de normen voor elektriciteit en water (tot en met vijf bewoners)." },
+        w.aantal_bewoners, zet("aantal_bewoners")),
+      w.zelfstandig ? veld({ label: "Oppervlakte woning (m²)", type: "getal",
+        hulp: "Nodig voor de verdeelsleutel gas zonder eigen meter." }, w.oppervlakte_m2, zet("oppervlakte_m2")) : null,
+      veld({ label: "Woonruimten op dezelfde aansluiting", type: "geheel",
+        hulp: "Vastrecht en belastingteruggave worden hierover gelijk verdeeld." },
+        w.aantal_woonruimten_op_aansluiting, zet("aantal_woonruimten_op_aansluiting")),
+      veld({ label: "Woonruimten in het complex", type: "geheel",
+        hulp: "Noemer van de verdeelsleutels (p. 26-27, p. 29)." },
+        w.aantal_woonruimten_complex, zet("aantal_woonruimten_complex")),
+      veld({ label: "Totale oppervlakte complex (m²)", type: "getal" },
+        w.totale_oppervlakte_complex_m2, zet("totale_oppervlakte_complex_m2")),
+      veld({ label: "Betaald voorschot over dit jaar", type: "bedrag" },
+        dossier.voorschot_in_rekening_gebracht, (v) => { dossier.voorschot_in_rekening_gebracht = v; }),
+      veld({ label: "Overeengekomen vast bedrag servicekosten", type: "bedrag",
+        hulp: "Is dit afgesproken, dan is de verhuurder eraan gebonden (voetnoot 4, p. 11)." },
+        dossier.overeengekomen_maximum, (v) => { dossier.overeengekomen_maximum = v; }),
+      veld({ label: "Ik maak gebruik van de gemeenschappelijke ruimten (of kan dat)", type: "ja_nee",
+        hulp: "Zo niet, dan hoeft u daar niet voor te betalen (p. 29)." },
+        w.gebruikt_gemeenschappelijke_ruimten, zet("gebruikt_gemeenschappelijke_ruimten")));
+  }
+
+  function rendProcedure() {
+    const pr = dossier.procedure;
+    const zet = (n) => (v) => { pr[n] = v; };
+    const bak = $("#procedurevelden");
+    bak.textContent = "";
+    const termijn = DATA.termijnen[String(dossier.periode.jaar)];
+    bak.append(
+      veld({ label: "Staat in uw huurcontract dat u servicekosten betaalt?", type: "ja_nee_onbekend",
+        hulp: "Dit mag ook stilzwijgend zijn overeengekomen (p. 9). Geldt als standaard voor alle posten; per post kunt u afwijken." },
+        dossier._overeengekomen_standaard, (v) => {
+          dossier._overeengekomen_standaard = v;
+          for (const post of dossier.kostenposten) if (!post._handmatig) post.overeengekomen = v;
+          rendPosten();
+        }),
+      veld({ label: "Datum huurovereenkomst", type: "datum",
+        hulp: "Vóór of vanaf 1 juli 2024 bepaalt of de Huurcommissie uitspraak doet of alleen adviseert." },
+        pr.contract_gesloten_op, zet("contract_gesloten_op")),
+      veld({ label: "Sector", type: "keuze", opties: [
+        { waarde: "sociaal", label: "Sociale sector" }, { waarde: "middenhuur", label: "Middenhuur" },
+        { waarde: "vrij", label: "Vrije sector" }] }, pr.sector, zet("sector")),
+      veld({ label: "Heeft u een afrekening ontvangen?", type: "ja_nee_onbekend" },
+        pr.afrekening_ontvangen, zet("afrekening_ontvangen")),
+      veld({ label: "Heeft u schriftelijk bezwaar gemaakt?", type: "ja_nee_onbekend",
+        hulp: "Verplicht vóór een verzoek bij de Huurcommissie (par. 6.3.1, p. 56)." },
+        pr.bezwaar_gemaakt, zet("bezwaar_gemaakt")),
+      veld({ label: "Heeft u de afrekening schriftelijk opgevraagd?", type: "ja_nee_onbekend",
+        hulp: "Verplicht als u géén afrekening kreeg (par. 6.3.2, p. 57)." },
+        pr.afrekening_opgevraagd, zet("afrekening_opgevraagd")),
+      veld({ label: "Beoogde datum van uw verzoek", type: "datum",
+        hulp: termijn ? "Uiterste verzoekdatum voor " + dossier.periode.jaar + ": " + termijn.uiterste_verzoekdatum + "."
+                      : "Uiterlijk tweeëneenhalf jaar na afloop van het kalenderjaar." },
+        pr.verzoekdatum, zet("verzoekdatum")));
+  }
+
+  function categorieGroepen() {
+    const groepen = {};
+    for (const [code, def] of Object.entries(DATA.categorieen.categorieen)) {
+      (groepen[def.groep] = groepen[def.groep] || []).push([code, def.label]);
+    }
+    return groepen;
+  }
+
+  function rendPosten() {
+    const bak = $("#posten");
+    bak.textContent = "";
+    if (!dossier.kostenposten.length) bak.append(el("p", { class: "klein" }, "Nog geen posten. Voeg ze hieronder toe."));
+    dossier.kostenposten.forEach((post, i) => bak.append(postKaart(post, i)));
+    $("#postenaantal").textContent = dossier.kostenposten.length + " post(en)";
+  }
+
+  function postKaart(post, index) {
+    const groepen = categorieGroepen();
+    const keuze = el("select", { onchange: (e) => { post.categorie = e.target.value || null; rendPosten(); } },
+      el("option", { value: "" }, "— niet geclassificeerd —"),
+      Object.entries(groepen).map(([groep, items]) => el("optgroup", { label: groep },
+        items.map(([code, label]) => el("option", { value: code, selected: post.categorie === code }, label + " (" + code + ")")))));
+
+    const kop = el("div", { class: "post-kop" },
+      el("div", {}, el("label", {}, "Omschrijving op de afrekening"),
+        el("input", { type: "text", value: post.omschrijving, onchange: (e) => { post.omschrijving = e.target.value; } })),
+      el("div", {}, el("label", {}, "Categorie"), keuze),
+      el("div", {}, el("label", {}, "Uw aandeel"),
+        el("input", { type: "number", step: "0.01", value: post.bedrag_verhuurder,
+          onchange: (e) => { post.bedrag_verhuurder = Number(e.target.value); } })),
+      el("button", { class: "stil", title: "Post verwijderen", "aria-label": "Post verwijderen",
+        onclick: () => { dossier.kostenposten.splice(index, 1); rendPosten(); } }, "✕"));
+
+    const def = post.categorie ? DATA.categorieen.categorieen[post.categorie] : null;
+    const body = el("div", { class: "post-body" });
+
+    if (post._alt && post._alt.length) {
+      body.append(el("div", { class: "hulp" }, "Op deze regel stonden meer bedragen. Kies welk bedrag uw aandeel is:"),
+        el("div", { class: "alt" }, [post.bedrag_verhuurder, ...post._alt].map((b) =>
+          el("button", { type: "button", "aria-pressed": String(Number(b) === Number(post.bedrag_verhuurder)),
+            onclick: () => { post.bedrag_verhuurder = Number(b); rendPosten(); } }, euro(b)))));
+    }
+    if (!post.categorie) {
+      body.append(el("div", { class: "vraag" },
+        "Niet automatisch geclassificeerd. Kies zelf een categorie — het Besluit servicekosten is niet limitatief (p. 29, p. 75)."));
+    } else if (post._vraag) {
+      body.append(el("div", { class: "vraag" }, post._vraag));
+    }
+
+    const rooster = el("div", { class: "rooster" });
+    for (const d of DATA.categorieen.algemene_velden) {
+      rooster.append(veld(d, post[d.naam], (v) => {
+        post[d.naam] = v;
+        if (d.naam === "overeengekomen") post._handmatig = true;
+      }));
+    }
+    if (def) for (const d of def.velden) {
+      rooster.append(veld(d, post.parameters[d.naam] !== undefined ? post.parameters[d.naam] : d.standaard,
+        (v) => { post.parameters[d.naam] = v; }));
+    }
+    body.append(rooster);
+
+    body.append(el("div", { style: "margin-top:14px" },
+      el("label", {}, "Welke bewijsstukken heeft de verhuurder aangeleverd?"),
+      el("div", { class: "checkrij" }, DATA.categorieen.bewijsopties.map((o) => el("label", {},
+        el("input", { type: "checkbox", checked: post.bewijs.includes(o.waarde), onchange: (e) => {
+          const set = new Set(post.bewijs);
+          if (e.target.checked) set.add(o.waarde); else set.delete(o.waarde);
+          post.bewijs = [...set];
+        } }), o.label))),
+      el("div", { class: "hulp" }, "Een grootboekkaart of overzicht van facturen is uitdrukkelijk niet voldoende (p. 59).")));
+
+    return el("div", { class: "post" }, kop,
+      el("details", {}, el("summary", {}, def ? "Vervolgvragen — " + def.label + " · " + def.bron : "Vervolgvragen"), body));
+  }
+
+  /* ----------------------------------------------------------- stap 3 */
+
+  function beoordeel() {
+    wisMeldingen();
+    if (!dossier.periode.jaar) return melding("Vul eerst het boekjaar in.", "fout");
+    const zonder = dossier.kostenposten.filter((p) => !p.categorie);
+    if (zonder.length) {
+      return melding(zonder.length + " post(en) hebben nog geen categorie. Kies die eerst — het model wijst een onbekende post nooit zelf af.", "fout");
+    }
+    try {
+      uitkomst = Kern.beoordeelDossier(dossier);
+    } catch (fout) {
+      return melding("De beoordeling is mislukt: " + fout.message, "fout");
+    }
+    rendResultaat();
+    toonStap("resultaat");
+  }
+
+  const badge = (status) => el("span", { class: "status status-" + status },
+    el("span", { "aria-hidden": "true" }, STATUS[status].glyph), STATUS[status].label);
+
+  function rendResultaat() {
+    $("#voorbeeldbalk").hidden = !isVoorbeeld;
+    rendVerdict();
+    rendOntvankelijkheid();
+    rendBevindingen();
+    rendVragen();
+    rendSterkte();
+    $("#brief").hidden = true;
+    $("#briefacties").hidden = true;
+  }
+
+  function rendVerdict() {
+    const f = uitkomst.financieel;
+    const bak = $("#verdict");
+    bak.textContent = "";
+    const band = f.bandbreedte_min !== f.bandbreedte_max;
+    const rood = uitkomst.tellingen.ROOD, oranje = uitkomst.tellingen.ORANJE;
+
+    let onder;
+    if (f.potentiele_correctie > 0 && band) {
+      onder = `Op ${rood} post(en) wijkt de afrekening af van het beleidsboek. Daarnaast is voor ` +
+        `${euro(f.onbeoordeeld_bedrag)} nog niet te beoordelen: als die posten óók onterecht blijken, ` +
+        `loopt het verschil op tot ${euro(f.bandbreedte_max)}.`;
+    } else if (f.potentiele_correctie > 0) {
+      onder = `Op ${rood} van de ${uitkomst.sterkte.posten_totaal} beoordeelde posten wijkt de afrekening af van het beleidsboek. Alle posten konden worden beoordeeld.`;
+    } else if (oranje) {
+      onder = `Geen harde afwijking gevonden, maar voor ${euro(f.onbeoordeeld_bedrag)} ontbreekt informatie. ` +
+        "Onderaan staat wat u daarvoor moet opvragen.";
+    } else {
+      onder = "Alle beoordeelde posten passen binnen wat het beleidsboek toestaat.";
+    }
+
+    bak.append(
+      el("div", { class: "label" }, "Potentiële correctie, boekjaar " + uitkomst.jaar),
+      el("div", { class: "hero" }, euro(f.potentiele_correctie)),
+      el("div", { class: "onder" }, onder));
+
+    // Verdeelbalk: waar staat de afrekening?
+    const som = {};
+    for (const b of uitkomst.beoordelingen) som[b.status] = (som[b.status] || 0) + b.bedrag_verhuurder;
+    const totaal = Object.values(som).reduce((a, b) => a + b, 0);
+    if (totaal > 0) {
+      const volgorde = ["ROOD", "ORANJE", "GROEN", "BUITEN_BEVOEGDHEID"].filter((s) => som[s] > 0);
+      const balk = el("div", { class: "balk", role: "img",
+        "aria-label": "Verdeling van de afrekening naar status. " +
+          volgorde.map((s) => `${STATUS[s].label}: ${euro(som[s])}`).join("; ") + "." });
+      for (const s of volgorde) {
+        const aandeel = som[s] / totaal;
+        const seg = el("div", { class: "seg", style: `flex:${aandeel} 1 0;background:${STATUS[s].kleur}`,
+          title: `${STATUS[s].label}: ${euro(som[s])}` },
+          aandeel > 0.13 ? el("span", {}, STATUS[s].glyph + " " + euro(som[s])) : null);
+        // Tweede kanaal naast kleur: rood en groen zijn voor deuteranopie niet
+        // aan de kleur te onderscheiden (CVD dE 4,1).
+        seg.prepend(el("span", { "aria-hidden": "true",
+          style: `position:absolute;inset:0;opacity:.9;background-image:url("data:image/svg+xml;utf8,${encodeURIComponent(patroon(s))}")` }));
+        balk.append(seg);
+      }
+      bak.append(balk);
+      bak.append(el("div", { class: "legenda" }, volgorde.map((s) => el("span", { class: "item" },
+        el("span", { class: "chip", style: "background:" + STATUS[s].kleur, "aria-hidden": "true" }),
+        el("span", { "aria-hidden": "true" }, STATUS[s].glyph),
+        STATUS[s].label + ": ", el("b", {}, euro(som[s]))))));
+    }
+
+    const cijfers = el("div", { class: "cijfers" });
+    const cijfer = (k, v, t, tekst) => el("div", { class: "cijfer" },
+      el("div", { class: "k" }, k), el("div", { class: "v" + (tekst ? " tekst" : "") }, v),
+      t ? el("div", { class: "t" }, t) : null);
+    cijfers.append(
+      cijfer("Volgens verhuurder", euro(f.totaal_verhuurder),
+        f.buiten_bevoegdheid > 0 ? "plus " + euro(f.buiten_bevoegdheid) + " buiten de bevoegdheid" : "binnen de bevoegdheid"),
+      cijfer("Volgens beoordelingsmodel", euro(f.totaal_model), "over " + euro(f.totaal_beoordeeld_verhuurder) + " aan beoordeelde posten"),
+      cijfer("Nog onbeoordeeld", euro(f.onbeoordeeld_bedrag),
+        oranje ? oranje + " post(en) wachten op informatie" : "geen openstaande vragen"));
+    if (f.voorschot_betaald !== undefined) {
+      cijfers.append(cijfer("Voorschot betaald", euro(f.voorschot_betaald),
+        "verhuurder rekent af op " + euro(f.saldo_volgens_verhuurder)));
+    }
+    bak.append(cijfers);
+  }
+
+  function patroon(status) {
+    const lijn = { GROEN: "rgba(255,255,255,.42)", ORANJE: "rgba(0,0,0,.28)",
+      ROOD: "rgba(255,255,255,.46)", BUITEN_BEVOEGDHEID: "rgba(255,255,255,.30)" }[status];
+    const vorm = {
+      GROEN: `<path d="M0 8 L8 0" stroke="${lijn}" stroke-width="3"/>`,
+      ORANJE: `<path d="M0 0 L8 8" stroke="${lijn}" stroke-width="3"/>`,
+      ROOD: `<circle cx="4" cy="4" r="1.7" fill="${lijn}"/>`,
+      BUITEN_BEVOEGDHEID: `<path d="M0 8 L8 0" stroke="${lijn}" stroke-width="1"/>`,
+    }[status];
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8">${vorm}</svg>`;
+  }
+
+  function rendOntvankelijkheid() {
+    const bak = $("#ontvankelijkheid");
+    bak.textContent = "";
+    if (uitkomst.blokkerend.length) {
+      bak.append(el("div", { class: "melding fout" },
+        el("b", {}, "Let op: dit verzoek is in deze vorm niet-ontvankelijk. "),
+        "De inhoudelijke beoordeling hieronder blijft nuttig, maar zonder dat u dit eerst herstelt komt de Huurcommissie er niet aan toe."));
+    }
+    for (const regel of uitkomst.ontvankelijkheid) {
+      bak.append(el("div", { class: "melding " + (regel.startsWith("ROOD") ? "fout" : regel.startsWith("OK") ? "ok" : "letop") }, regel));
+    }
+  }
+
+  function rendBevindingen() {
+    const bak = $("#bevindingen");
+    bak.textContent = "";
+    const rang = { ROOD: 0, ORANJE: 1, GROEN: 2, BUITEN_BEVOEGDHEID: 3 };
+    [...uitkomst.beoordelingen].sort((a, b) => (rang[a.status] - rang[b.status]) || ((b.verschil || 0) - (a.verschil || 0)))
+      .forEach((b) => {
+        const kaart = el("div", { class: "bev " + b.status });
+        kaart.append(el("div", { class: "bev-kop" }, el("h3", {}, b.omschrijving), badge(b.status),
+          el("div", { class: "bedragen" },
+            el("div", {}, "Verhuurder", el("b", {}, euro(b.bedrag_verhuurder))),
+            b.status !== "BUITEN_BEVOEGDHEID" ? el("div", {}, b.voorlopig ? "Model (voorlopig)" : "Model",
+              el("b", {}, b.bedrag_model === null ? "n.v.t." : euro(b.bedrag_model))) : null,
+            b.verschil !== null && b.status !== "BUITEN_BEVOEGDHEID"
+              ? el("div", {}, "Verschil", el("b", {}, euro(b.verschil))) : null)));
+        const dl = el("dl");
+        if (b.berekening.length) { dl.append(el("dt", {}, "Berekening")); for (const r of b.berekening) dl.append(el("dd", { class: "reken" }, r)); }
+        if (b.toelichting.length) { dl.append(el("dt", {}, "Toelichting")); for (const r of b.toelichting) dl.append(el("dd", {}, r)); }
+        if (b.ontbrekende_informatie.length) { dl.append(el("dt", {}, "Wat ontbreekt")); for (const r of b.ontbrekende_informatie) dl.append(el("dd", {}, r)); }
+        kaart.append(dl);
+        if (b.regels.length) {
+          kaart.append(el("div", { class: "regels" },
+            b.regels.map((id) => el("code", { title: REGELINDEX[id] ? REGELINDEX[id].onderwerp + " — " + REGELINDEX[id].bron : id }, id)),
+            el("code", { title: "Automatiseringsniveau van deze regel" }, b.automatisering)));
+        }
+        bak.append(kaart);
+      });
+  }
+
+  function rendVragen() {
+    const kaart = $("#vragen-kaart");
+    if (!uitkomst.openstaande_vragen.length) { kaart.hidden = true; return; }
+    kaart.hidden = false;
+    const tabel = $("#vragen");
+    tabel.textContent = "";
+    tabel.append(el("thead", {}, el("tr", {}, el("th", {}, "Post"), el("th", {}, "Wat er nodig is"), el("th", { class: "num" }, "Belang"))));
+    tabel.append(el("tbody", {}, uitkomst.openstaande_vragen.map((v) =>
+      el("tr", {}, el("td", {}, v.post), el("td", {}, v.vraag), el("td", { class: "num" }, euro(v.belang))))));
+  }
+
+  function rendSterkte() {
+    const s = uitkomst.sterkte;
+    const bak = $("#sterkte");
+    bak.textContent = "";
+    const blok = (k, v, t, tekst) => el("div", { class: "cijfer" },
+      el("div", { class: "k" }, k), el("div", { class: "v" + (tekst ? " tekst" : "") }, v), el("div", { class: "t" }, t));
+    const blok0 = uitkomst.blokkerend.length;
+    bak.append(
+      blok("Ontvankelijkheid", blok0 ? blok0 + " beletsel" : "Geen beletsel",
+        blok0 ? "herstel dit eerst" : "op basis van de ingevulde gegevens", true),
+      blok("Dekkingsgraad", Math.round(s.dekkingsgraad_procent) + "%", "deel van de afrekening dat beoordeeld kon worden"),
+      blok("Aandeel harde regels", Math.round(s.aandeel_harde_regels_procent) + "%", "correctie op grond van vaste normen, niet open normen"),
+      blok("Onderbouwde posten", s.posten_met_volledige_onderbouwing + " / " + s.posten_totaal, "posten waarvoor de verhuurder bewijs leverde"));
+    $("#sterkte-uitleg").textContent = s.toelichting;
+  }
+
+  /* ------------------------------------------------------------ brieven */
+
+  function euroTekst(w) { return "EUR " + Number(w).toFixed(2).replace(".", ","); }
+
+  function bezwaarbrief() {
+    const vandaag = new Date();
+    const over3w = new Date(vandaag.getTime() + 21 * 864e5);
+    const nl = (d) => d.toLocaleDateString("nl-NL", { day: "2-digit", month: "2-digit", year: "numeric" });
+    const rood = uitkomst.beoordelingen.filter((b) => b.status === "ROOD" && (b.verschil || 0) > 0);
+    const oranje = uitkomst.beoordelingen.filter((b) => b.status === "ORANJE");
+    const r = ["[Uw naam]", "[Uw adres]", "[Postcode en woonplaats]", "", "Aan: [naam verhuurder]",
+      "[adres verhuurder]", "", "Datum: " + nl(vandaag),
+      "Betreft: bezwaar tegen de afrekening servicekosten " + uitkomst.jaar, "", "Geachte heer/mevrouw,", "",
+      "Op [datum] ontving ik van u de afrekening servicekosten over " + uitkomst.jaar + ". Ik ben het niet eens met een " +
+      "aantal posten. Hieronder licht ik per kostenpost toe waarom, zoals artikel 7:260 BW en het Beleidsboek " +
+      "Servicekosten van de Huurcommissie van mij verlangen.", ""];
+    if (rood.length) {
+      r.push("1. Posten waartegen ik bezwaar maak", "");
+      rood.forEach((b, i) => {
+        r.push(`${i + 1}. ${b.omschrijving} - in rekening gebracht: ${euroTekst(b.bedrag_verhuurder)}`);
+        for (const t of b.toelichting) r.push("   " + t);
+        for (const t of b.berekening) r.push("   " + t);
+        r.push(`   Volgens het beleidsboek kom ik uit op ${euroTekst(b.bedrag_model)}. Ik verzoek u dit te corrigeren met ${euroTekst(b.verschil)}.`, "");
+      });
+      r.push("Het totaal van de door mij betwiste correcties bedraagt " + euroTekst(uitkomst.financieel.potentiele_correctie) + ".", "");
+    }
+    if (oranje.length) {
+      r.push((rood.length ? "2" : "1") + ". Posten waarvoor ik aanvullende informatie nodig heb", "",
+        "Op grond van artikel 7:259 lid 4 BW heb ik recht op inzage in de boeken en andere bescheiden die aan de " +
+        "afrekening ten grondslag liggen. Voor de volgende posten verzoek ik u die stukken te verstrekken:", "");
+      for (const b of oranje) {
+        r.push(`- ${b.omschrijving} (${euroTekst(b.bedrag_verhuurder)}):`);
+        for (const t of b.ontbrekende_informatie) r.push("  " + t);
+      }
+      r.push("");
+    }
+    r.push("Ik verzoek u binnen drie weken, dus uiterlijk " + nl(over3w) + ", op dit bezwaar te reageren en de " +
+      "afrekening zo nodig aan te passen. Ontvang ik binnen die termijn geen reactie, of neemt uw reactie mijn " +
+      "bezwaren niet weg, dan leg ik het geschil voor aan de Huurcommissie.", "", "Met vriendelijke groet,", "",
+      "[Uw naam]", "", "---",
+      "Concept, gegenereerd op basis van het Beleidsboek Servicekosten (versie 1 juli 2026). Controleer de gegevens " +
+      "tussen [ ] en de inhoudelijke juistheid voordat u verstuurt. Dit is geen juridisch advies.");
+    return r.join("\n");
+  }
+
+  function opvraagbrief(jaar) {
+    const vandaag = new Date();
+    const over3w = new Date(vandaag.getTime() + 21 * 864e5);
+    const nl = (d) => d.toLocaleDateString("nl-NL", { day: "2-digit", month: "2-digit", year: "numeric" });
+    return ["[Uw naam]", "[Uw adres]", "[Postcode en woonplaats]", "", "Aan: [naam verhuurder]", "[adres verhuurder]", "",
+      "Datum: " + nl(vandaag), "Betreft: verzoek om de afrekening servicekosten " + jaar, "", "Geachte heer/mevrouw,", "",
+      "Op grond van artikel 7:259 lid 2 BW bent u verplicht mij uiterlijk zes maanden na afloop van het kalenderjaar " +
+      "een naar soort uitgesplitst overzicht te verstrekken van de in dat jaar in rekening gebrachte kosten voor " +
+      "nutsvoorzieningen en servicekosten, met vermelding van de wijze van berekening. Voor het jaar " + jaar +
+      " was die termijn uiterlijk 30 juni " + (jaar + 1) + ".", "",
+      "Ik heb deze afrekening niet ontvangen. Hierbij verzoek ik u die alsnog te verstrekken, uiterlijk binnen drie " +
+      "weken, dus vóór " + nl(over3w) + ".", "",
+      "Ontvang ik de afrekening niet binnen die termijn, dan leg ik de vaststelling van mijn betalingsverplichting " +
+      "voor aan de Huurcommissie (artikel 7:260 BW).", "", "Met vriendelijke groet,", "", "[Uw naam]", "", "---",
+      "Concept op basis van het Beleidsboek Servicekosten (versie 1 juli 2026), paragraaf 6.3.2. Dit is geen juridisch advies."].join("\n");
+  }
+
+  function toonBrief(tekst) {
+    const vak = $("#brief");
+    vak.value = tekst;
+    vak.hidden = false;
+    $("#briefacties").hidden = false;
+    vak.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  /* ---------------------------------------------------------- navigatie */
+
+  function toonStap(naam) {
+    for (const s of ["start", "controle", "resultaat"]) $("#stap-" + s).hidden = s !== naam;
+    const volgorde = ["start", "controle", "resultaat"];
+    const i = volgorde.indexOf(naam);
+    document.querySelectorAll("#stappen li").forEach((li, n) => {
+      li.removeAttribute("aria-current");
+      if (n === i) li.setAttribute("aria-current", "step");
+      li.classList.toggle("klaar", n < i);
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function voegPostToe() {
+    dossier.kostenposten.push({ id: "P" + (dossier.kostenposten.length + 1), categorie: null,
+      omschrijving: "", bedrag_verhuurder: 0, overeengekomen: dossier._overeengekomen_standaard,
+      bewijs: [], levering_gemotiveerd_betwist: false, parameters: {} });
+  }
+
+  function vinkBewijs(soort) {
+    for (const post of dossier.kostenposten) if (!post.bewijs.includes(soort)) post.bewijs.push(soort);
+    rendPosten();
+    const label = DATA.categorieen.bewijsopties.find((o) => o.waarde === soort).label;
+    melding('"' + label + '" aangevinkt bij alle posten. Haal het weg bij posten waar dit bewijs ontbreekt — juist daar zit vaak de grootste correctie.', "ok");
+  }
+
+  /* --------------------------------------------------------------- start */
+
+  function start() {
+    $("#kies").addEventListener("click", () => $("#bestand").click());
+    $("#bestand").addEventListener("change", (e) => e.target.files[0] && leesBestand(e.target.files[0]));
+
+    const zone = $("#dropzone");
+    ["dragenter", "dragover"].forEach((g) => zone.addEventListener(g, (e) => { e.preventDefault(); zone.classList.add("hover"); }));
+    ["dragleave", "drop"].forEach((g) => zone.addEventListener(g, () => zone.classList.remove("hover")));
+    zone.addEventListener("drop", (e) => { e.preventDefault(); if (e.dataTransfer.files[0]) leesBestand(e.dataTransfer.files[0]); });
+
+    $("#plak-lezen").addEventListener("click", () => {
+      const tekst = $("#plakvak").value;
+      if (tekst.trim().length < 20) return melding("Plak eerst de tekst van uw afrekening.", "fout");
+      wisMeldingen();
+      leesTekst(tekst, "geplakte tekst", false);
+    });
+    $("#handmatig").addEventListener("click", () => {
+      dossier = leegDossier();
+      isVoorbeeld = false;
+      dossier.periode.jaar = Number(DATA.jaren[DATA.jaren.length - 1]);
+      voegPostToe();
+      rendControle();
+      toonStap("controle");
+    });
+    $("#voorbeeld-laden").addEventListener("click", () => { wisMeldingen(); leesTekst(DATA.voorbeeld, "voorbeeldafrekening", true); rendResultaatVoorbeeld(); });
+    $("#voorbeeld-eigen").addEventListener("click", () => { wisMeldingen(); dossier = leegDossier(); isVoorbeeld = false; toonStap("start"); });
+
+    $("#post-toevoegen").addEventListener("click", () => { voegPostToe(); rendPosten(); });
+    $("#snel-overeengekomen").addEventListener("click", () => {
+      for (const p of dossier.kostenposten) p.overeengekomen = true;
+      dossier._overeengekomen_standaard = true;
+      rendProcedure(); rendPosten();
+      melding("Alle posten staan nu op 'overeengekomen'. Wijk per post af waar dat niet klopt.", "ok");
+    });
+    $("#snel-facturen").addEventListener("click", () => vinkBewijs("facturen"));
+    $("#snel-specificatie").addEventListener("click", () => vinkBewijs("specificatieformulier"));
+    $("#beoordeel").addEventListener("click", beoordeel);
+    $("#terug-start").addEventListener("click", () => toonStap("start"));
+    $("#terug-controle").addEventListener("click", () => toonStap("controle"));
+    $("#opnieuw").addEventListener("click", () => { dossier = leegDossier(); uitkomst = null; isVoorbeeld = false; wisMeldingen(); toonStap("start"); });
+    $("#bezwaarbrief").addEventListener("click", () => toonBrief(bezwaarbrief()));
+    $("#opvraagbrief").addEventListener("click", () => toonBrief(opvraagbrief(dossier.periode.jaar || uitkomst.jaar)));
+    $("#kopieer").addEventListener("click", async () => {
+      try { await navigator.clipboard.writeText($("#brief").value); melding("Brief gekopieerd naar het klembord.", "ok"); }
+      catch { $("#brief").select(); melding("Kopiëren lukte niet automatisch; de tekst is geselecteerd, gebruik Ctrl/Cmd+C.", "letop"); }
+    });
+    $("#thema").addEventListener("click", () => {
+      const nu = document.documentElement.getAttribute("data-theme");
+      const donker = nu === "dark" || (nu !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
+      document.documentElement.setAttribute("data-theme", donker ? "light" : "dark");
+    });
+
+    // Open in een werkende staat: de voorbeeldafrekening, meteen beoordeeld.
+    leesTekst(DATA.voorbeeld, "voorbeeldafrekening", true);
+    rendResultaatVoorbeeld();
+  }
+
+  function rendResultaatVoorbeeld() {
+    // De voorbeeldhuurder heeft alles overeengekomen en de verhuurder leverde
+    // facturen; zo laat het voorbeeld echte bevindingen zien in plaats van
+    // twaalf keer "onvoldoende informatie".
+    dossier._overeengekomen_standaard = true;
+    for (const post of dossier.kostenposten) {
+      post.overeengekomen = true;
+      post.bewijs = ["facturen", "specificatieformulier"];
+    }
+    dossier.woonruimte.woningtype = "flatwoning_appartement";
+    dossier.woonruimte.aantal_bewoners = 2;
+    dossier.woonruimte.oppervlakte_m2 = 70;
+    dossier.procedure = { contract_gesloten_op: "2022-03-01", sector: "sociaal",
+      afrekening_ontvangen: true, bezwaar_gemaakt: true };
+    uitkomst = Kern.beoordeelDossier(dossier);
+    rendControle();
+    rendResultaat();
+    toonStap("resultaat");
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
+  else start();
+})();
+</script>

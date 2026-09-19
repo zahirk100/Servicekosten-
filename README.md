@@ -9,10 +9,26 @@ met paginaverwijzing, en de **applicatie** die die regels uitvoert — een huurd
 afrekening of voert de posten zelf in, en krijgt per kostenpost terug wat is toegestaan, wat niet,
 en wat er nog ontbreekt.
 
+## Direct proberen
+
+`web/index.html` is de hele applicatie in één bestand: open hem in een browser en hij werkt — de
+rekenkern, de parser en de interface zitten erin. Er is geen server, geen installatie en geen
+internetverbinding nodig; uw afrekening verlaat het tabblad niet.
+
+```bash
+# Openen na het clonen
+open web/index.html          # macOS
+xdg-open web/index.html      # Linux
+start web\index.html         # Windows
+```
+
+De pagina opent op een voorbeeldafrekening, zodat meteen zichtbaar is wat hij doet. Wilt u hem
+online zetten: zet GitHub Pages aan voor deze branch en `web/index.html` is meteen bereikbaar.
+
 ## Snel beginnen
 
 ```bash
-# De webapplicatie
+# De webapplicatie met server (PDF-verwerking in Python in plaats van in de browser)
 python3 -m pip install -r requirements.txt
 python3 -m app                       # http://127.0.0.1:8000
 
@@ -74,6 +90,7 @@ Huismeester - ROOD
 | [`docs/08-praktijktest.md`](docs/08-praktijktest.md) | Vijf casussen plus een meerjarendossier, doorgerekend door de engine (gegenereerd) |
 | [`docs/09-eindrapport.md`](docs/09-eindrapport.md) | Wat automatiseerbaar is, wat niet, en welke bronnen blokkerend zijn |
 | [`docs/10-applicatie.md`](docs/10-applicatie.md) | De applicatie: inleeslaag, formulier, resultaat, API, architectuur |
+| [`docs/11-browserversie.md`](docs/11-browserversie.md) | De versie die volledig in de browser draait, en hoe die is gevalideerd |
 
 ## Structuur
 
@@ -91,11 +108,16 @@ engine/                    Rekenkern (Python, standaardbibliotheek)
   rapport.py               Markdownrapportage
   serialisatie.py          Beoordeling -> JSON voor de API
   brief.py                 Bezwaarbrief en opvraagbrief
-app/                       Webapplicatie
+web/                       Browserversie: alles in één HTML-bestand, geen server
+  kern.js                  JavaScript-port van de rekenkern
+  parser.js                JavaScript-port van de inleeslaag
+  ui.js, stijl.css         Interface
+  index.html               Het gebouwde bestand (tools/bouw_webapp.py)
+app/                       Webapplicatie met server
   main.py                  FastAPI: API en statische interface
   parsers/                 PDF/CSV/tekst -> conceptdossier
   static/                  index.html, app.js, styles.css (geen buildstap, geen frameworks)
-tests/                     50 tests: rekenvoorbeelden, schema, parser, API
+tests/                     53 tests: rekenvoorbeelden, schema, parser, API, JavaScript-port
 tests/cases/               Zeven voorbeelddossiers
 voorbeelden/               Fictieve afrekeningen om de parser mee te proberen
 tools/                     Generatoren voor docs/07, docs/08, data/categorieen.json en de voorbeelden
@@ -126,7 +148,12 @@ wijkt een uitkomst af, dan is de implementatie fout, niet het beleidsboek.
 
 Daarnaast controleren `tests/test_parser.py` en `tests/test_api.py` de inleeslaag (Nederlandse
 bedragnotatie, classificatie, ruisfilters, PDF en CSV die dezelfde posten opleveren) en de
-endpoints. Samen 50 tests via `python3 tests/run_all.py`.
+endpoints. Samen 53 tests via `python3 tests/run_all.py`.
+
+De browserversie is een aparte implementatie en wordt daarom apart bewezen: `tests/test_web_kern.mjs`
+draait dezelfde zeventien rekenvoorbeelden door de JavaScript-port én vergelijkt de volledige uitvoer
+(bedragen, statussen, toegepaste regels, sterkte-indicatoren) met die van de Python-kern op alle zeven
+dossiers. 45 vergelijkingen, allemaal gelijk.
 
 ## Status en beperkingen
 

@@ -1,0 +1,617 @@
+{
+  "casus-1-eenvoudige-correcte-afrekening.json": {
+    "financieel": {
+      "totaal_verhuurder": "947.95",
+      "totaal_beoordeeld_verhuurder": "947.95",
+      "totaal_model": "947.95",
+      "potentiele_correctie": "0.00",
+      "onbeoordeeld_bedrag": "0.00",
+      "bandbreedte_min": "0.00",
+      "bandbreedte_max": "0.00",
+      "buiten_bevoegdheid": "0.00",
+      "voorschot_betaald": "1200.00",
+      "saldo_volgens_verhuurder": "252.05",
+      "saldo_volgens_model": "252.05"
+    },
+    "tellingen": {
+      "GROEN": 4,
+      "ORANJE": 0,
+      "ROOD": 0,
+      "BUITEN_BEVOEGDHEID": 0
+    },
+    "beoordelingen": [
+      {
+        "id": "P1",
+        "status": "GROEN",
+        "voorlopig": false,
+        "bedrag_model": "602.15",
+        "verschil": "0.00",
+        "regels": [
+          "R-NUT-01"
+        ]
+      },
+      {
+        "id": "P2",
+        "status": "GROEN",
+        "voorlopig": false,
+        "bedrag_model": "180.00",
+        "verschil": "0.00",
+        "regels": [
+          "R-KH-02",
+          "R-VDS-03"
+        ]
+      },
+      {
+        "id": "P3",
+        "status": "GROEN",
+        "voorlopig": false,
+        "bedrag_model": "149.33",
+        "verschil": "0.00",
+        "regels": [
+          "R-HUI-01"
+        ]
+      },
+      {
+        "id": "P4",
+        "status": "GROEN",
+        "voorlopig": false,
+        "bedrag_model": "16.47",
+        "verschil": "0.00",
+        "regels": [
+          "R-ADM-01"
+        ]
+      }
+    ],
+    "sterkte": {
+      "dekkingsgraad_procent": "100.00",
+      "aandeel_harde_regels_procent": "0.00",
+      "posten_met_volledige_onderbouwing": 4,
+      "posten_totaal": 4
+    }
+  },
+  "casus-2-eenvoudige-foutieve-afrekening.json": {
+    "financieel": {
+      "totaal_verhuurder": "563.33",
+      "totaal_beoordeeld_verhuurder": "563.33",
+      "totaal_model": "399.33",
+      "potentiele_correctie": "164.00",
+      "onbeoordeeld_bedrag": "0.00",
+      "bandbreedte_min": "164.00",
+      "bandbreedte_max": "164.00",
+      "buiten_bevoegdheid": "0.00",
+      "voorschot_betaald": "1080.00",
+      "saldo_volgens_verhuurder": "516.67",
+      "saldo_volgens_model": "680.67"
+    },
+    "tellingen": {
+      "GROEN": 1,
+      "ORANJE": 0,
+      "ROOD": 3,
+      "BUITEN_BEVOEGDHEID": 0
+    },
+    "beoordelingen": [
+      {
+        "id": "P1",
+        "status": "ROOD",
+        "voorlopig": false,
+        "bedrag_model": "149.33",
+        "verschil": "77.34",
+        "regels": [
+          "R-HUI-01"
+        ]
+      },
+      {
+        "id": "P2",
+        "status": "ROOD",
+        "voorlopig": false,
+        "bedrag_model": "40.00",
+        "verschil": "80.00",
+        "regels": [
+          "R-ADM-01"
+        ]
+      },
+      {
+        "id": "P3",
+        "status": "ROOD",
+        "voorlopig": false,
+        "bedrag_model": "60.00",
+        "verschil": "6.66",
+        "regels": [
+          "R-ROE-04"
+        ]
+      },
+      {
+        "id": "P4",
+        "status": "GROEN",
+        "voorlopig": false,
+        "bedrag_model": "150.00",
+        "verschil": "0.00",
+        "regels": [
+          "R-KH-02",
+          "R-VDS-03"
+        ]
+      }
+    ],
+    "sterkte": {
+      "dekkingsgraad_procent": "100.00",
+      "aandeel_harde_regels_procent": "100.00",
+      "posten_met_volledige_onderbouwing": 4,
+      "posten_totaal": 4
+    }
+  },
+  "casus-3-ontbrekende-bewijsstukken.json": {
+    "financieel": {
+      "totaal_verhuurder": "1547.00",
+      "totaal_beoordeeld_verhuurder": "1452.00",
+      "totaal_model": "351.50",
+      "potentiele_correctie": "1100.50",
+      "onbeoordeeld_bedrag": "95.00",
+      "bandbreedte_min": "1100.50",
+      "bandbreedte_max": "1195.50",
+      "buiten_bevoegdheid": "0.00",
+      "voorschot_betaald": "1500.00",
+      "saldo_volgens_verhuurder": "-47.00",
+      "saldo_volgens_model": "1053.50"
+    },
+    "tellingen": {
+      "GROEN": 0,
+      "ORANJE": 1,
+      "ROOD": 4,
+      "BUITEN_BEVOEGDHEID": 0
+    },
+    "beoordelingen": [
+      {
+        "id": "P1",
+        "status": "ROOD",
+        "voorlopig": false,
+        "bedrag_model": "327.50",
+        "verschil": "452.50",
+        "regels": [
+          "R-BEW-01"
+        ]
+      },
+      {
+        "id": "P2",
+        "status": "ROOD",
+        "voorlopig": false,
+        "bedrag_model": "12.00",
+        "verschil": "228.00",
+        "regels": [
+          "R-BEW-02",
+          "R-KH-02"
+        ]
+      },
+      {
+        "id": "P3",
+        "status": "ORANJE",
+        "voorlopig": true,
+        "bedrag_model": "95.00",
+        "verschil": "0.00",
+        "regels": [
+          "R-KH-03",
+          "R-VDS-03"
+        ]
+      },
+      {
+        "id": "P4",
+        "status": "ROOD",
+        "voorlopig": false,
+        "bedrag_model": "12.00",
+        "verschil": "288.00",
+        "regels": [
+          "R-ROE-02"
+        ]
+      },
+      {
+        "id": "P5",
+        "status": "ROOD",
+        "voorlopig": false,
+        "bedrag_model": "0.00",
+        "verschil": "132.00",
+        "regels": [
+          "R-BEW-03",
+          "R-SK-07"
+        ]
+      }
+    ],
+    "sterkte": {
+      "dekkingsgraad_procent": "93.86",
+      "aandeel_harde_regels_procent": "20.72",
+      "posten_met_volledige_onderbouwing": 2,
+      "posten_totaal": 5
+    }
+  },
+  "casus-4-meerdere-foutieve-posten.json": {
+    "financieel": {
+      "totaal_verhuurder": "837.00",
+      "totaal_beoordeeld_verhuurder": "837.00",
+      "totaal_model": "90.30",
+      "potentiele_correctie": "746.70",
+      "onbeoordeeld_bedrag": "0.00",
+      "bandbreedte_min": "746.70",
+      "bandbreedte_max": "746.70",
+      "buiten_bevoegdheid": "130.00",
+      "voorschot_betaald": "2100.00",
+      "saldo_volgens_verhuurder": "1263.00",
+      "saldo_volgens_model": "2009.70"
+    },
+    "tellingen": {
+      "GROEN": 0,
+      "ORANJE": 0,
+      "ROOD": 9,
+      "BUITEN_BEVOEGDHEID": 1
+    },
+    "beoordelingen": [
+      {
+        "id": "P1",
+        "status": "ROOD",
+        "voorlopig": false,
+        "bedrag_model": "0.00",
+        "verschil": "85.00",
+        "regels": [
+          "R-NSK-01"
+        ]
+      },
+      {
+        "id": "P2",
+        "status": "ROOD",
+        "voorlopig": false,
+        "bedrag_model": "0.00",
+        "verschil": "140.00",
+        "regels": [
+          "R-KH-02"
+        ]
+      },
+      {
+        "id": "P3",
+        "status": "ROOD",
+        "voorlopig": false,
+        "bedrag_model": "0.00",
+        "verschil": "92.00",
+        "regels": [
+          "R-VZ-01"
+        ]
+      },
+      {
+        "id": "P4",
+        "status": "ROOD",
+        "voorlopig": false,
+        "bedrag_model": "7.20",
+        "verschil": "40.80",
+        "regels": [
+          "R-VZ-02"
+        ]
+      },
+      {
+        "id": "P5",
+        "status": "ROOD",
+        "voorlopig": false,
+        "bedrag_model": "24.00",
+        "verschil": "48.00",
+        "regels": [
+          "R-KH-01",
+          "R-VDS-03"
+        ]
+      },
+      {
+        "id": "P6",
+        "status": "ROOD",
+        "voorlopig": false,
+        "bedrag_model": "0.00",
+        "verschil": "180.00",
+        "regels": [
+          "R-ROE-01"
+        ]
+      },
+      {
+        "id": "P7",
+        "status": "ROOD",
+        "voorlopig": false,
+        "bedrag_model": "0.00",
+        "verschil": "15.00",
+        "regels": [
+          "R-ROE-07"
+        ]
+      },
+      {
+        "id": "P8",
+        "status": "ROOD",
+        "voorlopig": false,
+        "bedrag_model": "22.00",
+        "verschil": "88.00",
+        "regels": [
+          "R-SK-12"
+        ]
+      },
+      {
+        "id": "P9",
+        "status": "BUITEN_BEVOEGDHEID",
+        "voorlopig": false,
+        "bedrag_model": null,
+        "verschil": null,
+        "regels": [
+          "R-NSK-02"
+        ]
+      },
+      {
+        "id": "P10",
+        "status": "ROOD",
+        "voorlopig": false,
+        "bedrag_model": "37.10",
+        "verschil": "57.90",
+        "regels": [
+          "R-ADM-01"
+        ]
+      }
+    ],
+    "sterkte": {
+      "dekkingsgraad_procent": "100.00",
+      "aandeel_harde_regels_procent": "93.57",
+      "posten_met_volledige_onderbouwing": 9,
+      "posten_totaal": 9
+    }
+  },
+  "casus-5-complex-menselijke-beoordeling.json": {
+    "financieel": {
+      "totaal_verhuurder": "2329.00",
+      "totaal_beoordeeld_verhuurder": "88.00",
+      "totaal_model": "0.00",
+      "potentiele_correctie": "88.00",
+      "onbeoordeeld_bedrag": "2241.00",
+      "bandbreedte_min": "88.00",
+      "bandbreedte_max": "2329.00",
+      "buiten_bevoegdheid": "0.00",
+      "voorschot_betaald": "1600.00",
+      "saldo_volgens_verhuurder": "-729.00",
+      "saldo_volgens_model": "-641.00"
+    },
+    "tellingen": {
+      "GROEN": 0,
+      "ORANJE": 5,
+      "ROOD": 1,
+      "BUITEN_BEVOEGDHEID": 0
+    },
+    "beoordelingen": [
+      {
+        "id": "P1",
+        "status": "ORANJE",
+        "voorlopig": true,
+        "bedrag_model": "1036.88",
+        "verschil": "143.12",
+        "regels": [
+          "R-NUT-03",
+          "R-NUT-04",
+          "R-PER-01"
+        ]
+      },
+      {
+        "id": "P2",
+        "status": "ROOD",
+        "voorlopig": false,
+        "bedrag_model": "0.00",
+        "verschil": "88.00",
+        "regels": [
+          "R-KH-03"
+        ]
+      },
+      {
+        "id": "P3",
+        "status": "ORANJE",
+        "voorlopig": true,
+        "bedrag_model": "289.03",
+        "verschil": "130.97",
+        "regels": [
+          "R-ROE-01",
+          "R-ROE-05"
+        ]
+      },
+      {
+        "id": "P4",
+        "status": "ORANJE",
+        "voorlopig": true,
+        "bedrag_model": "360.00",
+        "verschil": "180.00",
+        "regels": [
+          "R-WKO-01"
+        ]
+      },
+      {
+        "id": "P5",
+        "status": "ORANJE",
+        "voorlopig": true,
+        "bedrag_model": "43.33",
+        "verschil": "21.67",
+        "regels": [
+          "R-KH-10",
+          "R-VDS-03"
+        ]
+      },
+      {
+        "id": "P6",
+        "status": "ORANJE",
+        "voorlopig": true,
+        "bedrag_model": "24.00",
+        "verschil": "12.00",
+        "regels": [
+          "R-SK-13"
+        ]
+      }
+    ],
+    "sterkte": {
+      "dekkingsgraad_procent": "3.78",
+      "aandeel_harde_regels_procent": "0.00",
+      "posten_met_volledige_onderbouwing": 6,
+      "posten_totaal": 6
+    }
+  },
+  "meerjaar/2024.json": {
+    "financieel": {
+      "totaal_verhuurder": "703.67",
+      "totaal_beoordeeld_verhuurder": "703.67",
+      "totaal_model": "445.30",
+      "potentiele_correctie": "258.37",
+      "onbeoordeeld_bedrag": "0.00",
+      "bandbreedte_min": "258.37",
+      "bandbreedte_max": "258.37",
+      "buiten_bevoegdheid": "0.00",
+      "voorschot_betaald": "1800.00",
+      "saldo_volgens_verhuurder": "1096.33",
+      "saldo_volgens_model": "1354.70"
+    },
+    "tellingen": {
+      "GROEN": 1,
+      "ORANJE": 0,
+      "ROOD": 4,
+      "BUITEN_BEVOEGDHEID": 0
+    },
+    "beoordelingen": [
+      {
+        "id": "P1",
+        "status": "ROOD",
+        "voorlopig": false,
+        "bedrag_model": "149.33",
+        "verschil": "77.34",
+        "regels": [
+          "R-HUI-01"
+        ]
+      },
+      {
+        "id": "P2",
+        "status": "GROEN",
+        "voorlopig": false,
+        "bedrag_model": "210.00",
+        "verschil": "0.00",
+        "regels": [
+          "R-KH-02",
+          "R-VDS-03"
+        ]
+      },
+      {
+        "id": "P3",
+        "status": "ROOD",
+        "voorlopig": false,
+        "bedrag_model": "0.00",
+        "verschil": "88.00",
+        "regels": [
+          "R-VZ-01"
+        ]
+      },
+      {
+        "id": "P4",
+        "status": "ROOD",
+        "voorlopig": false,
+        "bedrag_model": "60.00",
+        "verschil": "24.00",
+        "regels": [
+          "R-ROE-04"
+        ]
+      },
+      {
+        "id": "P5",
+        "status": "ROOD",
+        "voorlopig": false,
+        "bedrag_model": "25.97",
+        "verschil": "69.03",
+        "regels": [
+          "R-ADM-01"
+        ]
+      }
+    ],
+    "sterkte": {
+      "dekkingsgraad_procent": "100.00",
+      "aandeel_harde_regels_procent": "100.00",
+      "posten_met_volledige_onderbouwing": 5,
+      "posten_totaal": 5
+    }
+  },
+  "meerjaar/2025.json": {
+    "financieel": {
+      "totaal_verhuurder": "873.00",
+      "totaal_beoordeeld_verhuurder": "873.00",
+      "totaal_model": "466.39",
+      "potentiele_correctie": "406.61",
+      "onbeoordeeld_bedrag": "0.00",
+      "bandbreedte_min": "406.61",
+      "bandbreedte_max": "406.61",
+      "buiten_bevoegdheid": "0.00",
+      "voorschot_betaald": "2100.00",
+      "saldo_volgens_verhuurder": "1227.00",
+      "saldo_volgens_model": "1633.61"
+    },
+    "tellingen": {
+      "GROEN": 1,
+      "ORANJE": 0,
+      "ROOD": 5,
+      "BUITEN_BEVOEGDHEID": 0
+    },
+    "beoordelingen": [
+      {
+        "id": "P1",
+        "status": "ROOD",
+        "voorlopig": false,
+        "bedrag_model": "149.24",
+        "verschil": "90.76",
+        "regels": [
+          "R-HUI-01"
+        ]
+      },
+      {
+        "id": "P2",
+        "status": "GROEN",
+        "voorlopig": false,
+        "bedrag_model": "225.00",
+        "verschil": "0.00",
+        "regels": [
+          "R-KH-02",
+          "R-VDS-03"
+        ]
+      },
+      {
+        "id": "P3",
+        "status": "ROOD",
+        "voorlopig": false,
+        "bedrag_model": "0.00",
+        "verschil": "94.00",
+        "regels": [
+          "R-VZ-01"
+        ]
+      },
+      {
+        "id": "P4",
+        "status": "ROOD",
+        "voorlopig": false,
+        "bedrag_model": "60.00",
+        "verschil": "24.00",
+        "regels": [
+          "R-ROE-04"
+        ]
+      },
+      {
+        "id": "P5",
+        "status": "ROOD",
+        "voorlopig": false,
+        "bedrag_model": "0.00",
+        "verschil": "120.00",
+        "regels": [
+          "R-NSK-01"
+        ]
+      },
+      {
+        "id": "P6",
+        "status": "ROOD",
+        "voorlopig": false,
+        "bedrag_model": "32.15",
+        "verschil": "77.85",
+        "regels": [
+          "R-ADM-01"
+        ]
+      }
+    ],
+    "sterkte": {
+      "dekkingsgraad_procent": "100.00",
+      "aandeel_harde_regels_procent": "100.00",
+      "posten_met_volledige_onderbouwing": 6,
+      "posten_totaal": 6
+    }
+  }
+}

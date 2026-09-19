@@ -1,0 +1,168 @@
+<title>Servicekosten-audit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,600&family=IBM+Plex+Mono:wght@400&display=swap">
+<style>/*__STIJL__*/</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="merk">Servicekosten-audit<em>Beleidsboek Servicekosten · versie 1 juli 2026</em></div>
+    <div class="top-rechts">
+      <button class="stil" id="thema" type="button">Thema</button>
+      <button class="stil" id="opnieuw" type="button">Opnieuw</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <ol class="stappen" id="stappen">
+    <li data-stap="start"><span class="bol">1</span>Afrekening inlezen</li>
+    <li data-stap="controle"><span class="bol">2</span>Controleren</li>
+    <li data-stap="resultaat" aria-current="step"><span class="bol">3</span>Beoordeling</li>
+  </ol>
+
+  <div id="meldingen" aria-live="polite"></div>
+
+  <!-- ============ STAP 1 ============ -->
+  <section id="stap-start" hidden>
+    <div class="kaart">
+      <h2>Lees uw servicekostenafrekening in</h2>
+      <p class="klein">Het model haalt de posten uit uw afrekening, koppelt ze aan de categorieën uit het
+        Besluit servicekosten en rekent ze na volgens het beleidsboek van de Huurcommissie. U controleert de
+        herkenning daarna zelf — het model raadt niets en wijst een onbekende post nooit vanzelf af.</p>
+
+      <div class="dropzone" id="dropzone">
+        <h3>Sleep uw afrekening hierheen</h3>
+        <p class="klein" style="margin:0 auto">PDF, CSV of tekstbestand. Een scan zonder tekstlaag kan niet
+          worden gelezen; plak dan de tekst of voer de posten handmatig in.</p>
+        <input type="file" id="bestand" accept=".pdf,.csv,.tsv,.txt,.md" class="sr">
+        <div class="actiebalk" style="justify-content:center">
+          <button class="primair" type="button" id="kies">Bestand kiezen</button>
+          <button type="button" id="handmatig">Handmatig invoeren</button>
+          <button type="button" id="voorbeeld-laden">Voorbeeld bekijken</button>
+        </div>
+      </div>
+
+      <details class="uitklap">
+        <summary>Of plak de tekst van uw afrekening</summary>
+        <div>
+          <p class="klein">Werkt altijd, ook als de PDF niet leesbaar is: open uw afrekening, selecteer alles
+            (Ctrl/Cmd+A), kopieer en plak hieronder.</p>
+          <textarea id="plakvak" placeholder="Plak hier de tekst van uw afrekening…"></textarea>
+          <div class="actiebalk"><button class="primair" type="button" id="plak-lezen">Tekst inlezen</button></div>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ============ STAP 2 ============ -->
+  <section id="stap-controle" hidden>
+    <div class="kaart">
+      <h2>Uw woning en de afrekenperiode</h2>
+      <p class="klein">Deze gegevens bepalen welke normbedragen gelden. De Nibud-tabellen in het beleidsboek
+        lopen tot en met 2025.</p>
+      <div class="rooster" id="woningvelden"></div>
+    </div>
+
+    <div class="kaart">
+      <h2>Procedure en termijnen</h2>
+      <p class="klein">De Huurcommissie toetst eerst de ontvankelijkheid. Zonder schriftelijk bezwaar — of,
+        als u geen afrekening kreeg, een schriftelijke opvraag — verklaart zij het verzoek niet-ontvankelijk,
+        hoe sterk uw zaak inhoudelijk ook is.</p>
+      <div class="rooster" id="procedurevelden"></div>
+    </div>
+
+    <div class="kaart">
+      <h2>De kostenposten <span class="klein" id="postenaantal" style="font-family:var(--sans);font-weight:400"></span></h2>
+      <p class="klein">Controleer per post de categorie en het bedrag. Klap een post open voor de
+        vervolgvragen die bij die categorie horen — die bepalen of het model kan rekenen of een
+        informatievraag moet stellen.</p>
+      <div class="actiebalk" style="margin-bottom:13px">
+        <button type="button" id="snel-overeengekomen">Alle posten: overeengekomen</button>
+        <button type="button" id="snel-facturen">Alle posten: facturen aanwezig</button>
+        <button type="button" id="snel-specificatie">Alle posten: specificatieformulier aanwezig</button>
+      </div>
+      <div id="posten"></div>
+      <div class="actiebalk"><button type="button" id="post-toevoegen">+ Post toevoegen</button></div>
+    </div>
+
+    <div class="actiebalk">
+      <button class="primair" type="button" id="beoordeel">Beoordeel deze afrekening</button>
+      <button type="button" id="terug-start">Terug</button>
+    </div>
+  </section>
+
+  <!-- ============ STAP 3 ============ -->
+  <section id="stap-resultaat">
+    <div class="voorbeeldbalk" id="voorbeeldbalk">
+      <span><b>Dit is een voorbeeldafrekening.</b> Fictief dossier met twaalf posten, zodat u meteen ziet wat
+        de applicatie doet.</span>
+      <button class="primair" type="button" id="voorbeeld-eigen">Mijn eigen afrekening inlezen</button>
+    </div>
+
+    <div class="verdict" id="verdict"></div>
+
+    <div id="ontvankelijkheid" style="margin-top:14px"></div>
+
+    <div class="kaart">
+      <h2>Bevindingen per post</h2>
+      <p class="klein">Gesorteerd op ernst. Elke bevinding noemt de toegepaste regel en de paragraaf en
+        pagina in het beleidsboek waarop die berust.</p>
+      <div id="bevindingen" style="margin-top:12px"></div>
+    </div>
+
+    <div class="kaart" id="vragen-kaart">
+      <h2>Wat u nog moet opvragen</h2>
+      <p class="klein">Gesorteerd op financieel belang. Artikel 7:259 lid 4 BW geeft u recht op inzage in de
+        boeken en bescheiden die aan de afrekening ten grondslag liggen.</p>
+      <div class="tabel-scroll"><table id="vragen"></table></div>
+    </div>
+
+    <div class="kaart">
+      <h2>Hoe sterk staat deze zaak?</h2>
+      <div class="cijfers" id="sterkte"></div>
+      <p class="klein" id="sterkte-uitleg" style="margin-top:14px"></p>
+    </div>
+
+    <div class="kaart">
+      <h2>Conceptbrief</h2>
+      <p class="klein">De bezwaarplicht uit paragraaf 6.3.1 vraagt dat u per kostenpost aangeeft waartegen u
+        bezwaar maakt en waarom. Deze brief doet dat op basis van de bevindingen hierboven.</p>
+      <div class="actiebalk">
+        <button type="button" id="bezwaarbrief">Bezwaarbrief opstellen</button>
+        <button type="button" id="opvraagbrief">Opvraagbrief (geen afrekening ontvangen)</button>
+      </div>
+      <textarea id="brief" spellcheck="false" aria-label="Conceptbrief" style="margin-top:12px" hidden></textarea>
+      <div class="actiebalk" id="briefacties" hidden>
+        <button class="primair" type="button" id="kopieer">Kopieer naar klembord</button>
+      </div>
+    </div>
+
+    <div class="actiebalk">
+      <button type="button" id="terug-controle">Terug naar de invoer</button>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap">
+  <p><b>Dit is geen juridisch advies.</b> Het beleidsboek is uitvoeringsbeleid: de Huurcommissie handelt
+    ernaar, maar kan gemotiveerd afwijken als het geschil dat rechtvaardigt (p. 3). Elke uitkomst hier is een
+    verwachting van de beleidslijn, geen voorspelling van de uitspraak.</p>
+  <p>Alles rekent in uw eigen browser. Er wordt niets verstuurd of opgeslagen — uw afrekening verlaat dit
+    tabblad niet.</p>
+  <p>Bron: Beleidsboek Servicekosten van de Huurcommissie, versie 1 juli 2026 (86 pagina's, inclusief het
+    Besluit servicekosten en het Besluit kleine herstellingen). 76 beslisregels; de rekenwijze is gevalideerd
+    tegen de zeventien rekenvoorbeelden uit dat document.</p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+  if (window.pdfjsLib) {
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  }
+</script>
+<script>window.SERVICEKOSTEN_DATA = /*__DATA__*/;</script>
+<script>/*__KERN__*/</script>
+<script>/*__PARSER__*/</script>
+<script>/*__UI__*/</script>

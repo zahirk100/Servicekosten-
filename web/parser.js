@@ -38,6 +38,12 @@
     return negatief ? -waarde : waarde;
   }
 
+  /* Een getal is pas geldvormig als het een valutateken draagt, decimalen achter
+     een komma heeft, of met punten in duizendtallen is geschreven. Een kaal getal
+     is op een factuur vaker een huisnummer, een KvK-nummer of een aantal. */
+  const GELDVORM = /€|EUR|,\d{1,2}(?!\d)|,-|\d{1,3}(?:\.\d{3})+/;
+  const lijktOpGeld = (tekst) => GELDVORM.test(tekst);
+
   function bedragTreffers(regel) {
     const treffers = [];
     BEDRAG.lastIndex = 0;
@@ -163,6 +169,8 @@
         }
         return;
       }
+      // Een briefhoofd met "Parklaan 3" of "KvK 30123456" is geen kostenpost.
+      if (!treffers.some((t) => lijktOpGeld(t.rauw))) return;
       if (omschrijving.length < 3 || isNegeerregel(omschrijving)) return;
 
       const kort = omschrijving.length > 90 ? omschrijving.slice(0, 90).trim() + "…" : omschrijving;

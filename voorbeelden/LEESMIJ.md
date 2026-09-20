@@ -1,15 +1,24 @@
 # Voorbeeldafrekeningen
 
-Drie verzonnen afrekeningen om de applicatie mee te testen. Plak de tekst in
-stap 2 ("Tekst plakken") of upload het bestand. De uitkomst hangt af van de
-antwoorden op de vijf vragen, dus die staan er per voorbeeld bij.
+Drie verzonnen afrekeningen om de applicatie mee te testen, elk in twee vormen:
 
-`tests/test_voorbeelden.py` legt de uitkomsten vast: wijzigt er iets aan de
-regels of de parser, dan valt die test om.
+- **`.pdf`** — een factuur zoals een verhuurder die verstuurt, met briefhoofd,
+  adresblok en een tabel met kolommen. Upload hem in stap 2. Dit is de weg die
+  een echte huurder loopt, inclusief de tekstextractie uit de pdf.
+- **`.txt`** — dezelfde afrekening als platte tekst, om te plakken.
+
+Beide geven precies dezelfde posten en dezelfde uitkomst; `tests/test_voorbeelden.py`
+bewaakt dat, en legt ook de uitkomsten zelf vast. Wijzigt er iets aan de regels of
+de parser, dan valt die test om.
+
+De uitkomst hangt af van de antwoorden op de vijf vragen, dus die staan er per
+voorbeeld bij.
+
+De pdf's worden gemaakt met `python3 tools/maak_voorbeeld_facturen.py`.
 
 ---
 
-## 1 — `voorbeeld-1-klopt-2024.txt`
+## 1 — `voorbeeld-1-klopt-2024`
 
 Een afrekening die klopt. Acht posten, allemaal toegestaan, allemaal onderbouwd.
 
@@ -22,7 +31,7 @@ berekening van de verhuurder; de applicatie is het daarmee eens.
 
 ---
 
-## 2 — `voorbeeld-2-te-veel-gerekend-2024.txt`
+## 2 — `voorbeeld-2-te-veel-gerekend-2024`
 
 Wel netjes onderbouwd, maar met posten die niet doorberekend mogen worden.
 
@@ -46,7 +55,7 @@ en de post wordt rood: de correctie loopt dan op naar € 356,00.
 
 ---
 
-## 3 — `voorbeeld-3-geen-onderbouwing-2024.txt`
+## 3 — `voorbeeld-3-geen-onderbouwing-2024`
 
 De verhuurder stuurt alleen een lijstje met bedragen. Geen facturen, geen
 specificatie.

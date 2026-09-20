@@ -54,6 +54,32 @@ def dossier_uit(bestand: str, *, woningtype: str, bewoners: int,
     }
 
 
+class PdfVersies(unittest.TestCase):
+    """De pdf-facturen moeten dezelfde posten opleveren als de tekstversies."""
+
+    def test_pdf_geeft_dezelfde_posten_als_tekst(self):
+        from app.parsers.documenten import lees_document
+
+        for naam in ("voorbeeld-1-klopt-2024", "voorbeeld-2-te-veel-gerekend-2024",
+                     "voorbeeld-3-geen-onderbouwing-2024"):
+            with self.subTest(voorbeeld=naam):
+                uit_tekst = parse_afrekening((WORTEL / "voorbeelden" / f"{naam}.txt").read_text("utf-8"))
+                rauw = (WORTEL / "voorbeelden" / f"{naam}.pdf").read_bytes()
+                tekst, meta = lees_document(rauw, f"{naam}.pdf")
+                uit_pdf = parse_afrekening(tekst, meta)
+
+                self.assertEqual(
+                    [(p.omschrijving, p.categorie, p.bedrag) for p in uit_pdf.posten],
+                    [(p.omschrijving, p.categorie, p.bedrag) for p in uit_tekst.posten],
+                )
+                self.assertEqual(uit_pdf.voorschot, uit_tekst.voorschot)
+                self.assertEqual(uit_pdf.jaar, uit_tekst.jaar)
+                # Geen ruis uit het briefhoofd: huisnummers en KvK-nummers zijn
+                # geen bedragen, dus worden die regels geen kostenpost.
+                self.assertTrue(all(p.categorie for p in uit_pdf.posten),
+                                [p.omschrijving for p in uit_pdf.posten if not p.categorie])
+
+
 class Voorbeelden(unittest.TestCase):
     def controleer(self, rauw: dict, *, posten: int, correctie: str,
                    tellingen: dict, bandbreedte_max: str | None = None):

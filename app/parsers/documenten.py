@@ -79,7 +79,16 @@ def _lees_pdf(inhoud: bytes, bestandsnaam: str) -> tuple[str, dict]:
             lezer.decrypt("")
         except Exception as exc:
             raise DocumentFout("De PDF is met een wachtwoord beveiligd.") from exc
-    paginas = [(p.extract_text() or "") for p in lezer.pages]
+    # Layout-modus houdt de kolommen bij elkaar: zonder die modus zet pypdf de
+    # omschrijving en de bedragen van een factuurregel op losse regels, en dan
+    # is er geen kostenregel meer te herkennen. Oudere pypdf kent de modus niet.
+    def paginatekst(pagina) -> str:
+        try:
+            return pagina.extract_text(extraction_mode="layout") or ""
+        except (TypeError, ValueError):
+            return pagina.extract_text() or ""
+
+    paginas = [paginatekst(p) for p in lezer.pages]
     tekst = "\n".join(paginas)
     if len(tekst.strip()) < 40:
         raise DocumentFout(

@@ -22,6 +22,15 @@ BEDRAG = re.compile(
 
 JAARTAL = re.compile(r"^(?:19|20)\d{2}$")
 
+# Een getal is pas geldvormig als het een valutateken draagt, decimalen achter
+# een komma heeft, of met punten in duizendtallen is geschreven. Een kaal getal
+# is op een factuur vaker een huisnummer, een KvK-nummer of een aantal.
+GELDVORM = re.compile(r"€|EUR|,\d{1,2}(?!\d)|,-|\d{1,3}(?:\.\d{3})+")
+
+
+def lijkt_op_geld(tekst: str) -> bool:
+    return bool(GELDVORM.search(tekst))
+
 MAANDEN = {
     "januari": 1, "februari": 2, "maart": 3, "april": 4, "mei": 5, "juni": 6,
     "juli": 7, "augustus": 8, "september": 9, "oktober": 10, "november": 11, "december": 12,

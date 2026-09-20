@@ -11,8 +11,7 @@ import re
 from dataclasses import dataclass, field
 from decimal import Decimal
 
-from .bedragen import bedrag_treffers, vind_jaar, vind_periode
-from .bedragen import naar_decimal
+from .bedragen import bedrag_treffers, lijkt_op_geld, naar_decimal, vind_jaar, vind_periode
 from .classificatie import classificeer, is_negeerregel, normaliseer
 
 # Een kostenregel is een omschrijving gevolgd door minstens één bedrag.
@@ -122,6 +121,9 @@ def parse_afrekening(tekst: str, metadata: dict | None = None) -> ConceptDossier
                 dossier.herkomst["voorschot"] = f"regel {nummer}: {regel.strip()[:80]}"
             continue
 
+        # Een briefhoofd met "Parklaan 3" of "KvK 30123456" is geen kostenpost.
+        if not any(lijkt_op_geld(m.group(0)) for m, _ in treffers):
+            continue
         if len(omschrijving) < MIN_OMSCHRIJVING or is_negeerregel(omschrijving):
             continue
         if len(omschrijving) > MAX_OMSCHRIJVING:

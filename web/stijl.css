@@ -179,29 +179,17 @@ textarea { font-family: var(--mono); font-size: .84rem; line-height: 1.6; min-he
    elkaar staan; anders wordt één post al een half scherm. */
 .veldrij.postrij { grid-template-columns: 1fr 104px; gap: 10px; }
 
-/* ═══════════════════════════════════════════════════════════════ uitslag */
-.uitslag { background: var(--vel); border: 1px solid var(--lijn); border-radius: var(--r-2); overflow: hidden; }
-.uitslag-kop { padding: 26px 22px 22px; border-bottom: 1px solid var(--lijn); }
-.uitslag .bedrag { font-family: var(--display); font-weight: 600; font-variant-numeric: tabular-nums;
-  font-size: clamp(2.8rem, 15vw, 3.9rem); line-height: .98; letter-spacing: -.045em; margin: 6px 0 12px; }
-.uitslag .zin { font-size: 1.01rem; color: var(--inkt-2); max-width: 42ch; }
-
-/* Het grootboek: statusregels als een afrekening, met haarlijnen. */
-.grootboek { list-style: none; margin: 0; padding: 0; }
-.grootboek li + li { border-top: 1px solid var(--lijn); }
-/* Uitlijnen op de eerste regel, niet op het midden: een statusnaam die over
-   twee regels breekt zette het merkje anders tussen de regels in. */
-.grootboek button { width: 100%; display: flex; align-items: flex-start; gap: 13px; padding: 15px 22px;
-  border: none; background: none; text-align: left; font: inherit; min-height: 0; border-radius: 0; }
-.grootboek button:hover { background: var(--vel-2); }
-.grootboek .merkje { flex: none; width: 26px; height: 26px; border-radius: 5px; display: grid;
+/* Het statusmerkje: ook in de beheeromgeving bij de ontvankelijkheidstoets. */
+.merkje { flex: none; width: 26px; height: 26px; border-radius: 5px; display: grid;
   place-items: center; font-weight: 800; font-size: .9rem; }
-.grootboek .omschrijving { flex: 1; min-width: 0; }
-.grootboek .omschrijving b { display: block; font-weight: 650; font-size: .97rem; overflow-wrap: anywhere; }
-.grootboek .omschrijving span { font-size: .84rem; color: var(--inkt-2); }
-.grootboek .geld { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap;
-  font-family: var(--display); font-size: 1.08rem; letter-spacing: -.02em; margin-top: 1px; }
-.grootboek .pijl { color: var(--inkt-3); flex: none; font-size: 1.1rem; line-height: 1.5; }
+
+/* De posten die de huurder zelf invoerde, als controle voor het indienen. */
+.postlijst { list-style: none; margin: 16px 0 0; padding: 0; border-top: 1px solid var(--lijn); }
+.postlijst li { display: flex; justify-content: space-between; gap: 14px; align-items: baseline;
+  padding: 9px 0; border-bottom: 1px solid var(--lijn); font-size: .93rem; }
+.postlijst li span:first-child { overflow-wrap: anywhere; }
+.postlijst .som { font-family: var(--display); font-weight: 600; letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums; white-space: nowrap; }
 
 .merk-ROOD { background: var(--rood-vel); color: var(--rood-inkt); }
 .merk-ORANJE { background: var(--oranje-vel); color: var(--oranje-inkt); }

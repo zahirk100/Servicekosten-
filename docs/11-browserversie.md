@@ -23,17 +23,32 @@ python3 tools/bouw_webapp.py
    Optioneel kunnen tot zes foto's mee (zie *Foto's* hieronder).
 3. **Vijf vragen** — boekjaar, woningtype, bewoners en complexgrootte, wat de verhuurder heeft
    aangeleverd, en het betaalde voorschot.
-4. **Voorlopige beoordeling** — het bedrag waar de huurder mogelijk recht op heeft, de posten per status,
-   de mogelijkheid om openstaande vragen alsnog te beantwoorden, en dan indienen.
+4. **Controleren en indienen** — een samenvatting van wat de huurder zelf heeft opgegeven (posten met
+   hun bedragen, voorschot, adres, woning), de openstaande vragen om alsnog te beantwoorden, en dan
+   indienen.
 
 Na indienen volgt een bevestiging met dossiernummer en de mededeling dat er contact wordt opgenomen met
 een rapport, met twee wegen terug: naar het dashboard, of meteen een volgende afrekening controleren.
 Het dossier verschijnt op het dashboard, waar de huurder de status, de gezette behandelstappen, de
 aantekeningen van de beoordelaar en uiteindelijk de uitkomst terugziet.
 
-De huurderskant houdt daarmee op bij indienen. **Brieven opstellen zit niet in die kant**: ze verwijzen
-naar wetsartikelen en termijnen waar een verkeerde keuze geld kost, en horen daarom bij de beoordelaar,
-die ze bij het dossier opstelt en meestuurt met het rapport.
+### Wat de huurder niet ziet
+
+De huurderskant is er om een aanvraag aan te melden, niet om een oordeel te geven. De kern rekent bij
+indienen wel het hele dossier door -- de beoordelaar begint niet met een leeg dossier -- maar de uitkomst
+daarvan blijft aan de beheerkant:
+
+- **Geen voorlopig bedrag.** Geen "je hebt mogelijk recht op EUR X", geen statusverdeling per post,
+  geen saldo tegenover het voorschot. Zo'n bedrag is een belofte die de behandeling daarna moet
+  waarmaken, terwijl het nog verandert zodra de opgevraagde stukken binnen zijn.
+- **Geen bevindingen per post.** Toegestaan bedrag, verschil, toegepaste regel: dat staat in het
+  rapport dat de beoordelaar stuurt, met de uitleg erbij.
+- **Geen brieven.** Ze verwijzen naar wetsartikelen en termijnen waar een verkeerde keuze geld kost.
+  De beoordelaar stelt ze op bij het dossier en stuurt ze mee met het rapport.
+
+Wat de huurder wél ziet: zijn eigen invoer, de vragen die nog openstaan, de stand van zaken met de
+gezette behandelstappen, de aantekeningen van de beoordelaar, en aan het eind de vastgelegde uitkomst
+met het daadwerkelijk gecorrigeerde bedrag. Dat laatste komt van een mens, niet uit een rekenregel.
 
 **Beheer.** Een overzicht van binnengekomen aanvragen met kengetallen (nieuw, in behandeling, totale
 claim, gemiddelde per dossier), zoeken op naam, adres, dossiernummer of jaar, filters per status, en

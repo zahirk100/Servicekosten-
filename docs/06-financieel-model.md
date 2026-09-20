@@ -38,6 +38,13 @@ effect_voor_huurder      = saldo_volgens_model - saldo_volgens_verhuurder   (= d
 De correctie is dus hetzelfde bedrag, of de huurder nu een naheffing krijgt of geld terugkrijgt -
 alleen de richting van de betaling verschilt.
 
+`kosten_volgens_verhuurder` en `kosten_volgens_model` laten allebei de posten buiten de bevoegdheid
+weg. Voor de correctie klopt dat - die posten vallen aan beide kanten van de streep weg. Voor het
+**saldo** niet: die posten blijven wel verschuldigd. Een saldo van EUR 573 bij EUR 130 aan
+heffingen betekent feitelijk EUR 443 in de hand. De applicatie noemt dat bedrag daarom bij het
+saldo, zowel op het scherm als in het rapport; zonder die vermelding leest het als een volledige
+eindafrekening.
+
 ## Over meerdere jaren
 
 Welke jaren nog beoordeeld kunnen worden, volgt uit Tabel 10 (p. 56): tot tweeëneenhalf jaar na

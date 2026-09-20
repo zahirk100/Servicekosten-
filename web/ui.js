@@ -735,11 +735,16 @@
     }
     if (f.voorschot_betaald !== undefined) {
       const saldo = f.saldo_volgens_model;
+      // Posten buiten de bevoegdheid tellen nergens in mee, ook niet in dit
+      // saldo. Zonder die vermelding leest het bedrag als een volledige
+      // eindafrekening, terwijl die posten nog wel betaald moeten worden.
+      const buiten = Number(f.buiten_bevoegdheid || 0);
       boek.append(el("li", {}, el("button", { type: "button", style: "cursor:default" },
         el("span", { class: "merkje merk-neutraal", "aria-hidden": "true" }, "€"),
         el("span", { class: "omschrijving" },
           el("b", {}, saldo >= 0 ? "Je krijgt mogelijk terug" : "Je moet mogelijk bijbetalen"),
-          el("span", {}, "voorschot " + euro(f.voorschot_betaald))),
+          el("span", {}, "voorschot " + euro(f.voorschot_betaald) +
+            (buiten > 0 ? " · buiten deze check blijft " + euro(buiten) : ""))),
         el("span", { class: "geld" }, euro(Math.abs(saldo))))));
     }
 
@@ -1116,6 +1121,7 @@
       correctie: u.financieel.potentiele_correctie,
       onbeoordeeld: u.financieel.onbeoordeeld_bedrag,
       bandbreedte_max: u.financieel.bandbreedte_max,
+      buiten_bevoegdheid: u.financieel.buiten_bevoegdheid,
       voorschot: u.financieel.voorschot_betaald ?? null,
       saldo: u.financieel.saldo_volgens_model ?? null,
       tellingen: u.tellingen,
@@ -1622,6 +1628,12 @@ body { font: 10.5pt/1.5 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, san
              " tegenover die terugbetaald zou moeten worden."
              : "Op basis van deze berekening resteert een bij te betalen bedrag van " + euro(Math.abs(a.saldo)) + ".")
           : "")));
+      if (Number(a.buiten_bevoegdheid || 0) > 0) {
+        r.append(el("p", { class: "mini" },
+          "In dit saldo is " + euro(a.buiten_bevoegdheid) + " aan posten buiten de bevoegdheid van " +
+          "de Huurcommissie niet meegerekend (par. 6.1, p. 51). Die posten blijven verschuldigd; het " +
+          "bedrag dat feitelijk wordt verrekend valt dus " + euro(a.buiten_bevoegdheid) + " lager uit."));
+      }
     }
 
     const ontv = a.ontvankelijkheid || a.blokkerend || [];

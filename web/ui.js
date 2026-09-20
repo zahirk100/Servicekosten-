@@ -753,11 +753,14 @@
     $("#groepen").append(rendGroepenUit(uitkomst.beoordelingen, { dossier, na: bereken }));
 
     $("#advies").textContent = f.potentiele_correctie > 0
-      ? "Dien je dossier in, dan kijken wij er met de hand naar en sturen we je een rapport met onze bevindingen en wat je kunt doen. Je kunt ook meteen zelf een bezwaarbrief maken."
+      ? "Dit is een voorlopige uitkomst uit de rekenregels. Dien je dossier in, dan loopt een beoordelaar " +
+        "het met de hand na, vraagt zo nodig stukken op bij je verhuurder, en stuurt je een rapport met de " +
+        "bevindingen en de brief die je kunt versturen."
       : oranje
-        ? "Er ontbreekt informatie die wij voor je kunnen opvragen. Dien je dossier in, dan nemen we contact met je op."
-        : "Er is geen aanleiding voor bezwaar gevonden. Wil je dat iemand er toch naar kijkt, dien het dan in.";
-    $("#briefblok").hidden = true;
+        ? "Er ontbreekt informatie die je verhuurder moet aanleveren. Dien je dossier in, dan vragen wij " +
+          "die voor je op en nemen we contact met je op."
+        : "Er is geen aanleiding voor bezwaar gevonden. Wil je dat iemand er toch met de hand naar kijkt, " +
+          "dien het dossier dan in.";
   }
 
   function rendGroepenUit(beoordelingen, ctx) {
@@ -975,13 +978,10 @@
           el("li", {}, el("span", { class: "wie" }, "Je ontvangt een rapport"),
             el("div", {}, "Met de bevindingen per post en wat je kunt doen.")))),
       el("div", { class: "knoppen" },
-        el("button", { class: "vol", type: "button", onclick: () => {
-          $("#indienbalk").hidden = true;
-          toon("uitkomst");
-          toonBrief(bezwaarbrief());
-        } }, "Maak alvast zelf een bezwaarbrief"),
         el("button", { class: "primair vol", type: "button", onclick: () => naarScherm("dash") },
-          "Naar mijn dossiers")));
+          "Naar mijn dossiers"),
+        el("button", { class: "vol", type: "button", onclick: startControle },
+          "Nog een afrekening controleren")));
   }
 
   /* ───────────────────────────────────────────────────────── beheer */
@@ -1853,13 +1853,9 @@ body { font: 10.5pt/1.5 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, san
   const eu = (w) => "EUR " + Number(w).toFixed(2).replace(".", ",");
   const nlDat = (d) => d.toLocaleDateString("nl-NL", { day: "2-digit", month: "2-digit", year: "numeric" });
 
-  /* Eén tekst, twee bronnen: de lopende controle van de huurder en een
-     opgeslagen dossier in de beheeromgeving. */
-  const alsBrief = () => ({ huurder: dossier.huurder, jaar: uitkomst.jaar,
-    bevindingen: uitkomst.beoordelingen, correctie: uitkomst.financieel.potentiele_correctie });
-  const bezwaarbrief = () => bezwaarbriefUit(alsBrief());
-  const opvraagbrief = (jaar) => opvraagbriefUit({ huurder: dossier.huurder, jaar });
-
+  /* Brieven zijn werk van de beoordelaar, niet van de huurder: ze verwijzen
+     naar wetsartikelen en termijnen waar een verkeerde keuze geld kost. De
+     huurder krijgt de brief die bij zijn dossier hoort van ons toegestuurd. */
   function bezwaarbriefUit(a) {
     const nu = new Date(), over3w = new Date(Date.now() + 21 * 864e5);
     const alle = a.bevindingen || [];
@@ -1957,12 +1953,6 @@ body { font: 10.5pt/1.5 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, san
       "Concept op basis van het Beleidsboek Servicekosten (versie 1 juli 2026), paragraaf 6.4. " +
       "Controleer de gegevens tussen [ ] voordat u verstuurt. Dit is geen juridisch advies.");
     return r.join("\n");
-  }
-
-  function toonBrief(tekst) {
-    $("#briefblok").hidden = false;
-    $("#brief").value = tekst;
-    $("#brief").scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
   /* ──────────────────────────────────────────────────────── voorbeeld */
@@ -2076,13 +2066,7 @@ body { font: 10.5pt/1.5 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, san
     $("#zoek").addEventListener("input", (e) => { zoekterm = e.target.value.trim().toLowerCase(); rendBeheer(); });
 
     $("#doe-indienen").addEventListener("click", dienIn);
-    $("#doe-brief").addEventListener("click", () => toonBrief(bezwaarbrief()));
     $("#doe-aanpassen").addEventListener("click", () => { vraagIndex = 0; naarScherm("vragen"); });
-    $("#opvraagbrief").addEventListener("click", () => toonBrief(opvraagbrief(dossier.periode.jaar || uitkomst.jaar)));
-    $("#kopieer").addEventListener("click", async () => {
-      try { await navigator.clipboard.writeText($("#brief").value); melding("De brief staat op je klembord.", "ok"); }
-      catch { $("#brief").select(); melding("Kopiëren lukte niet automatisch — de tekst is geselecteerd.", "letop"); }
-    });
     $("#voorbeeld-stop").addEventListener("click", () => { isVoorbeeld = false; startControle(); });
     $("#mijn-terug").addEventListener("click", () => terug("dash"));
     $("#dossier-terug").addEventListener("click", () => terug("beheer"));

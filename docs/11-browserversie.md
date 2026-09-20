@@ -24,11 +24,16 @@ python3 tools/bouw_webapp.py
 3. **Vijf vragen** — boekjaar, woningtype, bewoners en complexgrootte, wat de verhuurder heeft
    aangeleverd, en het betaalde voorschot.
 4. **Voorlopige beoordeling** — het bedrag waar de huurder mogelijk recht op heeft, de posten per status,
-   en de keuze: indienen of zelf een bezwaarbrief maken.
+   de mogelijkheid om openstaande vragen alsnog te beantwoorden, en dan indienen.
 
 Na indienen volgt een bevestiging met dossiernummer en de mededeling dat er contact wordt opgenomen met
-een rapport. Het dossier verschijnt op het dashboard, waar de huurder de status en de aantekeningen van
-de beoordelaar terugziet.
+een rapport, met twee wegen terug: naar het dashboard, of meteen een volgende afrekening controleren.
+Het dossier verschijnt op het dashboard, waar de huurder de status, de gezette behandelstappen, de
+aantekeningen van de beoordelaar en uiteindelijk de uitkomst terugziet.
+
+De huurderskant houdt daarmee op bij indienen. **Brieven opstellen zit niet in die kant**: ze verwijzen
+naar wetsartikelen en termijnen waar een verkeerde keuze geld kost, en horen daarom bij de beoordelaar,
+die ze bij het dossier opstelt en meestuurt met het rapport.
 
 **Beheer.** Een overzicht van binnengekomen aanvragen met kengetallen (nieuw, in behandeling, totale
 claim, gemiddelde per dossier), zoeken op naam, adres, dossiernummer of jaar, filters per status, en
@@ -69,8 +74,8 @@ is er een tekstversie om in een e-mail te plakken.
 
 Drie concepten, alle drie met de wettelijke grondslag erin: bezwaar tegen de afrekening (art. 7:260
 BW), inzage in de onderliggende stukken (art. 7:259 lid 4 BW), en het opvragen van een afrekening die
-nooit is verstrekt (art. 7:259 lid 2 BW). De huurder krijgt dezelfde brieven aangeboden aan het eind
-van de controle; ze worden uit één bron opgebouwd, zodat de twee kanten niet uit elkaar kunnen lopen.
+nooit is verstrekt (art. 7:259 lid 2 BW). Ze staan alleen in de beheeromgeving: de beoordelaar stelt
+ze op bij het dossier, legt dat vast in het verloop, en stuurt ze mee met het rapport.
 
 ## Opslag
 

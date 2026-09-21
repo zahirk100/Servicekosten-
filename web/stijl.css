@@ -310,6 +310,30 @@ details.diep dd.reken { font-family: var(--mono); font-size: .77rem; color: var(
 /* ══════════════════════════════════════════════ beheer · het werkblad */
 .kopregel { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 8px 0 18px; }
 
+/* Kengetallen als één regel boven de werkvoorraad. */
+.samenvatlijn { font-size: .92rem; color: var(--inkt-2); margin: 10px 0 0; max-width: none;
+  font-variant-numeric: tabular-nums; }
+.samenvatlijn b { color: var(--inkt); font-weight: 650; }
+.samenvatlijn .dringend { color: var(--rood-inkt); font-weight: 600; }
+
+/* Snelbalk: status en wachtrijnavigatie zonder scrollen. */
+.snelbalk { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center;
+  justify-content: space-between; background: var(--vel); border: 1px solid var(--lijn);
+  border-radius: var(--r-2); padding: 11px 13px; margin-top: 14px; }
+.snelbalk .filters { flex: 1 1 260px; }
+.snelnav { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
+.snelnav .mini { white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+/* Termijn in de werkvoorraad: de scherpste prioriteit. */
+.dossiers .termijn { display: block; font-size: .8rem; font-weight: 500; color: var(--inkt-3);
+  margin-top: 1px; }
+.dossiers .termijn.dringend { color: var(--rood-inkt); font-weight: 650; }
+
+/* Kopieerknopje bij contactgegevens. */
+.kopieerrij { display: flex; align-items: center; gap: 8px; }
+.kopieerrij span { overflow-wrap: anywhere; }
+.kopieer { flex: none; min-height: 32px; padding: 4px 9px; font-size: .9rem; border-radius: 5px; }
+
 /* Behandelstappen: een lijst die zegt hoe ver een dossier staat. */
 .stappen { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 7px; }
 .stappen li { display: flex; gap: 11px; align-items: flex-start; background: var(--vel);
@@ -321,6 +345,9 @@ details.diep dd.reken { font-family: var(--mono); font-size: .77rem; color: var(
 .stappen li.klaar .vink { background: var(--inkt); border-color: var(--inkt); color: var(--papier); }
 .stappen .vink.stil { pointer-events: none; }
 .stappen .wat { flex: 1; min-width: 0; }
+.stappen .sprong { border: none; background: none; padding: 0; min-height: 0; text-align: left;
+  display: block; border-radius: 4px; }
+.stappen .sprong:hover b { text-decoration: underline; text-underline-offset: 3px; }
 .stappen .wat b { display: block; font-weight: 650; font-size: .95rem; }
 .stappen .wat span { font-size: .85rem; color: var(--inkt-2); }
 .stappen .wanneer { font-size: .76rem; color: var(--inkt-3); white-space: nowrap; align-self: center;

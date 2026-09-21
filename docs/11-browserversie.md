@@ -116,6 +116,19 @@ Het antwoord op de bewijsvraag wordt bij het doorrekenen op alle posten van alle
 bij het tonen van de vraag. Anders zou een tweede afrekening stilletjes zonder onderbouwing worden
 beoordeeld en op het forfait van € 12,00 uitkomen.
 
+## De werkvoorraad
+
+Bij veel aanmeldingen is de volgorde van behandelen het werk. Het overzicht helpt daarbij:
+
+- **Termijn eerst** is de standaardsortering. Hoeveel tijd er nog is om dit boekjaar aan de
+  Huurcommissie voor te leggen (Tabel 10, p. 56) is de scherpste prioriteit: een verlopen termijn valt
+  niet meer te repareren. Elke regel toont die termijn, rood zodra hij binnen 120 dagen afloopt of al
+  voorbij is. Daarnaast kan er gesorteerd worden op nieuwste, oudste of hoogste bedrag.
+- **Per regel** staan status, naam, bedrag, dossiernummer, boekjaar, hoeveelste jaar van een aanmelding
+  met meerdere boekjaren, en hoever de behandeling staat (`stap 3/6`).
+- **Kengetallen op één regel** in plaats van vier tegels: op een telefoon stond de eerste aanvraag
+  anders een half scherm naar beneden.
+
 ## Het werkblad van de beoordelaar
 
 Een dossier is pas afgehandeld als er een uitkomst ligt, en daar zijn stappen voor nodig die niet in
@@ -131,6 +144,11 @@ afgevinkte punt zet de status van *Nieuw* op *In behandeling*.
 | **4. Herbeoordelen** | `Kern.beoordeelDossier` rekent opnieuw over de aangevulde invoer. Alle totalen, statussen en bevindingen worden overschreven; wijzigt de correctie, dan komt dat als aantekening in het verloop — ook de huurder ziet die. |
 | **5. Rapport** | Het rapport met alle bevindingen, plus de bezwaarbrief en de brief om een ontbrekende afrekening op te vragen. |
 | **6. Afronden** | Uitkomst (verhuurder heeft gecorrigeerd, voorgelegd aan de Huurcommissie, geen grond, huurder ziet ervan af, anders), het daadwerkelijk gecorrigeerde bedrag, een toelichting. Dat bepaalt de eindstatus en verschijnt bij de huurder op zijn eigen pagina. |
+
+Bovenaan het werkblad staat een **snelbalk**: de status wisselen en met *Vorige* en *Volgende* door de
+wachtrij lopen zonder eerst terug te gaan naar het overzicht, met de teller erbij (`2 van 4`). De
+stappenlijst eronder is tegelijk een sprongmenu — een stap aanklikken scrolt naar de bijbehorende
+kaart. E-mail en telefoon hebben een kopieerknop.
 
 Herbeoordelen vraagt om de oorspronkelijke invoer, niet alleen om de bevindingen. Die gaat daarom als
 `invoer` mee het dossier in. Een dossier van vóór die verandering heeft dat veld niet; het werkblad

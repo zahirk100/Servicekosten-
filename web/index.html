@@ -44,7 +44,7 @@
       je een rapport met wat we vinden.</p>
     <div class="knoppen rij held-knoppen">
       <a class="knop primair" href="#aanvraag">Aanvraag indienen</a>
-      <a class="knop" href="#hoe">Eerst lezen hoe het werkt</a>
+      <button class="knop" type="button" data-naar="hoe">Eerst lezen hoe het werkt</button>
     </div>
     <p class="mini">Aanmelden duurt een paar minuten. Je hebt alleen je afrekening nodig.</p>
   </section>
@@ -275,11 +275,17 @@
   <section id="s-beheer" class="wrap breed scherm" hidden>
     <p class="oog">Beheeromgeving</p>
     <h1>Aanvragen</h1>
-    <p class="klein" id="beheer-modus"></p>
-    <div class="kpi" id="kpi" style="margin-top:20px"></div>
+    <p class="mini" id="beheer-modus"></p>
+    <p class="samenvatlijn" id="kpi"></p>
     <div class="zoekrij">
       <input type="search" id="zoek" placeholder="Zoek op naam, adres, dossiernummer of jaar"
              autocomplete="off" enterkeyhint="search" aria-label="Zoek in aanvragen">
+      <select id="sorteer" aria-label="Sorteren">
+        <option value="termijn">Termijn eerst</option>
+        <option value="nieuwste">Nieuwste eerst</option>
+        <option value="oudste">Oudste eerst</option>
+        <option value="bedrag">Hoogste bedrag</option>
+      </select>
     </div>
     <div class="filters" id="filters"></div>
     <div id="dossierlijst"></div>

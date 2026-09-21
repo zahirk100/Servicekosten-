@@ -44,6 +44,8 @@
   let vraagIndex = 0;
   let filter = "alle";
   let zoekterm = "";
+  let sortering = "termijn";
+  let werklijst = [];   // de lijst zoals hij nu op het scherm staat, voor vorige/volgende
   let geopendDossier = null;
   let ingediend = false;
   let stil = false;   // waar tijdens terugnavigatie: dan geen nieuwe geschiedenis
@@ -1182,6 +1184,26 @@
 
   /* ───────────────────────────────────────────────────────── beheer */
 
+  /* Hoeveel tijd is er nog om dit boekjaar aan de Huurcommissie voor te leggen?
+     Dat is de scherpste prioriteit in de werkvoorraad: een verlopen termijn valt
+     niet meer te repareren (Tabel 10, p. 56). */
+  function termijnInfo(jaar) {
+    const t = D.termijnen[String(jaar)];
+    if (!t) return { tekst: "termijn onbekend", dagen: null, urgent: false };
+    const dagen = Math.round((new Date(t.uiterste_verzoekdatum) - new Date()) / 864e5);
+    if (dagen < 0) return { tekst: "termijn verlopen", dagen, urgent: true };
+    if (dagen <= 45) return { tekst: "nog " + dagen + " dagen", dagen, urgent: true };
+    const maanden = Math.round(dagen / 30.4);
+    return { tekst: "nog " + maanden + " maanden", dagen, urgent: dagen <= 120 };
+  }
+
+  const SORTEER = {
+    termijn: (a, b) => (termijnInfo(a.jaar).dagen ?? 9e9) - (termijnInfo(b.jaar).dagen ?? 9e9),
+    nieuwste: (a, b) => String(b.ingediend_op).localeCompare(String(a.ingediend_op)),
+    oudste: (a, b) => String(a.ingediend_op).localeCompare(String(b.ingediend_op)),
+    bedrag: (a, b) => Number(b.correctie || 0) - Number(a.correctie || 0),
+  };
+
   function past(a, t) {
     if (!t) return true;
     const h = a.huurder || {};
@@ -1199,16 +1221,17 @@
     const open = alle.filter((a) => a.status === "nieuw").length;
     const inBeh = alle.filter((a) => a.status === "behandeling").length;
     const claim = alle.reduce((s, a) => s + Number(a.correctie || 0), 0);
+    const dringend = alle.filter((a) => a.status !== "afgehandeld" && a.status !== "afgewezen"
+      && termijnInfo(a.jaar).urgent).length;
+    // Eén regel in plaats van vier tegels: de werkvoorraad zelf is het werk, en
+    // die stond op een telefoon anders een half scherm naar beneden.
     const kpi = $("#kpi");
     kpi.textContent = "";
     kpi.append(
-      el("div", {}, el("div", { class: "k" }, "Nieuw"), el("div", { class: "v" }, String(open)),
-        el("div", { class: "t" }, "wacht op beoordeling")),
-      el("div", {}, el("div", { class: "k" }, "In behandeling"), el("div", { class: "v" }, String(inBeh))),
-      el("div", {}, el("div", { class: "k" }, "Totale claim"), el("div", { class: "v" }, euro(claim)),
-        el("div", { class: "t" }, "over " + alle.length + " " + (alle.length === 1 ? "dossier" : "dossiers"))),
-      el("div", {}, el("div", { class: "k" }, "Gemiddeld"), el("div", { class: "v" }, euro(alle.length ? claim / alle.length : 0)),
-        el("div", { class: "t" }, "per dossier")));
+      el("b", {}, String(open)), " nieuw · ",
+      el("b", {}, String(inBeh)), " in behandeling · ",
+      el("b", {}, euro(claim)), " over " + alle.length + " " + (alle.length === 1 ? "dossier" : "dossiers"),
+      dringend ? el("span", { class: "dringend" }, " · " + dringend + " met een krappe termijn") : null);
 
     const filters = $("#filters");
     filters.textContent = "";
@@ -1222,7 +1245,9 @@
 
     const lijst = $("#dossierlijst");
     lijst.textContent = "";
-    const zichtbaar = filter === "alle" ? alles : alles.filter((a) => a.status === filter);
+    const zichtbaar = (filter === "alle" ? alles : alles.filter((a) => a.status === filter))
+      .slice().sort(SORTEER[sortering] || SORTEER.termijn);
+    werklijst = zichtbaar;
     if (!zichtbaar.length) {
       const zoekt = Boolean(zoekterm);
       lijst.append(el("div", { class: "leeg" },
@@ -1237,13 +1262,22 @@
             "Wis de zoekregel")) : null));
       return;
     }
-    lijst.append(el("ul", { class: "dossiers" }, zichtbaar.map((a) => el("li", {},
-      el("button", { type: "button", onclick: () => openDossier(a) },
-        el("span", { class: "chip " + (STATUSSEN[a.status] || STATUSSEN.nieuw).klasse },
-          el("span", { class: "stip", "aria-hidden": "true" }), (STATUSSEN[a.status] || STATUSSEN.nieuw).label),
-        el("span", { class: "naam" }, (a.huurder && a.huurder.naam) || "Onbekende huurder"),
-        el("span", { class: "som" }, euro(a.correctie)),
-        el("span", { class: "meta" }, a.id + " · boekjaar " + a.jaar + " · " + datum(a.ingediend_op)))))));
+    lijst.append(el("ul", { class: "dossiers" }, zichtbaar.map((a) => {
+      const t = termijnInfo(a.jaar);
+      const gedaan = Object.keys(a.stappen || {}).length;
+      const deel = [a.id, "boekjaar " + a.jaar];
+      if (a.groep_totaal > 1) deel.push("jaar " + a.groep_nummer + " van " + a.groep_totaal);
+      if (gedaan) deel.push("stap " + gedaan + "/6");
+      deel.push(datum(a.ingediend_op));
+      return el("li", {},
+        el("button", { type: "button", onclick: () => openDossier(a) },
+          el("span", { class: "chip " + (STATUSSEN[a.status] || STATUSSEN.nieuw).klasse },
+            el("span", { class: "stip", "aria-hidden": "true" }), (STATUSSEN[a.status] || STATUSSEN.nieuw).label),
+          el("span", { class: "naam" }, (a.huurder && a.huurder.naam) || "Onbekende huurder",
+            el("span", { class: "termijn" + (t.urgent ? " dringend" : "") }, t.tekst)),
+          el("span", { class: "som" }, euro(a.correctie)),
+          el("span", { class: "meta" }, deel.join(" · "))));
+    })));
   }
 
   /* ═════════════════════════════════════════════ beheer · één dossier
@@ -1399,6 +1433,7 @@
         el("span", { class: "klein" }, "Boekjaar " + a.jaar + " · ingediend " + datumTijd(a.ingediend_op)),
         a.herzien_op ? el("span", { class: "klein" }, "· herzien " + datumTijd(a.herzien_op)) : null));
 
+    bak.append(blokSnel(a));
     bak.append(blokVoortgang(a));
     bak.append(blokBedragen(a));
     bak.append(blokContact(a, h));
@@ -1430,6 +1465,24 @@
 
   /* ─────────────────────────────────────────────────────── de blokken */
 
+  /* Alles wat je bij elk dossier doet, binnen handbereik: de status zetten en
+     door de wachtrij lopen zonder eerst terug te gaan naar het overzicht. */
+  function blokSnel(a) {
+    const i = werklijst.findIndex((x) => x.id === a.id);
+    const ga = (naar) => { const v = werklijst[naar]; if (v) openDossier(v); };
+    return el("div", { class: "snelbalk" },
+      el("div", { class: "filters", style: "margin:0" },
+        Object.entries(STATUSSEN).map(([w, s]) => el("button", { type: "button",
+          "aria-pressed": String(a.status === w),
+          onclick: () => schrijf(a, { status: w }, "Status: " + s.label + ".") }, s.label))),
+      el("div", { class: "snelnav" },
+        el("button", { class: "klein", type: "button", disabled: i <= 0,
+          onclick: () => ga(i - 1) }, "‹ Vorige"),
+        el("span", { class: "mini" }, i < 0 ? "" : (i + 1) + " van " + werklijst.length),
+        el("button", { class: "klein", type: "button", disabled: i < 0 || i >= werklijst.length - 1,
+          onclick: () => ga(i + 1) }, "Volgende ›")));
+  }
+
   function blokVoortgang(a) {
     const gedaan = STAPPEN.filter((st) => stapKlaar(a, st.s)).length;
     return el("div", { class: "kaart", style: "margin-top:14px" },
@@ -1442,7 +1495,11 @@
           el("button", { class: "vink", type: "button", "aria-pressed": String(klaar),
             "aria-label": st.label + (klaar ? " ongedaan maken" : " afvinken"),
             onclick: () => zetStap(a, st.s, !klaar) }, "✓"),
-          el("span", { class: "wat" }, el("b", {}, st.label), el("span", {}, st.doel)),
+          // De regel zelf springt naar de bijbehorende kaart verderop.
+          el("button", { class: "wat sprong", type: "button", onclick: () => {
+            const doel = document.getElementById("stap-" + (ANKER_ALIAS[st.s] || st.s));
+            if (doel) doel.scrollIntoView({ behavior: "smooth", block: "start" });
+          } }, el("b", {}, st.label), el("span", {}, st.doel)),
           klaar ? el("span", { class: "wanneer" }, datum(a.stappen[st.s])) : null);
       })));
   }
@@ -1467,10 +1524,17 @@
     const w = a.woonruimte || {};
     const p = a.periode || {};
     const regel = (k, v) => el("div", {}, el("div", { class: "mini" }, k), el("div", {}, v || "—"));
+    const kopieerbaar = (k, v) => el("div", {}, el("div", { class: "mini" }, k),
+      el("div", { class: "kopieerrij" }, el("span", {}, v || "—"),
+        v ? el("button", { class: "kopieer", type: "button", title: "Kopieer " + k.toLowerCase(),
+          onclick: async (e) => {
+            try { await navigator.clipboard.writeText(v); e.target.textContent = "✓"; melding(k + " gekopieerd.", "ok"); }
+            catch { melding("Kopiëren lukte niet.", "letop"); }
+          } }, "⧉") : null));
     return el("div", { class: "kaart", style: "margin-top:12px" },
       el("p", { class: "oog" }, "Huurder en woning"),
       el("div", { class: "veldrij twee", style: "margin-top:4px" },
-        regel("E-mail", h.email), regel("Telefoon", h.telefoon)),
+        kopieerbaar("E-mail", h.email), kopieerbaar("Telefoon", h.telefoon)),
       el("div", { class: "veldrij twee" },
         regel("Adres", h.adres), regel("Verhuurder", h.verhuurder)),
       el("div", { class: "veldrij twee" },
@@ -1484,7 +1548,7 @@
   }
 
   function blokOntvankelijkheid(a) {
-    const kaart = el("div", { class: "kaart", style: "margin-top:12px" },
+    const kaart = el("div", { class: "kaart", id: "stap-ontvankelijkheid", style: "margin-top:12px" },
       el("p", { class: "oog" }, "Stap 1"),
       el("h2", {}, "Ontvankelijkheid"),
       el("p", { class: "klein" }, "De huurdersstroom vraagt hier niet naar. Vul aan wat je weet; " +
@@ -1532,7 +1596,7 @@
 
   function blokPosten(a) {
     const oranje = (a.bevindingen || []).filter((b) => b.status === "ORANJE");
-    const kaart = el("div", { class: "kaart", style: "margin-top:12px" },
+    const kaart = el("div", { class: "kaart", id: "stap-posten", style: "margin-top:12px" },
       el("p", { class: "oog" }, "Stap 2"),
       el("h2", {}, oranje.length
         ? oranje.length + (oranje.length === 1 ? " post kan nog niet beoordeeld worden" : " posten kunnen nog niet beoordeeld worden")
@@ -1562,7 +1626,7 @@
 
   function blokStukken(a) {
     const stukken = stukkenVoor(a);
-    const kaart = el("div", { class: "kaart", style: "margin-top:12px" },
+    const kaart = el("div", { class: "kaart", id: "stap-stukken", style: "margin-top:12px" },
       el("p", { class: "oog" }, "Stap 3"),
       el("h2", {}, "Op te vragen stukken"));
 
@@ -1622,7 +1686,7 @@
   }
 
   function blokRapport(a) {
-    return el("div", { class: "kaart", style: "margin-top:12px" },
+    return el("div", { class: "kaart", id: "stap-rapport", style: "margin-top:12px" },
       el("p", { class: "oog" }, "Stap 5"),
       el("h2", {}, "Rapport en brieven"),
       el("p", { class: "klein" }, "Het rapport bevat alle bevindingen met de berekening en de regel " +
@@ -1646,7 +1710,7 @@
 
   function blokAfronden(a) {
     const af = a.afhandeling || {};
-    const kaart = el("div", { class: "kaart", style: "margin-top:12px" },
+    const kaart = el("div", { class: "kaart", id: "stap-afgerond", style: "margin-top:12px" },
       el("p", { class: "oog" }, "Stap 6"),
       el("h2", {}, af.uitkomst ? "Afgerond" : "Dossier afronden"));
 
@@ -1724,12 +1788,12 @@
           if (!tekst) return melding("Schrijf eerst een aantekening.", "fout");
           await schrijf(a, metNotitie(a, "Update van de beoordelaar", tekst), "Aantekening opgeslagen.");
         } }, "Aantekening opslaan"),
-        el("div", { class: "filters", style: "margin:0" },
-          Object.entries(STATUSSEN).map(([w, s]) => el("button", { type: "button",
-            "aria-pressed": String(a.status === w),
-            onclick: () => schrijf(a, { status: w }, "Status bijgewerkt naar " + s.label + ".") }, s.label)))));
+        ));
     return kaart;
   }
+
+  /* Stap 4 heeft geen eigen kaart; herbeoordelen gebeurt bij de posten. */
+  const ANKER_ALIAS = { herbeoordeeld: "posten" };
 
   const herteken = () => {
     const a = Opslag.lijst().find((x) => x.id === geopendDossier);
@@ -2244,6 +2308,7 @@ body { font: 10.5pt/1.5 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, san
     });
     $("#uitkomst-terug").addEventListener("click", () => terug("vragen"));
     $("#zoek").addEventListener("input", (e) => { zoekterm = e.target.value.trim().toLowerCase(); rendBeheer(); });
+    $("#sorteer").addEventListener("change", (e) => { sortering = e.target.value; rendBeheer(); });
 
     $("#doe-indienen").addEventListener("click", dienIn);
     $("#doe-aanpassen").addEventListener("click", () => { vraagIndex = 0; naarScherm("vragen"); });
@@ -2272,6 +2337,15 @@ body { font: 10.5pt/1.5 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, san
     rolKnoppen();
     if (thuis === "beheer") rendBeheer(); else if (thuis === "dash") rendDash();
     toon(thuis);
+
+    // Een anker binnen de landingspagina mag de hash niet gebruiken: die is van
+    // de router, en in een sandbox-iframe komt zo'n sprong er niet doorheen.
+    for (const knop of document.querySelectorAll("[data-naar]")) {
+      knop.addEventListener("click", () => {
+        const doel = document.getElementById(knop.getAttribute("data-naar"));
+        if (doel) doel.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
 
     // Een <a href="#beheer"> verandert alleen de hash; die sprong routeren we hier.
     window.addEventListener("hashchange", () => {

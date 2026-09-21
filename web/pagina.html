@@ -10,7 +10,7 @@
 <meta name="description" content="Controleer je servicekostenafrekening volgens het Beleidsboek Servicekosten van de Huurcommissie.">
 <meta name="theme-color" content="#f5f4f0" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#14150f" media="(prefers-color-scheme: dark)">
-<title>/*__TITEL__*/</title>
+<title>Servicekosten — klopt jouw afrekening?</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Public+Sans:wght@400;500;600;650;700&family=IBM+Plex+Mono&display=swap">
@@ -20,9 +20,10 @@
 
 <header class="balk zonder-rollen" id="balk">
   <div class="wrap breed">
-    <a class="merk" href="index.html"><span class="punt"></span>Servicekosten</a>
+    <a class="merk" href="#" id="naar-huis"><span class="punt"></span>Servicekosten</a>
     <span class="balk-rechts">
       <span class="rolnaam" id="rolnaam"></span>
+      <a class="knopje" href="#aanvraag" id="kop-cta" hidden>Aanvraag<span class="breed-alleen"> indienen</span></a>
       <button class="stil" id="thema" type="button" aria-label="Licht of donker">◑</button>
     </span>
   </div>
@@ -30,6 +31,11 @@
 
 <main>
   <div class="wrap breed meldingbak" id="meldingen" aria-live="polite"></div>
+
+  <!-- ═════════════ LANDING ═════════════ -->
+  <section id="s-landing" class="scherm" hidden>
+/*__LANDING__*/
+  </section>
 
   <!-- ═════════════ HUURDER · dashboard ═════════════ -->
   <section id="s-dash" class="wrap breed scherm" hidden>
@@ -185,6 +191,7 @@
 </main>
 
 <footer class="wrap breed">
+  <p id="beheerregel" hidden><a href="#beheer">Beheeromgeving</a></p>
   <p><b>Geen juridisch advies.</b> De uitkomst is een berekening volgens het Beleidsboek Servicekosten van
     de Huurcommissie (versie 1 juli 2026). De Huurcommissie handelt naar dat beleid maar kan gemotiveerd
     afwijken. Bij twijfel: het Juridisch Loket of een huurdersvereniging.</p>
@@ -199,7 +206,6 @@
       "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
   }
 </script>
-<script>window.SERVICEKOSTEN_ROL = "/*__ROL__*/";</script>
 <script src="app.js"></script>
 </body>
 </html>

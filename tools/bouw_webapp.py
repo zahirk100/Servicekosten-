@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """Bouwt de drie pagina's van de applicatie.
 
-    web/index.html     landingspagina met informatie
-    web/aanvraag.html  de huurder meldt een aanvraag aan
-    web/beheer.html    de beoordelaar behandelt de dossiers
+    web/index.html     alles: landingspagina, aanvraag (#aanvraag) en beheer (#beheer)
+    web/aanvraag.html  doorverwijzing naar index.html#aanvraag
+    web/beheer.html    doorverwijzing naar index.html#beheer
     web/app.js         normen, regels, parser en interface in één bestand
 
-Aanvraag en beheer delen dezelfde schil (web/pagina.html) en dezelfde code; ze
-verschillen alleen in de rol die ze bij het laden meegeven. web/stijl.css wordt
-ongewijzigd uitgeleverd en door alle drie de pagina's gebruikt.
+De drie ingangen zitten in één document en worden door de hash gescheiden. Dat
+moet, omdat een Artifact in een sandbox-iframe draait waar een sprong naar een
+ander document niet doorheen komt. web/stijl.css wordt ongewijzigd uitgeleverd.
 
 Bron blijft data/*.json, web/*.js, web/pagina.html en web/landing.html — pas die
 aan en draai dit opnieuw.
@@ -22,10 +22,28 @@ from pathlib import Path
 WORTEL = Path(__file__).resolve().parent.parent
 WEB = WORTEL / "web"
 
-PAGINAS = [
-    ("aanvraag.html", "huurder", "Servicekosten — aanvraag indienen"),
-    ("beheer.html", "beheer", "Servicekosten — beheer"),
+# Eigen adressen voor wie ze rechtstreeks opvraagt of bookmarkt. Het zijn
+# doorverwijzingen: de applicatie zelf is één document, want een Artifact draait
+# in een sandbox-iframe waar een sprong naar een ander document niet doorheen komt.
+INGANGEN = [
+    ("aanvraag.html", "#aanvraag", "Aanvraag indienen"),
+    ("beheer.html", "#beheer", "Beheeromgeving"),
 ]
+
+DOORVERWIJZING = """<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="refresh" content="0; url=index.html{hash}">
+<title>Servicekosten — {titel}</title>
+</head>
+<body>
+<p>Een moment — <a href="index.html{hash}">{titel}</a>.</p>
+<script>location.replace("index.html{hash}");</script>
+</body>
+</html>
+"""
 
 
 def lees(pad: Path) -> str:
@@ -71,17 +89,16 @@ def main() -> int:
     print(f"{WEB / 'app.js'}: {len(app) / 1024:.0f} KB")
 
     schil = lees(WEB / "pagina.html")
-    for plaatshouder in ("/*__ROL__*/", "/*__TITEL__*/"):
-        if plaatshouder not in schil:
-            raise SystemExit(f"Plaatshouder {plaatshouder} ontbreekt in web/pagina.html")
-    for bestand, rol, titel in PAGINAS:
-        pagina = schil.replace("/*__ROL__*/", rol).replace("/*__TITEL__*/", titel)
-        (WEB / bestand).write_text(pagina, encoding="utf-8")
-        print(f"{WEB / bestand}: {len(pagina) / 1024:.1f} KB")
+    if "/*__LANDING__*/" not in schil:
+        raise SystemExit("Plaatshouder /*__LANDING__*/ ontbreekt in web/pagina.html")
+    pagina = schil.replace("/*__LANDING__*/", lees(WEB / "landing.html"))
+    (WEB / "index.html").write_text(pagina, encoding="utf-8")
+    print(f"{WEB / 'index.html'}: {len(pagina) / 1024:.1f} KB")
 
-    landing = lees(WEB / "landing.html")
-    (WEB / "index.html").write_text(landing, encoding="utf-8")
-    print(f"{WEB / 'index.html'}: {len(landing) / 1024:.1f} KB")
+    for bestand, hash_, titel in INGANGEN:
+        inhoud = DOORVERWIJZING.format(hash=hash_, titel=titel)
+        (WEB / bestand).write_text(inhoud, encoding="utf-8")
+        print(f"{WEB / bestand}: doorverwijzing naar index.html{hash_}")
     return 0
 
 

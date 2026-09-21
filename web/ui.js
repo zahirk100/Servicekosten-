@@ -1,8 +1,10 @@
 /* Servicekosten — interface.
 
-   Twee rollen, elk op een eigen pagina (aanvraag.html en beheer.html). Welke
-   rol een pagina draait staat in window.SERVICEKOSTEN_ROL; de rest van de code
-   is gedeeld.
+   Drie ingangen in één document, gescheiden door de hash: de landingspagina
+   (geen hash), de aanvraag (#aanvraag) en de beheeromgeving (#beheer). Eén
+   document, omdat een Artifact in een sandbox-iframe draait waar een sprong
+   naar een ander document niet doorheen komt; aanvraag.html en beheer.html
+   blijven bestaan als ingang, maar sturen hierheen door.
 
 
    - Huurder: dashboard met eigen dossiers, een controle in vier stappen,
@@ -33,7 +35,8 @@
     afgewezen:    { label: "Geen actie",      klasse: "st-afgewezen" },
   };
 
-  const rol = window.SERVICEKOSTEN_ROL === "beheer" ? "beheer" : "huurder";
+  let rol = "huurder";
+  let huidigScherm = "landing";
   let aanvraag = null;              // huurder, woonruimte en alle boekjaren
   let jaarIndex = 0;                // het boekjaar dat nu wordt ingevuld
   let uitkomsten = [];              // doorrekening per boekjaar
@@ -90,15 +93,29 @@
   /* Het boekjaar dat op dit moment wordt ingevuld. */
   const jaarNu = () => aanvraag.jaren[jaarIndex];
 
-  const SCHERMEN = ["dash", "gegevens", "invoer", "vragen", "uitkomst", "bedankt", "mijn", "beheer", "dossier"];
+  const SCHERMEN = ["landing", "dash", "gegevens", "invoer", "vragen", "uitkomst", "bedankt",
+                    "mijn", "beheer", "dossier"];
+
+  /* De drie ingangen hebben een eigen adres; de schermen daarbinnen niet. */
+  const HASH_VAN = { landing: "", dash: "#aanvraag", beheer: "#beheer" };
+  const SCHERM_VAN_HASH = { "": "landing", "#": "landing", "#aanvraag": "dash", "#beheer": "beheer" };
+  const schermUitHash = () => SCHERM_VAN_HASH[location.hash] || null;
 
   function toon(naam) {
     for (const s of SCHERMEN) $("#s-" + s).hidden = s !== naam;
+    huidigScherm = naam;
+    const opLanding = naam === "landing";
+    $("#kop-cta").hidden = !opLanding;
+    $("#beheerregel").hidden = !opLanding;
+    // Alleen de drie ingangen veranderen het adres; undefined laat het staan.
+    const adres = HASH_VAN[naam] === undefined ? undefined
+      : (HASH_VAN[naam] || location.pathname + location.search);
     if (stil) { /* we komen hier via de terugknop: de geschiedenis klopt al */ }
     else if (history.state && history.state.scherm === naam) { /* zelfde scherm, geen dubbele stap */ }
     else {
       navN += 1;
-      try { history.pushState({ scherm: naam, n: navN }, ""); } catch { /* geschiedenis niet beschikbaar */ }
+      try { history.pushState({ scherm: naam, n: navN }, "", adres); }
+      catch { /* geschiedenis niet beschikbaar */ }
     }
     window.scrollTo({ top: 0 });
   }
@@ -108,8 +125,9 @@
      bijbehorende scherm terug uit wat er nog in het geheugen staat. */
   function naarScherm(naam) {
     wisMeldingen();
-    if (naam === "beheer") { rendBeheer(); return toon("beheer"); }
-    if (naam === "dash") { rendDash(); return toon("dash"); }
+    if (naam === "landing") { rol = "huurder"; rolKnoppen(); return toon("landing"); }
+    if (naam === "beheer") { rol = "beheer"; rolKnoppen(); rendBeheer(); return toon("beheer"); }
+    if (naam === "dash") { rol = "huurder"; rolKnoppen(); rendDash(); return toon("dash"); }
     if (naam === "gegevens") { voortgang("#vg-gegevens", 1, 4); vulGegevensVelden(); return toon("gegevens"); }
     if (naam === "invoer") {
       voortgang("#vg-invoer", 2, 4);
@@ -2234,7 +2252,7 @@ body { font: 10.5pt/1.5 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, san
 
     window.addEventListener("popstate", (e) => {
       navN = (e.state && e.state.n) || 0;
-      herstel((e.state && e.state.scherm) || (rol === "beheer" ? "beheer" : "dash"));
+      herstel((e.state && e.state.scherm) || schermUitHash() || "landing");
     });
 
     Opslag.opWijziging(() => {
@@ -2248,11 +2266,20 @@ body { font: 10.5pt/1.5 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, san
     Opslag.start();
 
     if (!aanvraag) leegAanvraag();
-    const thuis = rol === "beheer" ? "beheer" : "dash";
+    const thuis = schermUitHash() || "landing";
+    rol = thuis === "beheer" ? "beheer" : "huurder";
     try { history.replaceState({ scherm: thuis, n: 0 }, ""); } catch { /* geschiedenis niet beschikbaar */ }
     rolKnoppen();
-    if (rol === "beheer") rendBeheer(); else rendDash();
+    if (thuis === "beheer") rendBeheer(); else if (thuis === "dash") rendDash();
     toon(thuis);
+
+    // Een <a href="#beheer"> verandert alleen de hash; die sprong routeren we hier.
+    window.addEventListener("hashchange", () => {
+      const naam = schermUitHash();
+      if (!naam || naam === huidigScherm) return;
+      stil = true;
+      try { naarScherm(naam); } finally { stil = false; }
+    });
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);

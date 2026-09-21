@@ -1,18 +1,30 @@
 # 11 - De applicatie in de browser
 
-Drie pagina's, één codebestand. Geen server, geen installatie.
+Drie ingangen, één document. Geen server, geen installatie.
+
+| Adres | Wat je krijgt |
+| --- | --- |
+| `/` | Landingspagina: wat het is, hoe het werkt, en een knop naar de aanvraag |
+| `/#aanvraag` | De huurder meldt een aanvraag aan |
+| `/#beheer` | De beoordelaar behandelt de dossiers |
 
 | Bestand | Wat het is |
 | --- | --- |
-| `web/index.html` | Landingspagina: wat het is, hoe het werkt, en een knop naar de aanvraag |
-| `web/aanvraag.html` | De huurder meldt een aanvraag aan |
-| `web/beheer.html` | De beoordelaar behandelt de dossiers |
-| `web/app.js` | Normen, regels, parser en interface — gedeeld door beide applicatiepagina's |
-| `web/stijl.css` | Bron én uitgeleverd bestand; alle drie de pagina's gebruiken het |
+| `web/index.html` | Alle drie de ingangen in één document |
+| `web/aanvraag.html`, `web/beheer.html` | Doorverwijzingen, zodat `/aanvraag` en `/beheer` blijven werken |
+| `web/app.js` | Normen, regels, parser en interface |
+| `web/stijl.css` | Bron én uitgeleverd bestand |
 
-Aanvraag en beheer draaien dezelfde code; ze verschillen alleen in
-`window.SERVICEKOSTEN_ROL`, die bij het laden vastligt. Daarmee kon de rolwissel uit de kopbalk: een
-huurder komt de beheeromgeving niet meer per ongeluk tegen.
+**Waarom één document.** De ingangen zaten eerst in losse pagina's, met gewone links ertussen. Dat
+werkt op een webserver, maar niet in een Artifact: die draait in een sandbox-iframe waar een sprong
+naar een ander document niet doorheen komt, en dan is de aanvraagpagina onbereikbaar. De scheiding
+loopt nu via de hash, wat overal werkt — in het iframe, op een webserver en vanaf een bestand op
+schijf. `aanvraag.html` en `beheer.html` bestaan nog als ingang en sturen door naar de juiste hash,
+zodat die adressen te bookmarken blijven.
+
+De rol volgt uit de hash en ligt daarmee vast per adres; de rolwissel kon uit de kopbalk. Een huurder
+komt de beheeromgeving niet meer per ongeluk tegen: de link ernaartoe staat alleen in de voettekst van
+de landingspagina.
 
 > **Let op: de beheerpagina kent geen inlog.** Wie de URL kent, komt erin. De landingspagina wijst er
 > daarom niet naartoe, maar dat is geen beveiliging. Vóór productie hoort hier authenticatie voor,

@@ -44,18 +44,23 @@ class WebPort(unittest.TestCase):
         self.assertIn("identiek aan de Python-kern", uitkomst.stdout)
 
     def test_gebouwde_bestanden_zijn_actueel(self):
-        """web/app.js moet de huidige bronbestanden bevatten."""
+        """web/app.js en web/index.html moeten de huidige bronnen bevatten."""
         app = (WORTEL / "web" / "app.js").read_text("utf-8")
         for bestand in ("kern.js", "parser.js", "fotos.js", "opslag.js", "ui.js"):
             bron = (WORTEL / "web" / bestand).read_text("utf-8")
             with self.subTest(bestand=bestand):
                 self.assertIn(bron.strip()[:400], app,
                               f"web/{bestand} is gewijzigd; draai tools/bouw_webapp.py opnieuw")
-        self.assertIn('"normen"', app[:400] + app[:200000])
+        self.assertIn('"normen"', app[:200000])
 
-        landing = (WORTEL / "web" / "landing.html").read_text("utf-8")
-        self.assertEqual((WORTEL / "web" / "index.html").read_text("utf-8"), landing,
-                         "web/landing.html is gewijzigd; draai tools/bouw_webapp.py opnieuw")
+        index = (WORTEL / "web" / "index.html").read_text("utf-8")
+        for bron, naam in ((WORTEL / "web" / "landing.html", "landing.html"),
+                           (WORTEL / "web" / "pagina.html", "pagina.html")):
+            stuk = bron.read_text("utf-8").split("\n")[3].strip()
+            with self.subTest(bestand=naam):
+                self.assertIn(stuk, index,
+                              f"web/{naam} is gewijzigd; draai tools/bouw_webapp.py opnieuw")
+        self.assertNotIn("/*__", index, "onvervangen plaatshouder")
 
     def test_elke_pagina_is_een_volwaardig_document(self):
         """Zonder doctype en viewport legt mobiel Safari een pagina op 980 px uit.
@@ -72,15 +77,26 @@ class WebPort(unittest.TestCase):
                 self.assertIn('<meta charset="utf-8">', kop)
                 self.assertIn('name="viewport"', kop)
                 self.assertIn("width=device-width", kop)
-                self.assertNotIn("/*__", kop, "onvervangen plaatshouder")
 
-    def test_de_twee_rollen_staan_op_eigen_paginas(self):
-        aanvraag = (WORTEL / "web" / "aanvraag.html").read_text("utf-8")
-        beheer = (WORTEL / "web" / "beheer.html").read_text("utf-8")
-        self.assertIn('window.SERVICEKOSTEN_ROL = "huurder"', aanvraag)
-        self.assertIn('window.SERVICEKOSTEN_ROL = "beheer"', beheer)
-        # De rolwissel in de kopbalk hoort weg te zijn.
-        self.assertNotIn('id="rol-beheer"', aanvraag)
+    def test_de_drie_ingangen_zijn_bereikbaar(self):
+        """Een Artifact draait in een sandbox-iframe waar een sprong naar een
+        ander document niet doorheen komt. De ingangen moeten daarom in hetzelfde
+        document liggen, bereikbaar via de hash."""
+        index = (WORTEL / "web" / "index.html").read_text("utf-8")
+        for scherm in ("s-landing", "s-dash", "s-beheer"):
+            self.assertIn(f'id="{scherm}"', index, f"{scherm} ontbreekt in het document")
+        self.assertIn('href="#aanvraag"', index)
+        self.assertIn('href="#beheer"', index)
+        # Geen enkele link mag naar een ander document springen.
+        self.assertNotIn('href="aanvraag.html"', index)
+        self.assertNotIn('href="beheer.html"', index)
+
+        # De eigen adressen blijven bestaan als doorverwijzing.
+        for bestand, hash_ in (("aanvraag.html", "#aanvraag"), ("beheer.html", "#beheer")):
+            inhoud = (WORTEL / "web" / bestand).read_text("utf-8")
+            with self.subTest(ingang=bestand):
+                self.assertIn(f'location.replace("index.html{hash_}")', inhoud)
+                self.assertIn(f'url=index.html{hash_}', inhoud)
 
 
 if __name__ == "__main__":

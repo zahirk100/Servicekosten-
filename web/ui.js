@@ -1,6 +1,10 @@
 /* Servicekosten — interface.
 
-   Twee rollen op één pagina:
+   Twee rollen, elk op een eigen pagina (aanvraag.html en beheer.html). Welke
+   rol een pagina draait staat in window.SERVICEKOSTEN_ROL; de rest van de code
+   is gedeeld.
+
+
    - Huurder: dashboard met eigen dossiers, een controle in vier stappen,
      en na indienen een bevestiging dat er contact wordt opgenomen.
    - Beheer: binnengekomen aanvragen, verwerken, en een rapport opstellen.
@@ -29,14 +33,15 @@
     afgewezen:    { label: "Geen actie",      klasse: "st-afgewezen" },
   };
 
-  let rol = "huurder";
-  let dossier = leegDossier();
-  let uitkomst = null;
+  const rol = window.SERVICEKOSTEN_ROL === "beheer" ? "beheer" : "huurder";
+  let aanvraag = null;              // huurder, woonruimte en alle boekjaren
+  let jaarIndex = 0;                // het boekjaar dat nu wordt ingevuld
+  let uitkomsten = [];              // doorrekening per boekjaar
+  let actieveVragen = [];           // alleen de vragen die deze aanvraag nodig heeft
   let vraagIndex = 0;
   let filter = "alle";
   let zoekterm = "";
   let geopendDossier = null;
-  let bijlagen = [];
   let ingediend = false;
   let stil = false;   // waar tijdens terugnavigatie: dan geen nieuwe geschiedenis
   let navN = 0;
@@ -82,26 +87,13 @@
     return el("span", { class: "chip " + s.klasse }, el("span", { class: "stip", "aria-hidden": "true" }), s.label);
   };
 
-  function leegDossier() {
-    return {
-      huurder: { naam: "", email: "", telefoon: "", adres: "", verhuurder: "" },
-      woonruimte: { zelfstandig: true, aantal_woonruimten_op_aansluiting: 1, gebruikt_gemeenschappelijke_ruimten: true },
-      periode: { jaar: null, maand_van: 1, maand_tot_en_met: 12 },
-      procedure: {}, voorschot_in_rekening_gebracht: null, overeengekomen_maximum: null,
-      kostenposten: [], bron: "",
-    };
-  }
+  /* Het boekjaar dat op dit moment wordt ingevuld. */
+  const jaarNu = () => aanvraag.jaren[jaarIndex];
 
   const SCHERMEN = ["dash", "gegevens", "invoer", "vragen", "uitkomst", "bedankt", "mijn", "beheer", "dossier"];
-  // Tijdens de controle zelf helpt de rolwissel niemand; hij kost alleen een
-  // tweede kopregel op een telefoon. Hij komt terug zodra je ergens kunt kiezen.
-  const MET_ROLWISSEL = new Set(["dash", "mijn", "beheer", "dossier"]);
 
   function toon(naam) {
     for (const s of SCHERMEN) $("#s-" + s).hidden = s !== naam;
-    const rollen = MET_ROLWISSEL.has(naam);
-    $("#rollen").hidden = !rollen;
-    $("#balk").classList.toggle("zonder-rollen", !rollen);
     if (stil) { /* we komen hier via de terugknop: de geschiedenis klopt al */ }
     else if (history.state && history.state.scherm === naam) { /* zelfde scherm, geen dubbele stap */ }
     else {
@@ -116,17 +108,24 @@
      bijbehorende scherm terug uit wat er nog in het geheugen staat. */
   function naarScherm(naam) {
     wisMeldingen();
-    if (naam === "beheer") { rol = "beheer"; rolKnoppen(); rendBeheer(); return toon("beheer"); }
-    if (naam === "dash") { rol = "huurder"; rolKnoppen(); rendDash(); return toon("dash"); }
+    if (naam === "beheer") { rendBeheer(); return toon("beheer"); }
+    if (naam === "dash") { rendDash(); return toon("dash"); }
     if (naam === "gegevens") { voortgang("#vg-gegevens", 1, 4); vulGegevensVelden(); return toon("gegevens"); }
     if (naam === "invoer") {
       voortgang("#vg-invoer", 2, 4);
+      const nr = jaarIndex + 1, totaal = aanvraag.jaren.length;
+      $("#invoer-oog").textContent = totaal > 1
+        ? "Stap 2 van 4 · Afrekening " + nr + " van " + totaal
+        : "Stap 2 van 4 · Je afrekening";
+      $("#invoer-kop").textContent = jaarNu().periode.jaar
+        ? "Afrekening " + jaarNu().periode.jaar
+        : (totaal > 1 && nr > 1 ? "Nog een afrekening erbij" : "Hoe wil je je afrekening invoeren?");
       rendFotos();
-      if (dossier.kostenposten.length && $("#handblok").hidden) toonControle();
+      if (jaarNu().kostenposten.length && $("#handblok").hidden) toonControle();
       return toon("invoer");
     }
     if (naam === "vragen") {
-      if (!dossier.kostenposten.length) return naarScherm("invoer");
+      if (!metPosten().length) return naarScherm("invoer");
       toonVraag(); return toon("vragen");
     }
     if (naam === "uitkomst") {
@@ -172,7 +171,7 @@
     const eigen = mijnDossiers();
 
     const concept = Opslag.leesConcept();
-    if (concept && concept.dossier) {
+    if (concept && concept.aanvraag) {
       bak.append(el("div", { class: "hervat" },
         el("p", { class: "oog" }, "Niet afgemaakt"),
         el("h3", {}, "Je hebt een controle openstaan"),
@@ -191,9 +190,9 @@
             "Meld je servicekostenafrekening aan. Wij rekenen hem na volgens het beleidsboek van de " +
             "Huurcommissie, post voor post, en sturen je een rapport met wat we vinden.")),
         el("div", { class: "route" },
-          [["1", "Je gegevens", "Zodat we contact met je kunnen opnemen over je dossier."],
-           ["2", "Je afrekening erin", "Upload het bestand, plak de tekst, of voer de posten zelf in."],
-           ["3", "Vijf korte vragen", "Over je woning en wat je verhuurder heeft aangeleverd."],
+          [["1", "Je gegevens", "Zodat we contact met je kunnen opnemen over je aanvraag."],
+           ["2", "Je afrekening erin", "Upload de pdf, plak de tekst, of voer de posten zelf in. Meer jaren mag."],
+           ["3", "Een enkele vraag", "Alleen wat we echt nodig hebben — meestal één vraag."],
            ["4", "Controleren en indienen", "Nog even nakijken, en dan gaan wij ermee aan de slag."]]
             .map(([n, t, s]) => el("div", { class: "route-item" },
               el("span", { class: "stap" }, n),
@@ -231,21 +230,28 @@
   }
 
   function conceptRegel(c) {
-    const d = c.dossier || {};
-    const posten = (d.kostenposten || []).length;
-    const wie = (d.huurder && d.huurder.naam) ? d.huurder.naam + " · " : "";
-    const fotos = (c.bijlagen || []).length;
+    const a = c.aanvraag || {};
+    const jaren = (a.jaren || []).filter((j) => (j.kostenposten || []).length);
+    const posten = jaren.reduce((t, j) => t + j.kostenposten.length, 0);
+    const wie = (a.huurder && a.huurder.naam) ? a.huurder.naam + " · " : "";
+    const fotos = (a.jaren || []).reduce((t, j) => t + (j.bijlagen || []).length, 0);
     return wie +
-      (posten ? posten + " " + (posten === 1 ? "post" : "posten") + " ingevoerd" : "nog geen posten") +
+      (posten ? posten + " " + (posten === 1 ? "post" : "posten") +
+        (jaren.length > 1 ? " over " + jaren.length + " jaren" : "") : "nog geen posten") +
       (fotos ? " · " + fotos + (fotos === 1 ? " foto" : " foto's") : "") +
       " · bewaard " + datumTijd(new Date(c.bewaard_op).toISOString());
   }
 
   function hervatConcept(c) {
-    ingediend = false; uitkomst = null;
-    dossier = c.dossier;
-    bijlagen = c.bijlagen || [];
-    vraagIndex = Math.min(c.vraagIndex || 0, VRAGEN.length - 1);
+    ingediend = false;
+    uitkomsten = [];
+    aanvraag = c.aanvraag;
+    if (!aanvraag.jaren || !aanvraag.jaren.length) aanvraag.jaren = [leegJaar()];
+    if (!aanvraag.gesteld) aanvraag.gesteld = {};
+    koppelJaren();
+    jaarIndex = Math.min(c.jaarIndex || 0, aanvraag.jaren.length - 1);
+    actieveVragen = bepaalVragen();
+    vraagIndex = Math.min(c.vraagIndex || 0, Math.max(0, actieveVragen.length - 1));
     naarScherm(c.scherm || "gegevens");
   }
 
@@ -253,8 +259,11 @@
      bewaren niet door de foto's, dan bewaren we de rest liever wel. */
   function bewaar(scherm) {
     if (ingediend) return;
-    if (!Opslag.bewaarConcept({ scherm, vraagIndex, dossier, bijlagen })) {
-      Opslag.bewaarConcept({ scherm, vraagIndex, dossier, bijlagen: [] });
+    if (!Opslag.bewaarConcept({ scherm, vraagIndex, jaarIndex, aanvraag })) {
+      // Te groot door de foto's: de rest bewaren is beter dan niets bewaren.
+      const zonder = JSON.parse(JSON.stringify(aanvraag));
+      for (const j of zonder.jaren) j.bijlagen = [];
+      Opslag.bewaarConcept({ scherm, vraagIndex, jaarIndex, aanvraag: zonder });
     }
   }
 
@@ -336,39 +345,43 @@
   function startControle() {
     wisMeldingen();
     ingediend = false;
-    uitkomst = null;
-    dossier = leegDossier();
-    bijlagen = [];
+    uitkomsten = [];
+    actieveVragen = [];
+    leegAanvraag();
+    jaarIndex = 0;
     handRijen = [];
     Opslag.wisConcept();
     naarScherm("gegevens");
   }
 
   function vulGegevensVelden() {
-    $("#g-naam").value = dossier.huurder.naam;
-    $("#g-email").value = dossier.huurder.email;
-    $("#g-tel").value = dossier.huurder.telefoon;
-    $("#g-adres").value = dossier.huurder.adres;
-    $("#g-verhuurder").value = dossier.huurder.verhuurder;
+    const h = aanvraag.huurder;
+    $("#g-naam").value = h.naam;
+    $("#g-email").value = h.email;
+    $("#g-tel").value = h.telefoon;
+    $("#g-adres").value = h.adres;
+    $("#g-verhuurder").value = h.verhuurder;
   }
 
   function leesGegevens() {
-    dossier.huurder = {
+    // Dezelfde objecten die elk boekjaar deelt: aanpassen, niet vervangen.
+    Object.assign(aanvraag.huurder, {
       naam: $("#g-naam").value.trim(), email: $("#g-email").value.trim(),
       telefoon: $("#g-tel").value.trim(), adres: $("#g-adres").value.trim(),
       verhuurder: $("#g-verhuurder").value.trim(),
-    };
+    });
   }
 
   /* ─────────────────────────────────────────────────── inlezen */
 
   function neemConceptOver(concept, bron) {
+    const dossier = jaarNu();
     dossier.bron = bron;
     dossier.periode.jaar = concept.jaar;
     dossier.periode.maand_van = concept.maand_van;
     dossier.periode.maand_tot_en_met = concept.maand_tot_en_met;
     dossier.voorschot_in_rekening_gebracht = concept.voorschot;
-    if (concept.aantal_woonruimten) dossier.woonruimte.aantal_woonruimten_complex = concept.aantal_woonruimten;
+    if (concept.aantal_woonruimten) aanvraag.woonruimte.aantal_woonruimten_complex = concept.aantal_woonruimten;
     dossier.kostenposten = concept.posten.map((p, i) => ({
       id: "P" + (i + 1), categorie: p.categorie, omschrijving: p.omschrijving,
       bedrag_verhuurder: p.bedrag, overeengekomen: true, bewijs: [],
@@ -444,6 +457,7 @@
   /* ─────────────────────────────────────────────────────────── foto's */
 
   function rendFotos() {
+    const bijlagen = jaarNu().bijlagen;
     const strook = $("#fotostrook");
     strook.textContent = "";
     bijlagen.forEach((f, i) => {
@@ -462,6 +476,7 @@
 
   async function voegFotosToe(files) {
     wisMeldingen();
+    const bijlagen = jaarNu().bijlagen;
     const ruimte = Fotos.MAX_FOTOS - bijlagen.length;
     if (ruimte <= 0) return melding("Je kunt maximaal " + Fotos.MAX_FOTOS + " foto's meesturen.", "letop");
     const gekozen = [...files].slice(0, ruimte);
@@ -479,7 +494,7 @@
     bewaar("invoer");
     if (gelukt) {
       melding(bijlagen.length + (bijlagen.length === 1 ? " foto gaat" : " foto's gaan") +
-        " mee met je dossier. Onze beoordelaar kijkt er met de hand naar.", "ok");
+        " mee met je aanvraag. Onze beoordelaar kijkt er met de hand naar.", "ok");
     }
   }
 
@@ -487,7 +502,7 @@
      of een verkeerd geraden soort kosten verandert de hele uitkomst, en alleen
      de huurder ziet op de afrekening wat er echt staat. */
   function toonControle() {
-    handRijen = dossier.kostenposten.map((post) => ({
+    handRijen = jaarNu().kostenposten.map((post) => ({
       omschrijving: post.omschrijving, categorie: post.categorie,
       bedrag: post.bedrag_verhuurder, handmatigGekozen: true, bron: post,
     }));
@@ -543,23 +558,58 @@
     });
   }
 
-  /* ──────────────────────────────────────────────────────── vragen */
+  /* ═════════════════════════════════════════════ huurder · de aanvraag
 
-  const VRAGEN = [
+     Eén aanmelding kan meerdere boekjaren bevatten. Juridisch blijft elk jaar
+     een eigen verzoek: art. 7:260 lid 2 BW staat per kostensoort niet meer dan
+     één tijdvak van ten hoogste twaalf maanden toe, en terugkijken kan tot
+     tweeëneenhalf jaar na afloop van het kalenderjaar (Tabel 10, p. 56). De
+     huurder meldt ze in één keer aan; wij maken er evenveel dossiers van. */
+
+  function leegJaar() {
+    return {
+      huurder: aanvraag.huurder, woonruimte: aanvraag.woonruimte,
+      periode: { jaar: null, maand_van: 1, maand_tot_en_met: 12 },
+      procedure: {}, voorschot_in_rekening_gebracht: null, overeengekomen_maximum: null,
+      kostenposten: [], bron: "", bijlagen: [],
+    };
+  }
+
+  function leegAanvraag() {
+    const a = {
+      huurder: { naam: "", email: "", telefoon: "", adres: "", verhuurder: "" },
+      woonruimte: { zelfstandig: true, aantal_woonruimten_op_aansluiting: 1,
+                    gebruikt_gemeenschappelijke_ruimten: true },
+      onderbouwing: null, gesteld: {}, jaren: [],
+    };
+    aanvraag = a;               // leegJaar leest de gedeelde blokken hieruit
+    a.jaren.push(leegJaar());
+    return a;
+  }
+
+  /* Huurder en woonruimte zijn één object dat elk jaar deelt; na het herstellen
+     uit JSON moet die koppeling opnieuw worden gelegd. */
+  function koppelJaren() {
+    for (const j of aanvraag.jaren) { j.huurder = aanvraag.huurder; j.woonruimte = aanvraag.woonruimte; }
+  }
+
+  const metPosten = () => aanvraag.jaren.filter((j) => j.kostenposten.length);
+
+  /* ───────────────────────────────────────────── alleen nodige vragen
+
+     Elke vraag hangt aan een categorie die hem nodig heeft. Wie alleen
+     schoonmaak en verzekeringen op de afrekening heeft staan, krijgt één vraag:
+     heeft de verhuurder de kosten onderbouwd? Dat is meteen de zwaarste regel
+     uit het beleidsboek. */
+  const ALLE_VRAGEN = [
     {
-      kop: "Over welk jaar gaat deze afrekening?",
-      hulp: "Het boekjaar bepaalt welke normbedragen en termijnen gelden.",
-      render: () => el("div", {}, el("label", { for: "q-jaar" }, "Boekjaar"),
-        el("input", { type: "number", id: "q-jaar", inputmode: "numeric", value: dossier.periode.jaar || "" }),
-        el("div", { class: "hulp" }, "Normbedragen beschikbaar voor " + D.jaren.join(", ") + ".")),
-      lees: () => { dossier.periode.jaar = Number($("#q-jaar").value) || null; },
-      geldig: () => dossier.periode.jaar ? null : "Vul het boekjaar in.",
-    },
-    {
+      sleutel: "woning",
+      nodig: (c) => c.some((x) => x.startsWith("NUT-")),
       kop: "Wat voor woonruimte huur je?",
-      hulp: "Dit bepaalt met welk normverbruik wordt gerekend als er iets aan de meterstanden mankeert.",
+      hulp: "Nodig voor je nutsvoorzieningen: het normverbruik uit Tabel 1 en het wettelijk " +
+            "vastgestelde verbruik verschillen per soort woonruimte.",
       render() {
-        const w = dossier.woonruimte;
+        const w = aanvraag.woonruimte;
         const bak = el("div", {});
         const keuzes = el("div", { class: "keuzes" });
         const opties = D.woningtypen.map((t) => ({ w: t.waarde, l: t.label, zelf: true }));
@@ -571,104 +621,287 @@
             el("span", { class: "kt" }, o.l)));
         }
         bak.append(keuzes);
-        if (!w.zelfstandig) bak.append(el("div", { style: "margin-top:18px" },
-          el("label", { for: "q-m2" }, "Hoe groot is je kamer ongeveer? (m²)"),
-          el("input", { type: "number", id: "q-m2", inputmode: "decimal", value: w.oppervlakte_m2 || "" }),
-          el("div", { class: "hulp" }, "Voor een kamer rekent de Huurcommissie met 25 m³ gas per m². Een ruwe schatting is prima.")));
+        if (!w.zelfstandig) {
+          bak.append(el("div", { style: "margin-top:18px" },
+            el("label", { for: "q-m2" }, "Hoe groot is je kamer ongeveer? (m²)"),
+            el("input", { type: "number", id: "q-m2", inputmode: "decimal", value: w.oppervlakte_m2 || "" }),
+            el("div", { class: "hulp" }, "Voor een kamer rekent de Huurcommissie met 25 m³ gas per m². " +
+              "Een ruwe schatting is prima.")));
+        }
         return bak;
       },
-      lees() { if (!dossier.woonruimte.zelfstandig && $("#q-m2")) dossier.woonruimte.oppervlakte_m2 = Number($("#q-m2").value) || null; },
-      geldig: () => (dossier.woonruimte.zelfstandig && !dossier.woonruimte.woningtype) ? "Kies wat voor woning je huurt." : null,
+      lees() { if (!aanvraag.woonruimte.zelfstandig && $("#q-m2")) aanvraag.woonruimte.oppervlakte_m2 = Number($("#q-m2").value) || null; },
+      geldig: () => (aanvraag.woonruimte.zelfstandig && !aanvraag.woonruimte.woningtype)
+        ? "Kies wat voor woonruimte je huurt." : null,
     },
     {
-      kop: "Hoe zit het gebouw in elkaar?",
-      hulp: "Gedeelde kosten worden over de woningen verdeeld, dus het aantal telt mee.",
-      render() {
-        const w = dossier.woonruimte;
-        return el("div", {},
-          el("label", { for: "q-bew" }, "Met hoeveel mensen woon je er?"),
-          el("input", { type: "number", id: "q-bew", inputmode: "numeric", min: "1", value: w.aantal_bewoners || "" }),
-          el("div", { class: "hulp" }, "Bepaalt het normverbruik voor water en elektriciteit."),
-          el("div", { style: "margin-top:18px" },
-            el("label", { for: "q-complex" }, "Hoeveel woningen zitten er in het complex?"),
-            el("input", { type: "number", id: "q-complex", inputmode: "numeric", min: "1", value: w.aantal_woonruimten_complex || "" }),
-            el("div", { class: "hulp" }, "Weet je het niet? Laat leeg — dan meld ik het als openstaande vraag in plaats van te gokken.")));
-      },
-      lees() {
-        dossier.woonruimte.aantal_bewoners = Number($("#q-bew").value) || null;
-        dossier.woonruimte.aantal_woonruimten_complex = Number($("#q-complex").value) || null;
-      },
-      geldig: () => dossier.woonruimte.aantal_bewoners ? null : "Vul in met hoeveel mensen je er woont.",
+      sleutel: "bewoners",
+      nodig: (c) => c.some((x) => x.startsWith("NUT-ELK") || x.startsWith("NUT-WATER")),
+      kop: "Met hoeveel mensen woon je er?",
+      hulp: "Het normverbruik voor elektriciteit en water hangt af van het aantal bewoners " +
+            "(Tabel 4 en Tabel 7).",
+      render: () => el("div", {}, el("label", { for: "q-bew" }, "Aantal bewoners"),
+        el("input", { type: "number", id: "q-bew", inputmode: "numeric", min: "1",
+          value: aanvraag.woonruimte.aantal_bewoners || "" })),
+      lees() { aanvraag.woonruimte.aantal_bewoners = Number($("#q-bew").value) || null; },
+      geldig: () => aanvraag.woonruimte.aantal_bewoners ? null : "Vul in met hoeveel mensen je er woont.",
     },
     {
+      sleutel: "complex",
+      nodig: (c) => c.some((x) => x === "SK-06" || x === "SK-06B"),
+      kop: "Hoeveel woningen zitten er in het complex?",
+      hulp: "De kosten van een huismeester of beveiliging worden over de woningen verdeeld.",
+      render: () => el("div", {}, el("label", { for: "q-complex" }, "Aantal woningen"),
+        el("input", { type: "number", id: "q-complex", inputmode: "numeric", min: "1",
+          value: aanvraag.woonruimte.aantal_woonruimten_complex || "" }),
+        el("div", { class: "hulp" }, "Weet je het niet? Laat leeg — dan vragen wij het op bij je " +
+          "verhuurder in plaats van te gokken.")),
+      lees() { aanvraag.woonruimte.aantal_woonruimten_complex = Number($("#q-complex").value) || null; },
+      geldig: () => null,
+    },
+    {
+      sleutel: "onderbouwing",
+      nodig: () => true,
       kop: "Heeft je verhuurder facturen laten zien?",
-      hulp: "Dit is het belangrijkste punt van de hele check. Wie zijn kosten niet onderbouwt, mag ze vaak niet rekenen.",
+      hulp: "Dit is het belangrijkste punt van de hele aanvraag. Wie zijn kosten niet onderbouwt, " +
+            "mag ze vaak niet rekenen.",
       render() {
-        const nu = dossier._onderbouwing;
+        const nu = aanvraag.onderbouwing;
         const opties = [
           { w: "volledig", t: "Ja, facturen én een gespecificeerd overzicht", s: "Alles uitgesplitst per post." },
           { w: "deels", t: "Alleen een totaalbedrag per post", s: "Wel een overzicht, geen onderliggende facturen." },
           { w: "geen", t: "Nee, ik heb niets gezien", s: "Alleen de afrekening zelf." },
-          { w: "onbekend", t: "Weet ik niet", s: "Dan zet ik het als openstaande vraag neer." },
+          { w: "onbekend", t: "Weet ik niet", s: "Dan zetten wij het als openstaande vraag neer." },
         ];
         return el("div", { class: "keuzes" }, opties.map((o) =>
           el("button", { class: "keuze", type: "button", "aria-pressed": String(nu === o.w),
-            onclick: () => { dossier._onderbouwing = o.w; toonVraag(); } },
+            onclick: () => { aanvraag.onderbouwing = o.w; toonVraag(); } },
             el("span", { class: "kt" }, o.t), el("span", { class: "ks" }, o.s))));
       },
-      lees() {
-        const k = dossier._onderbouwing;
-        const bewijs = k === "volledig" ? ["facturen", "specificatieformulier"] : k === "deels" ? ["specificatieformulier"] : [];
-        for (const post of dossier.kostenposten) if (!post._bewijsHandmatig) post.bewijs = bewijs.slice();
-      },
-      geldig: () => dossier._onderbouwing ? null : "Kies een van de vier antwoorden.",
-    },
-    {
-      kop: "Wat heb je aan voorschot betaald?",
-      hulp: "Optioneel. Hiermee zie je of je geld terugkrijgt of moet bijbetalen.",
-      render: () => el("div", {}, el("label", { for: "q-vs" }, "Totaal betaald voorschot over dit jaar (€)"),
-        el("input", { type: "number", id: "q-vs", inputmode: "decimal", step: "0.01", value: dossier.voorschot_in_rekening_gebracht || "" }),
-        el("div", { class: "hulp" }, "Meestal je maandbedrag × 12. Weet je het niet? Laat leeg.")),
-      lees: () => { dossier.voorschot_in_rekening_gebracht = Number($("#q-vs").value) || null; },
-      geldig: () => null,
+      lees: pasBewijsToe,
+      geldig: () => aanvraag.onderbouwing ? null : "Kies een van de vier antwoorden.",
     },
   ];
 
-  function startVragen() { vraagIndex = 0; bewaar("vragen"); naarScherm("vragen"); }
+  /* Het antwoord op de bewijsvraag geldt voor elke post van elk boekjaar, ook
+     voor een jaar dat er later bij komt. Daarom hangt dit niet aan het tonen
+     van de vraag maar aan het doorrekenen: anders zou een tweede afrekening
+     stilletjes zonder onderbouwing worden beoordeeld en op het forfait van
+     EUR 12,00 uitkomen. */
+  function pasBewijsToe() {
+    const k = aanvraag.onderbouwing;
+    if (!k) return;
+    const bewijs = k === "volledig" ? ["facturen", "specificatieformulier"]
+      : k === "deels" ? ["specificatieformulier"] : [];
+    for (const j of aanvraag.jaren) {
+      for (const post of j.kostenposten) if (!post._bewijsHandmatig) post.bewijs = bewijs.slice();
+    }
+  }
+
+  function bepaalVragen() {
+    const cats = aanvraag.jaren.flatMap((j) => j.kostenposten.map((p) => p.categorie));
+    return ALLE_VRAGEN.filter((v) => v.nodig(cats));
+  }
+
+  function startVragen() {
+    actieveVragen = bepaalVragen();
+    // Elke vraag wordt één keer gesteld. Bijhouden dát hij is gesteld, niet of
+    // het antwoord geldig is: een vraag waar "weet ik niet" op mag, zou anders
+    // worden overgeslagen terwijl de huurder hem wel had kunnen beantwoorden.
+    const open = actieveVragen.findIndex((v) => !aanvraag.gesteld[v.sleutel]);
+    if (open === -1) return bereken();
+    vraagIndex = open;
+    bewaar("vragen");
+    naarScherm("vragen");
+  }
 
   function toonVraag() {
-    const v = VRAGEN[vraagIndex];
+    if (!actieveVragen.length) actieveVragen = bepaalVragen();
+    vraagIndex = Math.min(vraagIndex, actieveVragen.length - 1);
+    const v = actieveVragen[vraagIndex];
     voortgang("#voortgang", 3, 4);
-    $("#vraagteller").textContent = "Stap 3 van 4 · Vraag " + (vraagIndex + 1) + " van " + VRAGEN.length;
+    $("#vraagteller").textContent = actieveVragen.length === 1
+      ? "Stap 3 van 4 · Nog één vraag"
+      : "Stap 3 van 4 · Vraag " + (vraagIndex + 1) + " van " + actieveVragen.length;
     $("#vraagkop").textContent = v.kop;
     $("#vraaghulp").textContent = v.hulp;
     $("#vraaginhoud").textContent = "";
     $("#vraaginhoud").append(v.render());
-    $("#v-volgende").textContent = vraagIndex === VRAGEN.length - 1 ? "Bekijk de uitkomst" : "Volgende";
+    $("#v-volgende").textContent = vraagIndex === actieveVragen.length - 1 ? "Naar het overzicht" : "Volgende";
     $("#v-vorige").textContent = vraagIndex === 0 ? "Terug" : "Vorige";
   }
 
   function volgendeVraag() {
     wisMeldingen();
-    const v = VRAGEN[vraagIndex];
+    const v = actieveVragen[vraagIndex];
     v.lees();
     const fout = v.geldig();
     if (fout) return melding(fout, "fout");
-    if (vraagIndex < VRAGEN.length - 1) { vraagIndex++; toonVraag(); bewaar("vragen"); window.scrollTo({ top: 0 }); }
+    aanvraag.gesteld[v.sleutel] = true;
+    if (vraagIndex < actieveVragen.length - 1) { vraagIndex++; toonVraag(); bewaar("vragen"); window.scrollTo({ top: 0 }); }
     else bereken();
   }
 
-  /* ────────────────────────────────────────────────────── uitkomst */
+  /* ─────────────────────────────────────────────────────── doorrekenen */
 
   function bereken() {
     wisMeldingen();
-    try { uitkomst = Kern.beoordeelDossier(dossier); }
-    catch (fout) { return melding("Er ging iets mis bij het berekenen: " + fout.message, "fout"); }
+    koppelJaren();
+    pasBewijsToe();
+    const jaren = metPosten();
+    if (!jaren.length) return naarScherm("invoer");
+    uitkomsten = [];
+    for (const j of jaren) {
+      if (!j.periode.jaar) { uitkomsten.push(null); continue; }
+      try { uitkomsten.push(Kern.beoordeelDossier(j)); }
+      catch (fout) {
+        melding("Er ging iets mis bij het berekenen: " + fout.message, "fout");
+        uitkomsten.push(null);
+      }
+    }
     bewaar("vragen");
     rendUitkomst();
     toon("uitkomst");
   }
 
+  /* ───────────────────────────────────────── stap 4: controleren en indienen
+
+     Geen oordeel: de huurder meldt een aanvraag aan en ziet hier alleen terug
+     wat hij zelf heeft opgegeven. Boekjaar en voorschot staan hier omdat ze uit
+     de afrekening komen en alleen nog bevestigd hoeven te worden. */
+  function rendUitkomst() {
+    voortgang("#vg-uitkomst", 4, 4);
+    const jaren = metPosten();
+    const vak = $("#samenvatting");
+    vak.textContent = "";
+
+    jaren.forEach((j, i) => {
+      const u = uitkomsten[i];
+      const ingevoerd = j.kostenposten.reduce((t, p) => t + Number(p.bedrag_verhuurder || 0), 0);
+      const veldId = "jr" + i;
+      const kaart = el("div", { class: "kaart", style: "margin-top:14px" },
+        el("p", { class: "oog" }, jaren.length > 1 ? "Afrekening " + (i + 1) + " van " + jaren.length : "Je afrekening"),
+        el("h2", {}, j.kostenposten.length + (j.kostenposten.length === 1 ? " kostenpost" : " kostenposten")),
+        el("div", { class: "veldrij twee" },
+          el("div", {},
+            el("label", { for: veldId }, "Boekjaar"),
+            el("input", { type: "number", id: veldId, inputmode: "numeric", value: j.periode.jaar || "",
+              placeholder: "bijv. 2024",
+              onchange: (e) => { j.periode.jaar = Number(e.target.value) || null; bereken(); } }),
+            el("div", { class: "hulp" }, termijnHulp(j.periode.jaar))),
+          el("div", {},
+            el("label", { for: veldId + "v" }, "Betaald voorschot (optioneel)"),
+            el("input", { type: "number", id: veldId + "v", inputmode: "decimal", step: "0.01",
+              value: j.voorschot_in_rekening_gebracht == null ? "" : j.voorschot_in_rekening_gebracht,
+              placeholder: "maandbedrag × 12",
+              onchange: (e) => {
+                j.voorschot_in_rekening_gebracht = e.target.value === "" ? null : Number(e.target.value);
+                bereken();
+              } }))),
+        el("ul", { class: "postlijst" }, j.kostenposten.map((p) => el("li", {},
+          el("span", {}, p.omschrijving),
+          el("span", { class: "som" }, euro(p.bedrag_verhuurder))))),
+        el("div", { class: "postsom" },
+          el("span", {}, "Samen in rekening gebracht"),
+          el("span", { class: "som" }, euro(ingevoerd))),
+        j.bijlagen.length ? el("p", { class: "mini", style: "margin-top:10px" },
+          j.bijlagen.length + (j.bijlagen.length === 1 ? " foto meegestuurd" : " foto's meegestuurd")) : null,
+        el("div", { class: "knoppen rij" },
+          el("button", { class: "klein", type: "button",
+            onclick: () => { jaarIndex = aanvraag.jaren.indexOf(j); naarScherm("invoer"); } }, "Aanpassen"),
+          jaren.length > 1 ? el("button", { class: "link", type: "button", onclick: () => {
+            if (!confirm("Dit boekjaar uit je aanvraag halen?")) return;
+            aanvraag.jaren.splice(aanvraag.jaren.indexOf(j), 1);
+            if (!aanvraag.jaren.length) aanvraag.jaren.push(leegJaar());
+            jaarIndex = 0; bereken();
+          } }, "Verwijderen") : null));
+      vak.append(kaart);
+
+      if (u && u.blokkerend.length) {
+        vak.append(el("div", { class: "melding letop" }, el("b", {}, "Let op bij " + j.periode.jaar + ". "),
+          u.blokkerend.map((r) => r.replace(/^ROOD - /, "")).join(" ") +
+          " Je kunt de aanvraag gewoon indienen; wij kijken hier met je naar."));
+      }
+    });
+
+    vak.append(el("div", { class: "kaart", style: "margin-top:12px" },
+      el("p", { class: "oog" }, "Meer jaren"),
+      el("h2", {}, "Heb je nog een afrekening?"),
+      el("p", { class: "klein" }, "Je kunt tot tweeëneenhalf jaar terug indienen. Elk jaar wordt een " +
+        "eigen verzoek, maar je meldt ze in één keer aan."),
+      el("div", { class: "knoppen" },
+        el("button", { class: "vol", type: "button", onclick: () => {
+          aanvraag.jaren.push(leegJaar());
+          jaarIndex = aanvraag.jaren.length - 1;
+          handRijen = [];
+          $("#plakblok").hidden = true; $("#handblok").hidden = true;
+          naarScherm("invoer");
+        } }, "Nog een boekjaar toevoegen"))));
+
+    // Contactblok: kort, want de huurder vulde het net zelf in.
+    const h = aanvraag.huurder;
+    vak.append(el("div", { class: "kaart", style: "margin-top:12px" },
+      el("p", { class: "oog" }, "Naar wie sturen we de uitkomst?"),
+      el("div", { class: "veldrij twee", style: "margin-top:4px" },
+        el("div", {}, el("div", { class: "mini" }, "Naam"), el("div", {}, h.naam || "—")),
+        el("div", {}, el("div", { class: "mini" }, "E-mail"), el("div", {}, h.email || "—"))),
+      el("div", { class: "veldrij twee" },
+        el("div", {}, el("div", { class: "mini" }, "Adres"), el("div", {}, h.adres || "—")),
+        el("div", {}, el("div", { class: "mini" }, "Verhuurder"), el("div", {}, h.verhuurder || "—"))),
+      el("div", { class: "knoppen" },
+        el("button", { class: "klein", type: "button", onclick: () => naarScherm("gegevens") },
+          "Gegevens aanpassen"))));
+
+    // Openstaande vragen over alle jaren heen: geen oordeel, maar een verzoek
+    // om gegevens waarmee de aanvraag completer binnenkomt.
+    const open = [];
+    jaren.forEach((j, i) => {
+      const u = uitkomsten[i];
+      if (!u) return;
+      for (const b of u.beoordelingen) {
+        if (b.status === "ORANJE" && b.ontbrekende_informatie.length) open.push({ b, j });
+      }
+    });
+    const vragenvak = $("#openvragen");
+    vragenvak.textContent = "";
+    if (open.length) {
+      vragenvak.append(el("div", { class: "kaart", style: "margin-top:12px" },
+        el("p", { class: "oog" }, "Optioneel"),
+        el("h2", {}, open.length === 1 ? "Over één post hebben we nog een vraag"
+          : "Over " + open.length + " posten hebben we nog vragen"),
+        el("p", { class: "klein" }, "Beantwoord wat je weet. Wat je openlaat vragen wij op bij je " +
+          "verhuurder; dat kost alleen meer tijd."),
+        el("ul", { class: "openlijst" }, open.map(({ b, j }) => el("li", {},
+          el("span", { class: "wat" }, el("b", {}, b.omschrijving),
+            el("span", {}, vereenvoudig(b.ontbrekende_informatie[0]))),
+          el("button", { class: "klein", type: "button",
+            onclick: () => openBlad(b, j, bereken) }, "Beantwoorden"))))));
+    }
+
+    $("#ontvankelijk").textContent = "";
+    $("#doe-indienen").textContent = jaren.length > 1
+      ? "Dien " + jaren.length + " aanvragen in" : "Dien mijn aanvraag in";
+    $("#advies").textContent =
+      "Een beoordelaar loopt je afrekening post voor post na volgens het Beleidsboek Servicekosten " +
+      "van de Huurcommissie, vraagt zo nodig stukken op bij je verhuurder, en stuurt je een rapport " +
+      "met de bevindingen en wat je kunt doen. Daarover nemen we contact met je op.";
+  }
+
+  /* Tot wanneer kan dit boekjaar nog worden voorgelegd? (Tabel 10, p. 56) */
+  function termijnHulp(jaar) {
+    if (!jaar) return "Staat meestal boven aan de afrekening.";
+    const t = D.termijnen[String(jaar)];
+    if (!t) return "Voor dit boekjaar staan er geen termijnen in het beleidsboek.";
+    const uiterste = new Date(t.uiterste_verzoekdatum);
+    const nl = uiterste.toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" });
+    return uiterste < new Date()
+      ? "Let op: de termijn liep tot " + nl + "."
+      : "Indienen kan tot en met " + nl + ".";
+  }
+
+  /* Bij meerdere toegepaste regels wint de regel met de hoogste prioriteit: een
+     verbod ("leegstand mag niet") zegt de lezer meer dan een verdeelsleutel die
+     daarnaast ook is toegepast. */
   function besteRegel(b) {
     let beste = null;
     for (const id of b.regels) {
@@ -676,76 +909,6 @@
       if (u && (!beste || u.prioriteit > UITLEG[beste].prioriteit)) beste = id;
     }
     return beste;
-  }
-
-  /* Stap 4 is geen oordeel maar een controle. De huurder meldt een aanvraag
-     aan; wat daaruit volgt, hoort hij van een beoordelaar met een rapport
-     erbij. Een voorlopig bedrag op dit scherm wekt een verwachting die de
-     behandeling daarna moet waarmaken -- en die verandert nog, zodra de
-     ontbrekende stukken binnen zijn. De berekening draait wel: de beoordelaar
-     begint niet met een leeg dossier. */
-  function rendUitkomst() {
-    voortgang("#vg-uitkomst", 4, 4);
-
-    const posten = dossier.kostenposten || [];
-    const ingevoerd = posten.reduce((t, p) => t + Number(p.bedrag_verhuurder || 0), 0);
-    const h = dossier.huurder;
-    const w = dossier.woonruimte;
-    const regel = (k, val) => el("div", {}, el("div", { class: "mini" }, k), el("div", {}, val || "—"));
-
-    const vak = $("#samenvatting");
-    vak.textContent = "";
-    vak.append(el("div", { class: "kaart", style: "margin-top:18px" },
-      el("p", { class: "oog" }, "Je aanvraag"),
-      el("h2", {}, posten.length + (posten.length === 1 ? " kostenpost" : " kostenposten") +
-        " over " + (dossier.periode.jaar || "")),
-      el("div", { class: "veldrij twee", style: "margin-top:6px" },
-        regel("Samen in rekening gebracht", euro(ingevoerd)),
-        regel("Betaald voorschot", dossier.voorschot_in_rekening_gebracht != null
-          ? euro(dossier.voorschot_in_rekening_gebracht) : "niet ingevuld")),
-      el("div", { class: "veldrij twee" },
-        regel("Adres", h.adres), regel("Verhuurder", h.verhuurder)),
-      el("div", { class: "veldrij twee" },
-        regel("Woonruimte", w.zelfstandig === false ? "Kamer (gedeelde voorzieningen)"
-          : (w.woningtype || "").replace(/_/g, " ") || "—"),
-        regel("Bewoners", w.aantal_bewoners ? String(w.aantal_bewoners) : "—")),
-      el("ul", { class: "postlijst" }, posten.map((p) => el("li", {},
-        el("span", {}, p.omschrijving),
-        el("span", { class: "som" }, euro(p.bedrag_verhuurder)))))));
-
-    // Openstaande vragen zijn geen oordeel maar een verzoek om gegevens: hoe
-    // completer de aanvraag binnenkomt, hoe minder er opgevraagd hoeft te worden.
-    const open = uitkomst.beoordelingen.filter(
-      (b) => b.status === "ORANJE" && b.ontbrekende_informatie.length);
-    const vragenvak = $("#openvragen");
-    vragenvak.textContent = "";
-    if (open.length) {
-      vragenvak.append(el("div", { class: "kaart", style: "margin-top:12px" },
-        el("p", { class: "oog" }, "Optioneel"),
-        el("h2", {}, open.length === 1
-          ? "Over één post hebben we nog een vraag"
-          : "Over " + open.length + " posten hebben we nog vragen"),
-        el("p", { class: "klein" }, "Beantwoord wat je weet. Wat je openlaat vragen wij op bij je " +
-          "verhuurder; dat kost alleen meer tijd."),
-        el("ul", { class: "openlijst" }, open.map((b) => el("li", {},
-          el("span", { class: "wat" }, el("b", {}, b.omschrijving),
-            el("span", {}, vereenvoudig(b.ontbrekende_informatie[0]))),
-          el("button", { class: "klein", type: "button",
-            onclick: () => openBlad(b, dossier, bereken) }, "Beantwoorden"))))));
-    }
-
-    const ontv = $("#ontvankelijk");
-    ontv.textContent = "";
-    if (uitkomst.blokkerend.length) {
-      ontv.append(el("div", { class: "melding letop" }, el("b", {}, "Let op. "),
-        uitkomst.blokkerend.map((r) => r.replace(/^ROOD - /, "")).join(" ") +
-        " Je kunt je aanvraag gewoon indienen; wij kijken hier met je naar."));
-    }
-
-    $("#advies").textContent =
-      "Een beoordelaar loopt je afrekening post voor post na volgens het Beleidsboek Servicekosten " +
-      "van de Huurcommissie, vraagt zo nodig stukken op bij je verhuurder, en stuurt je een rapport " +
-      "met de bevindingen en wat je kunt doen. Daarover nemen we contact met je op.";
   }
 
   function rendGroepenUit(beoordelingen, ctx) {
@@ -865,7 +1028,7 @@
   /* Zowel de huurder (tijdens de controle) als de beoordelaar (in het dossier)
      vult hier gegevens aan; alleen het bronbestand en het vervolg verschillen. */
   function openBlad(b, brondossier, na) {
-    const bron = brondossier || dossier;
+    const bron = brondossier || jaarNu();
     const post = (bron.kostenposten || []).find((p) => p.id === b.kostenpost_id);
     if (!post) return melding("Deze post staat niet meer in het dossier.", "fout");
     const def = D.categorieen.categorieen[post.categorie];
@@ -900,41 +1063,63 @@
   /* De ingevulde posten gaan mee het dossier in. Zonder die invoer kan de
      beoordelaar de aangevulde gegevens niet opnieuw laten doorrekenen en blijft
      de beheerkant een leesscherm. */
-  function samenvattingVoorOpslag() {
-    return Object.assign(uitkomstVelden(uitkomst, dossier), {
-      huurder: dossier.huurder,
-      bron: dossier.bron,
-      invoer: dossier,
-      stappen: {},
-      stukken: [],
-      afhandeling: null,
+  function samenvattingVoorOpslag(jaar, u, groep, nummer, totaal) {
+    return Object.assign(uitkomstVelden(u, jaar), {
+      huurder: aanvraag.huurder,
+      bron: jaar.bron,
+      invoer: jaar,
+      groep, groep_nummer: nummer, groep_totaal: totaal,
+      stappen: {}, stukken: [], afhandeling: null,
     });
   }
 
   async function dienIn() {
     wisMeldingen();
-    if (!dossier.huurder.naam || !dossier.huurder.email) {
+    const h = aanvraag.huurder;
+    if (!h.naam || !h.email) {
       naarScherm("gegevens");
       return melding("Vul eerst je naam en e-mailadres in — anders kunnen we geen contact met je opnemen.", "fout");
     }
+    const jaren = metPosten();
+    if (!jaren.length) return naarScherm("invoer");
+    const zonderJaar = jaren.filter((j) => !j.periode.jaar);
+    if (zonderJaar.length) {
+      return melding("Vul bij elke afrekening het boekjaar in; daar hangen de normbedragen en de " +
+        "termijnen aan.", "fout");
+    }
     const knop = $("#doe-indienen");
+    const label = knop.textContent;
     knop.disabled = true;
     knop.textContent = "Bezig met indienen…";
+    // Eén aanmelding, meerdere verzoeken: het groepskenmerk houdt ze bij elkaar.
+    const groep = "G" + Date.now().toString(36).toUpperCase();
+    const binnen = [];
     try {
-      const doc = await Opslag.dienIn(Object.assign(samenvattingVoorOpslag(), { bijlagen }));
+      for (let i = 0; i < jaren.length; i++) {
+        const jaar = jaren[i];
+        const u = uitkomsten[i] || Kern.beoordeelDossier(jaar);
+        const doc = await Opslag.dienIn(Object.assign(
+          samenvattingVoorOpslag(jaar, u, groep, i + 1, jaren.length),
+          { bijlagen: jaar.bijlagen }));
+        binnen.push(doc);
+      }
       ingediend = true;
       Opslag.wisConcept();
-      rendBedankt(doc);
+      rendBedankt(binnen);
       toon("bedankt");
     } catch (fout) {
-      melding("Indienen lukte niet: " + (fout.message || fout.code || "onbekende fout"), "fout");
+      melding("Indienen lukte niet: " + (fout.message || fout.code || "onbekende fout") +
+        (binnen.length ? " " + binnen.length + " van de " + jaren.length + " zijn wel binnengekomen." : ""), "fout");
     } finally {
       knop.disabled = false;
-      knop.textContent = "Dien mijn aanvraag in";
+      knop.textContent = label;
     }
   }
 
-  function rendBedankt(doc) {
+  function rendBedankt(binnen) {
+    const eerste = binnen[0];
+    const meer = binnen.length > 1;
+    const fotos = binnen.reduce((t, d) => t + (d.aantal_bijlagen || 0), 0);
     const bak = $("#bedankt-inhoud");
     bak.textContent = "";
     bak.append(
@@ -942,33 +1127,39 @@
         el("p", { class: "oog" }, "Ingediend"),
         el("h1", {}, "Bedankt, we gaan ermee aan de slag"),
         el("p", { class: "lead" },
-          "Je dossier is ontvangen. We bekijken je afrekening met de hand, stellen een rapport op met onze " +
-          "bevindingen, en nemen daarover contact met je op via " + (doc.huurder.email || "je e-mailadres") + ".")),
+          (meer ? "Je " + binnen.length + " aanvragen zijn ontvangen." : "Je aanvraag is ontvangen.") +
+          " We bekijken je afrekening met de hand, stellen een rapport op met onze bevindingen, en " +
+          "nemen daarover contact met je op via " + (eerste.huurder.email || "je e-mailadres") + ".")),
+
       el("div", { class: "kaart", style: "margin-top:22px" },
-        el("p", { class: "oog" }, "Je dossiernummer"),
-        el("div", { style: "font-family:var(--display);font-size:2rem;font-weight:600;letter-spacing:-.03em" }, doc.id),
-        el("p", { class: "klein", style: "margin-top:8px" }, "Bewaar dit nummer. Je vindt je dossier ook terug op je dashboard." +
-          (bijlagen.length ? " Je " + (bijlagen.length === 1 ? "foto is" : bijlagen.length + " foto's zijn") + " meegestuurd." : "")),
-        el("div", { class: "kpi", style: "margin-top:16px" },
-          el("div", {}, el("div", { class: "k" }, "Boekjaar"), el("div", { class: "v" }, String(doc.jaar))),
-          el("div", {}, el("div", { class: "k" }, "Kostenposten"),
-            el("div", { class: "v" }, String((doc.bevindingen || []).length))),
-          el("div", {}, el("div", { class: "k" }, "Ingediend"),
-            el("div", { class: "v" }, datum(doc.ingediend_op))))),
+        el("p", { class: "oog" }, meer ? "Je dossiernummers" : "Je dossiernummer"),
+        el("ul", { class: "nummers" }, binnen.map((d) => el("li", {},
+          el("span", { class: "nr" }, d.id),
+          el("span", { class: "klein" }, "boekjaar " + d.jaar + " · " +
+            (d.bevindingen || []).length + " posten")))),
+        el("p", { class: "klein", style: "margin-top:10px" },
+          "Bewaar " + (meer ? "deze nummers" : "dit nummer") + ". Je vindt " +
+          (meer ? "ze" : "het") + " ook terug op je dashboard." +
+          (fotos ? " Je " + (fotos === 1 ? "foto is" : fotos + " foto's zijn") + " meegestuurd." : "")),
+        meer ? el("p", { class: "mini" }, "Elk boekjaar is een eigen verzoek: de wet staat per " +
+          "kostensoort niet meer dan één tijdvak van twaalf maanden toe (art. 7:260 lid 2 BW). " +
+          "Wij behandelen ze samen.") : null),
+
       el("div", { class: "kaart" },
         el("p", { class: "oog" }, "Wat gebeurt er nu?"),
         el("ul", { class: "tijdlijn" },
-          el("li", {}, el("span", { class: "wie" }, "Je dossier is binnen"),
-            el("div", { class: "wanneer" }, datumTijd(doc.ingediend_op))),
+          el("li", {}, el("span", { class: "wie" }, meer ? "Je aanvragen zijn binnen" : "Je aanvraag is binnen"),
+            el("div", { class: "wanneer" }, datumTijd(eerste.ingediend_op))),
           el("li", {}, el("span", { class: "wie" }, "Wij controleren je afrekening"),
-            el("div", {}, "Een beoordelaar loopt de bevindingen na en vraagt zo nodig stukken op bij je verhuurder.")),
+            el("div", {}, "Een beoordelaar loopt de posten na en vraagt zo nodig stukken op bij je verhuurder.")),
           el("li", {}, el("span", { class: "wie" }, "Je ontvangt een rapport"),
             el("div", {}, "Met de bevindingen per post, wat dat betekent, en wat je kunt doen.")))),
+
       el("div", { class: "knoppen" },
         el("button", { class: "primair vol", type: "button", onclick: () => naarScherm("dash") },
           "Naar mijn dossiers"),
         el("button", { class: "vol", type: "button", onclick: startControle },
-          "Nog een afrekening controleren")));
+          "Nog een aanvraag doen")));
   }
 
   /* ───────────────────────────────────────────────────────── beheer */
@@ -1951,13 +2142,9 @@ body { font: 10.5pt/1.5 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, san
 
   /* ──────────────────────────────────────────────────────────── rol */
 
+  /* De rol ligt vast bij het laden van de pagina. */
   function rolKnoppen() {
-    $("#rol-huurder").setAttribute("aria-selected", String(rol === "huurder"));
-    $("#rol-beheer").setAttribute("aria-selected", String(rol === "beheer"));
-  }
-  function zetRol(nieuw) {
-    if (rol === nieuw) return;
-    naarScherm(nieuw === "beheer" ? "beheer" : "dash");
+    $("#rolnaam").textContent = rol === "beheer" ? "Beheer" : "";
   }
 
   /* ─────────────────────────────────────────────────────────── start */
@@ -1967,8 +2154,6 @@ body { font: 10.5pt/1.5 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, san
     // de taal hier, zodat afbreken en voorlezen ook daar klopt.
     document.documentElement.lang = "nl";
 
-    $("#rol-huurder").addEventListener("click", () => zetRol("huurder"));
-    $("#rol-beheer").addEventListener("click", () => zetRol("beheer"));
     $("#thema").addEventListener("click", () => {
       const nu = document.documentElement.getAttribute("data-theme");
       const donker = nu === "dark" || (nu !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
@@ -1979,8 +2164,9 @@ body { font: 10.5pt/1.5 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, san
     $("#gegevens-verder").addEventListener("click", () => {
       wisMeldingen();
       leesGegevens();
-      if (!dossier.huurder.naam || !dossier.huurder.email) return melding("Vul je naam en e-mailadres in.", "fout");
-      if (!dossier.kostenposten.length) { $("#plakblok").hidden = true; $("#handblok").hidden = true; }
+      const h = aanvraag.huurder;
+      if (!h.naam || !h.email) return melding("Vul je naam en e-mailadres in.", "fout");
+      if (!jaarNu().kostenposten.length) { $("#plakblok").hidden = true; $("#handblok").hidden = true; }
       bewaar("invoer");
       naarScherm("invoer");
     });
@@ -1994,9 +2180,9 @@ body { font: 10.5pt/1.5 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, san
       wisMeldingen();
       if (!$("#plakblok").hidden && $("#plakvak").value.trim().length >= 20) return $("#plak-lezen").click();
       if (!$("#handblok").hidden && handRijen.some((r) => r.categorie && Number(r.bedrag) > 0)) return $("#hand-klaar").click();
-      if (dossier.kostenposten.length) return naarScherm("vragen");
-      melding(bijlagen.length
-        ? "Je foto staat klaar en gaat mee met je dossier. Voer de posten er nog bij in — kies 'Posten zelf invoeren' — dan kan ik ook rekenen."
+      if (jaarNu().kostenposten.length) return naarScherm("vragen");
+      melding(jaarNu().bijlagen.length
+        ? "Je foto staat klaar en gaat mee met je aanvraag. Voer de posten er nog bij in — kies 'Posten zelf invoeren' — dan kunnen we ook rekenen."
         : "Kies eerst hoe je je afrekening invoert: een bestand uploaden, de tekst plakken, of de posten zelf invoeren.",
         "letop");
     });
@@ -2010,6 +2196,7 @@ body { font: 10.5pt/1.5 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, san
       wisMeldingen();
       const bruikbaar = handRijen.filter((r) => r.categorie && Number(r.bedrag) > 0);
       if (!bruikbaar.length) return melding("Voeg minstens één post toe met een soort en een bedrag.", "fout");
+      const dossier = jaarNu();
       if (!dossier.bron) dossier.bron = "handmatig ingevoerd";
       dossier.kostenposten = bruikbaar.map((r, i) => {
         const post = r.bron || {
@@ -2047,7 +2234,7 @@ body { font: 10.5pt/1.5 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, san
 
     window.addEventListener("popstate", (e) => {
       navN = (e.state && e.state.n) || 0;
-      herstel((e.state && e.state.scherm) || "dash");
+      herstel((e.state && e.state.scherm) || (rol === "beheer" ? "beheer" : "dash"));
     });
 
     Opslag.opWijziging(() => {
@@ -2060,10 +2247,12 @@ body { font: 10.5pt/1.5 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, san
     });
     Opslag.start();
 
-    try { history.replaceState({ scherm: "dash", n: 0 }, ""); } catch { /* geschiedenis niet beschikbaar */ }
+    if (!aanvraag) leegAanvraag();
+    const thuis = rol === "beheer" ? "beheer" : "dash";
+    try { history.replaceState({ scherm: thuis, n: 0 }, ""); } catch { /* geschiedenis niet beschikbaar */ }
     rolKnoppen();
-    rendDash();
-    toon("dash");
+    if (rol === "beheer") rendBeheer(); else rendDash();
+    toon(thuis);
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);

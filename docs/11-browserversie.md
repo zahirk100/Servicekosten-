@@ -1,9 +1,24 @@
 # 11 - De applicatie in de browser
 
-`web/index.html` is de volledige applicatie in één bestand: twee rollen, een rekenkern, een parser en een
-opslaglaag. Geen server, geen installatie.
+Drie pagina's, één codebestand. Geen server, geen installatie.
 
-Bouwen na een wijziging in `data/` of `web/*.js`:
+| Bestand | Wat het is |
+| --- | --- |
+| `web/index.html` | Landingspagina: wat het is, hoe het werkt, en een knop naar de aanvraag |
+| `web/aanvraag.html` | De huurder meldt een aanvraag aan |
+| `web/beheer.html` | De beoordelaar behandelt de dossiers |
+| `web/app.js` | Normen, regels, parser en interface — gedeeld door beide applicatiepagina's |
+| `web/stijl.css` | Bron én uitgeleverd bestand; alle drie de pagina's gebruiken het |
+
+Aanvraag en beheer draaien dezelfde code; ze verschillen alleen in
+`window.SERVICEKOSTEN_ROL`, die bij het laden vastligt. Daarmee kon de rolwissel uit de kopbalk: een
+huurder komt de beheeromgeving niet meer per ongeluk tegen.
+
+> **Let op: de beheerpagina kent geen inlog.** Wie de URL kent, komt erin. De landingspagina wijst er
+> daarom niet naartoe, maar dat is geen beveiliging. Vóór productie hoort hier authenticatie voor,
+> en zolang die er niet is, staan er persoonsgegevens van huurders achter een raadbare URL.
+
+Bouwen na een wijziging in `data/`, `web/*.js`, `web/pagina.html` of `web/landing.html`:
 
 ```
 python3 tools/bouw_webapp.py
@@ -21,8 +36,7 @@ python3 tools/bouw_webapp.py
    huurder ziet op de afrekening wat er werkelijk staat. Omschrijving, soort kosten en bedrag zijn
    per post aan te passen, een post is te verwijderen en er is er een toe te voegen.
    Optioneel kunnen tot zes foto's mee (zie *Foto's* hieronder).
-3. **Vijf vragen** — boekjaar, woningtype, bewoners en complexgrootte, wat de verhuurder heeft
-   aangeleverd, en het betaalde voorschot.
+3. **Alleen de vragen die nodig zijn** — zie hieronder. Meestal is dat er één.
 4. **Controleren en indienen** — een samenvatting van wat de huurder zelf heeft opgegeven (posten met
    hun bedragen, voorschot, adres, woning), de openstaande vragen om alsnog te beantwoorden, en dan
    indienen.
@@ -53,6 +67,42 @@ met het daadwerkelijk gecorrigeerde bedrag. Dat laatste komt van een mens, niet 
 **Beheer.** Een overzicht van binnengekomen aanvragen met kengetallen (nieuw, in behandeling, totale
 claim, gemiddelde per dossier), zoeken op naam, adres, dossiernummer of jaar, filters per status, en
 per dossier een werkblad.
+
+## Zo min mogelijk vragen
+
+Het doel is dat een huurder zijn aanvraag in een paar minuten kwijt is. Elke vraag hangt daarom aan
+een categorie die hem nodig heeft; de kern is nagelopen op waar de antwoorden werkelijk landen.
+
+| Vraag | Wordt gesteld bij | Waarvoor de kern hem gebruikt |
+| --- | --- | --- |
+| Wat voor woonruimte huur je? | `NUT-GAS-*` | Verbruiksnorm uit Tabel 1 (p. 13) of 25 m³ per m² (p. 14), en zelfstandig/onzelfstandig voor het wettelijk forfait (Tabel 11) |
+| Met hoeveel mensen woon je er? | `NUT-ELK-*`, `NUT-WATER-*` | Verbruiksnorm uit Tabel 4 (p. 18) en Tabel 7 (p. 21) |
+| Hoeveel woningen in het complex? | `SK-06`, `SK-06B` | Verdeling van de kosten van huismeester en beveiliging (p. 40-41) |
+| Heeft je verhuurder facturen laten zien? | altijd | Het bewijsregime van par. 6.4.2 (p. 60-61) |
+
+Een afrekening met alleen schoonmaak, verzekeringen en glasbewassing levert dus één vraag op. Boekjaar
+en voorschot zijn helemaal geen vraag meer: de parser haalt ze uit de afrekening en ze staan als
+invulveld in stap 4, waar ze alleen nog bevestigd hoeven te worden.
+
+Elke vraag wordt één keer gesteld en dat wordt per sleutel bijgehouden — niet of het antwoord geldig
+is. Een vraag waarop "weet ik niet" mag (de complexgrootte) zou anders worden overgeslagen terwijl de
+huurder hem wel had kunnen beantwoorden.
+
+## Meerdere boekjaren in één aanmelding
+
+Een verzoek aan de Huurcommissie kan tot tweeëneenhalf jaar na afloop van het kalenderjaar (Tabel 10,
+p. 56), en veel huurders hebben meer dan één jaar liggen. In stap 4 staat daarom **Nog een boekjaar
+toevoegen**: de huurder loopt stap 2 opnieuw, en al beantwoorde vragen worden niet herhaald.
+
+Juridisch blijft elk jaar een eigen verzoek — art. 7:260 lid 2 BW staat per kostensoort niet meer dan
+één tijdvak van twaalf maanden toe. Bij indienen wordt elk jaar dus een eigen dossier, met een gedeeld
+`groep`-kenmerk plus `groep_nummer` en `groep_totaal`, zodat de beoordelaar ziet dat ze bij elkaar
+horen. Contactgegevens en woonruimte zijn één object dat alle jaren delen; na het herstellen van een
+bewaard concept uit JSON wordt die koppeling opnieuw gelegd.
+
+Het antwoord op de bewijsvraag wordt bij het doorrekenen op alle posten van alle jaren toegepast, niet
+bij het tonen van de vraag. Anders zou een tweede afrekening stilletjes zonder onderbouwing worden
+beoordeeld en op het forfait van € 12,00 uitkomen.
 
 ## Het werkblad van de beoordelaar
 

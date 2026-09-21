@@ -1,8 +1,17 @@
 #!/usr/bin/env python3
-"""Bouwt web/index.html: één bestand met de normen, de regels, de parser en de interface.
+"""Bouwt de drie pagina's van de applicatie.
 
-De pagina draait volledig in de browser; er is geen server en geen buildstap voor
-de gebruiker. Bron blijft data/*.json en web/*.js — pas die aan en draai dit opnieuw.
+    web/index.html     landingspagina met informatie
+    web/aanvraag.html  de huurder meldt een aanvraag aan
+    web/beheer.html    de beoordelaar behandelt de dossiers
+    web/app.js         normen, regels, parser en interface in één bestand
+
+Aanvraag en beheer delen dezelfde schil (web/pagina.html) en dezelfde code; ze
+verschillen alleen in de rol die ze bij het laden meegeven. web/stijl.css wordt
+ongewijzigd uitgeleverd en door alle drie de pagina's gebruikt.
+
+Bron blijft data/*.json, web/*.js, web/pagina.html en web/landing.html — pas die
+aan en draai dit opnieuw.
 """
 
 from __future__ import annotations
@@ -13,23 +22,24 @@ from pathlib import Path
 WORTEL = Path(__file__).resolve().parent.parent
 WEB = WORTEL / "web"
 
+PAGINAS = [
+    ("aanvraag.html", "huurder", "Servicekosten — aanvraag indienen"),
+    ("beheer.html", "beheer", "Servicekosten — beheer"),
+]
+
 
 def lees(pad: Path) -> str:
     return pad.read_text(encoding="utf-8")
 
 
-def main() -> int:
+def bouw_data() -> dict:
     normen = json.loads(lees(WORTEL / "data" / "normen.json"))
-    categorieen = json.loads(lees(WORTEL / "data" / "categorieen.json"))
-    classificatie = json.loads(lees(WORTEL / "data" / "classificatie.json"))
     beslisregels = json.loads(lees(WORTEL / "data" / "beslisregels.json"))
-    uitleg = json.loads(lees(WORTEL / "data" / "uitleg.json"))
-
-    data = {
+    return {
         "normen": normen,
-        "categorieen": categorieen,
-        "classificatie": classificatie,
-        "uitleg": uitleg,
+        "categorieen": json.loads(lees(WORTEL / "data" / "categorieen.json")),
+        "classificatie": json.loads(lees(WORTEL / "data" / "classificatie.json")),
+        "uitleg": json.loads(lees(WORTEL / "data" / "uitleg.json")),
         # Alleen wat de interface toont: onderwerp en bron per regel-ID.
         "beslisregels": {"regels": [{"id": r["id"], "onderwerp": r["onderwerp"], "bron": r["bron"]}
                                     for r in beslisregels["regels"]]},
@@ -41,25 +51,37 @@ def main() -> int:
         "voorbeeld": lees(WORTEL / "voorbeelden" / "voorbeeld-afrekening-2024.txt"),
     }
 
-    pagina = lees(WEB / "pagina.html")
-    vervangingen = {
-        "/*__STIJL__*/": lees(WEB / "stijl.css"),
-        "/*__DATA__*/": json.dumps(data, ensure_ascii=False, separators=(",", ":")),
-        "/*__KERN__*/": lees(WEB / "kern.js"),
-        "/*__PARSER__*/": lees(WEB / "parser.js"),
-        "/*__FOTOS__*/": lees(WEB / "fotos.js"),
-        "/*__OPSLAG__*/": lees(WEB / "opslag.js"),
-        "/*__UI__*/": lees(WEB / "ui.js"),
-    }
-    for sleutel, inhoud in vervangingen.items():
-        if sleutel not in pagina:
-            raise SystemExit(f"Plaatshouder {sleutel} ontbreekt in web/pagina.html")
-        # </script> in een string zou het script vroegtijdig sluiten.
-        pagina = pagina.replace(sleutel, inhoud.replace("</script>", "<\\/script>"), 1)
 
-    doel = WEB / "index.html"
-    doel.write_text(pagina, encoding="utf-8")
-    print(f"{doel} geschreven: {len(pagina) / 1024:.0f} KB")
+def bouw_app_js(data: dict) -> str:
+    """Alle uitvoerbare code in één bestand, gedeeld door beide pagina's."""
+    delen = [
+        "/* Gegenereerd door tools/bouw_webapp.py — bewerk web/*.js, niet dit bestand. */",
+        "window.SERVICEKOSTEN_DATA = " + json.dumps(data, ensure_ascii=False, separators=(",", ":")) + ";",
+    ]
+    for naam in ("kern.js", "parser.js", "fotos.js", "opslag.js", "ui.js"):
+        delen.append("/* ── " + naam + " ── */")
+        delen.append(lees(WEB / naam))
+    return "\n".join(delen) + "\n"
+
+
+def main() -> int:
+    data = bouw_data()
+    app = bouw_app_js(data)
+    (WEB / "app.js").write_text(app, encoding="utf-8")
+    print(f"{WEB / 'app.js'}: {len(app) / 1024:.0f} KB")
+
+    schil = lees(WEB / "pagina.html")
+    for plaatshouder in ("/*__ROL__*/", "/*__TITEL__*/"):
+        if plaatshouder not in schil:
+            raise SystemExit(f"Plaatshouder {plaatshouder} ontbreekt in web/pagina.html")
+    for bestand, rol, titel in PAGINAS:
+        pagina = schil.replace("/*__ROL__*/", rol).replace("/*__TITEL__*/", titel)
+        (WEB / bestand).write_text(pagina, encoding="utf-8")
+        print(f"{WEB / bestand}: {len(pagina) / 1024:.1f} KB")
+
+    landing = lees(WEB / "landing.html")
+    (WEB / "index.html").write_text(landing, encoding="utf-8")
+    print(f"{WEB / 'index.html'}: {len(landing) / 1024:.1f} KB")
     return 0
 
 
